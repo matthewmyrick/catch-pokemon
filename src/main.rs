@@ -257,13 +257,24 @@ fn get_storage_path() -> PathBuf {
     path
 }
 
+// Embed the art files directly in the binary
+const POKEBALL_STILL: &str = include_str!("../static/art/pokeball-still.txt");
+const POKEBALL_LEFT: &str = include_str!("../static/art/pokeball-left.txt");
+const POKEBALL_RIGHT: &str = include_str!("../static/art/pokeball-right.txt");
+const POKEBALL_CAUGHT: &str = include_str!("../static/art/pokeball-caught.txt");
+const POKEBALL_NOT_CAUGHT: &str = include_str!("../static/art/pokeball-not-caught.txt");
+
 fn load_pokeball_art(art_type: &str) -> Vec<String> {
-    let art_path = format!("static/art/pokeball-{}.txt", art_type);
-    if let Ok(content) = fs::read_to_string(&art_path) {
-        content.lines().map(|line| line.to_string()).collect()
-    } else {
-        vec![]
-    }
+    let content = match art_type {
+        "still" => POKEBALL_STILL,
+        "left" => POKEBALL_LEFT,
+        "right" => POKEBALL_RIGHT,
+        "caught" => POKEBALL_CAUGHT,
+        "not-caught" => POKEBALL_NOT_CAUGHT,
+        _ => return vec![],
+    };
+    
+    content.lines().map(|line| line.to_string()).collect()
 }
 
 fn clear_lines(count: usize) {
@@ -492,11 +503,36 @@ fn catch_pokemon(pokemon: String, ball_str: String, skip_animation: bool, hide_p
         }
 
     } else {
-        println!(
-            "{}",
-            format!("Oh no! The wild {} broke free and ran away!", pokemon).red()
-        );
-        println!("Try using a better Pokéball next time!");
+        // 10% chance the Pokemon runs away, 90% chance it just breaks free
+        let run_away_chance = rng.gen_range(0.0..100.0);
+        if run_away_chance < 10.0 {
+            println!(
+                "{}",
+                format!("Oh no! The wild {} broke free and ran away!", pokemon).red()
+            );
+        } else {
+            println!(
+                "{}",
+                format!("Oh no! The wild {} broke free!", pokemon).red()
+            );
+            
+            // Show what the Pokemon is doing after breaking free
+            let actions = [
+                "makes a face at you",
+                "sticks its tongue out",
+                "laughs mockingly",
+                "does a little dance",
+                "shakes its head disapprovingly",
+                "crosses its arms defiantly",
+                "winks at you cheekily",
+                "spins around showing off",
+                &format!("shouts \"{}!\" loudly", pokemon.to_uppercase()),
+                "gives you a smug look"
+            ];
+            
+            let action = actions[rng.gen_range(0..actions.len())];
+            println!("{} {}.", pokemon, action);
+        }
     }
 }
 
