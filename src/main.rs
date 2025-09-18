@@ -13,7 +13,23 @@ use chrono::{DateTime, Local};
 use crossterm::{cursor, terminal, ExecutableCommand};
 
 #[derive(Parser, Debug)]
-#[command(author, version, about = "Catch Pokemon in your terminal!", long_about = None)]
+#[command(
+    author, 
+    version, 
+    about = "Catch Pokemon in your terminal!", 
+    long_about = "A fun terminal-based Pokemon catching game with animated ASCII art!\n\n\
+Available commands:\n  \
+catch     Try to catch a Pokemon with different Pokeball types\n  \
+pc        View your Pokemon collection with detailed statistics\n  \
+release   Release Pokemon back to the wild\n  \
+status    Check if you've caught a Pokemon before\n  \
+clear     Clear your entire Pokemon collection\n\n\
+Examples:\n  \
+catch-pokemon catch pikachu --ball ultra\n  \
+catch-pokemon pc\n  \
+catch-pokemon status charizard --boolean\n  \
+catch-pokemon release rattata --number 5"
+)]
 struct Args {
     #[command(subcommand)]
     command: Commands,
@@ -21,48 +37,98 @@ struct Args {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    /// Try to catch a Pokemon
+    /// Try to catch a Pokemon with animated Pokeball throwing
+    #[command(long_about = "Attempt to catch a Pokemon using different types of Pokeballs.\n\n\
+Each Pokemon has different catch rates based on rarity:\n\
+- Legendary/Mythical: 3% base rate (very hard)\n\
+- Pseudo-legendary/Starters: 45% base rate (hard)\n\
+- Common Pokemon: 120-255% base rate (easy)\n\n\
+Pokeball types and modifiers:\n\
+- pokeball/poke: 1x modifier (red ball)\n\
+- great/greatball: 1.5x modifier (blue ball)\n\
+- ultra/ultraball: 2x modifier (yellow ball)\n\
+- master/masterball: guaranteed catch (purple ball)\n\n\
+Examples:\n\
+  catch-pokemon catch pikachu\n\
+  catch-pokemon catch mewtwo --ball master\n\
+  catch-pokemon catch charizard --ball ultra --skip-animation\n\
+  catch-pokemon catch bulbasaur --hide-pokemon")]
     Catch {
-        /// Name of the Pokemon to catch
+        /// Name of the Pokemon to catch (case insensitive)
         pokemon: String,
         
-        /// Type of Pokeball to use (pokeball, great, ultra, master)
-        #[arg(short = 'b', long, default_value = "pokeball")]
+        /// Type of Pokeball to use: pokeball, great, ultra, master
+        #[arg(short = 'b', long, default_value = "pokeball", 
+              help = "Pokeball type (pokeball=1x, great=1.5x, ultra=2x, master=guaranteed)")]
         ball: String,
         
-        /// Skip the animation
-        #[arg(short = 's', long)]
+        /// Skip the animated Pokeball throwing sequence
+        #[arg(short = 's', long, help = "Skip animations for faster catching")]
         skip_animation: bool,
         
-        /// Hide the Pokemon when it appears
-        #[arg(long, default_value = "false")]
+        /// Hide the Pokemon ASCII art when it appears
+        #[arg(long, default_value = "false", help = "Don't show Pokemon sprite, only catching animation")]
         hide_pokemon: bool,
     },
     
-    /// Show all caught Pokemon in your PC
+    /// Display your Pokemon collection with detailed statistics
+    #[command(long_about = "View all Pokemon you've caught in your PC storage.\n\n\
+Shows detailed information including:\n\
+- Pokemon grouped by name with total counts\n\
+- Breakdown of catches by ball type for each Pokemon\n\
+- Summary statistics of total catches by ball type\n\
+- Recent catch history with timestamps\n\n\
+Example:\n\
+  catch-pokemon pc")]
     Pc,
     
-    /// Release Pokemon from your PC
+    /// Release Pokemon from your PC back to the wild
+    #[command(long_about = "Release Pokemon from your PC storage back to the wild.\n\n\
+You can release single Pokemon or multiple at once. This action cannot be undone!\n\
+If you specify more Pokemon than you have, it will release all available.\n\n\
+Examples:\n\
+  catch-pokemon release pidgey\n\
+  catch-pokemon release rattata --number 10\n\
+  catch-pokemon release pikachu -n 3")]
     Release {
-        /// Name of the Pokemon to release
+        /// Name of the Pokemon to release (case insensitive)
         pokemon: String,
         
-        /// Number of this Pokemon to release (default: 1)
-        #[arg(short = 'n', long, default_value = "1")]
+        /// Number of this Pokemon to release (releases all if you don't have enough)
+        #[arg(short = 'n', long, default_value = "1", 
+              help = "How many of this Pokemon to release (default: 1)")]
         number: usize,
     },
     
-    /// Check if a Pokemon has been caught before
+    /// Check if you've caught a specific Pokemon before
+    #[command(long_about = "Check your collection status for a specific Pokemon.\n\n\
+Two output modes:\n\
+- Default: Shows detailed information with catch count and most recent catch\n\
+- Boolean: Returns just 'true' or 'false' (useful for scripting)\n\n\
+Examples:\n\
+  catch-pokemon status charizard\n\
+  catch-pokemon status pikachu --boolean\n\
+  \n\
+Scripting example:\n\
+  if [ \"$(catch-pokemon status mewtwo --boolean)\" = \"true\" ]; then\n\
+    echo \"You have Mewtwo!\"\n\
+  fi")]
     Status {
-        /// Name of the Pokemon to check
+        /// Name of the Pokemon to check (case insensitive)
         pokemon: String,
         
-        /// Return only true/false instead of detailed output
-        #[arg(long)]
+        /// Output only 'true' or 'false' instead of detailed information
+        #[arg(long, help = "Return just true/false for scripting")]
         boolean: bool,
     },
     
-    /// Clear your PC storage (start fresh)
+    /// Clear your entire Pokemon collection (DESTRUCTIVE)
+    #[command(long_about = "Permanently delete all Pokemon from your PC storage.\n\n\
+⚠️  WARNING: This action cannot be undone!\n\
+All caught Pokemon, catch history, and statistics will be lost.\n\
+You will be prompted to confirm before deletion.\n\n\
+Example:\n\
+  catch-pokemon clear")]
     Clear,
 }
 
