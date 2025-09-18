@@ -22,10 +22,36 @@ A terminal-based Pokemon catching game that uses `pokemon-colorscripts` to displ
 - [pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts) (for displaying Pokemon ASCII art)
 - Rust 1.70+ (for building from source)
 
+### Quick Install (Recommended)
+
+```bash
+# Clone and install globally
+git clone https://github.com/matthewmyrick/catch-pokemon.git
+cd catch-pokemon
+chmod +x install.sh
+./install.sh
+```
+
+This will:
+- Build the optimized release binary
+- Install it to `~/.local/bin/catch-pokemon`
+- Add `~/.local/bin` to your PATH if needed
+- Allow you to use `catch-pokemon` from anywhere in your terminal
+
+### Download Release
+
+1. Go to [Releases](https://github.com/matthewmyrick/catch-pokemon/releases)
+2. Download the latest release for your platform:
+   - `catch-pokemon-vX.X.X-linux.tar.gz` (Linux)
+   - `catch-pokemon-vX.X.X-macos.tar.gz` (macOS)
+   - `catch-pokemon-vX.X.X-windows.zip` (Windows)
+3. Extract the archive
+4. Run `./install.sh` (Unix) or copy the binary to your PATH
+
 ### Build from Source
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/matthewmyrick/catch-pokemon.git
 cd catch-pokemon
 cargo build --release
 ```
@@ -38,16 +64,16 @@ The binary will be available at `target/release/catch-pokemon`
 
 ```bash
 # Catch with a regular Pokeball (default)
-./target/release/catch-pokemon catch pikachu
+catch-pokemon catch pikachu
 
 # Catch with a specific ball type
-./target/release/catch-pokemon catch mewtwo --ball ultra
+catch-pokemon catch mewtwo --ball ultra
 
 # Skip animation for faster catching
-./target/release/catch-pokemon catch eevee --ball great --skip-animation
+catch-pokemon catch eevee --ball great --skip-animation
 
 # Hide the Pokemon when it appears (only show the catching animation)
-./target/release/catch-pokemon catch pikachu --hide-pokemon
+catch-pokemon catch pikachu --hide-pokemon
 ```
 
 Ball types available:
@@ -61,20 +87,22 @@ Ball types available:
 Display all Pokemon you've caught:
 
 ```bash
-./target/release/catch-pokemon pc
+catch-pokemon pc
 ```
 
 This shows:
-- Total unique Pokemon caught
-- Count of each Pokemon if caught multiple times
+- Pokemon grouped by name with total counts
+- Breakdown of catches by ball type for each Pokemon
+- Summary statistics of total catches by ball type
 - Recent catch history with timestamps and ball used
+- Highlighted catch rate display
 
 ### Clear PC Storage
 
 Start fresh by clearing all caught Pokemon:
 
 ```bash
-./target/release/catch-pokemon clear
+catch-pokemon clear
 ```
 
 ## Pokemon Catch Rates
@@ -119,32 +147,32 @@ Caught Pokemon are stored persistently in:
 
 ```bash
 # Try to catch a legendary with an Ultra Ball
-./target/release/catch-pokemon catch articuno --ball ultra
+catch-pokemon catch articuno --ball ultra
 
 # Guaranteed catch with Master Ball
-./target/release/catch-pokemon catch rayquaza --ball master
+catch-pokemon catch rayquaza --ball master
 
 # Catch a starter Pokemon without showing it
-./target/release/catch-pokemon catch charmander --ball great --hide-pokemon
+catch-pokemon catch charmander --ball great --hide-pokemon
 
 # Quick catch without animations
-./target/release/catch-pokemon catch rattata --skip-animation
+catch-pokemon catch rattata --skip-animation
 
 # Check your collection
-./target/release/catch-pokemon pc
+catch-pokemon pc
 
 # Clear your PC and start over
-./target/release/catch-pokemon clear
+catch-pokemon clear
 ```
 
 ## Command Help
 
 ```bash
 # See all available commands
-./target/release/catch-pokemon --help
+catch-pokemon --help
 
 # Get help for a specific command
-./target/release/catch-pokemon catch --help
+catch-pokemon catch --help
 ```
 
 ## Animation Details

@@ -1,0 +1,200 @@
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      should-release: ${{ steps.check.outputs.should-release }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get version from Cargo.toml
+      id: version
+      run: |
+        VERSION=$(grep "^version =" Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: $VERSION"
+
+    - name: Check if version tag exists
+      id: check
+      run: |
+        VERSION=${{ steps.version.outputs.version }}
+        if git tag --list | grep -q "^v$VERSION$"; then
+          echo "Tag v$VERSION already exists, skipping release"
+          echo "should-release=false" >> $GITHUB_OUTPUT
+        else
+          echo "Tag v$VERSION does not exist, will create release"
+          echo "should-release=true" >> $GITHUB_OUTPUT
+        fi
+
+  release:
+    needs: check-version
+    if: needs.check-version.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build release binary
+      run: cargo build --release
+
+    - name: Run tests
+      run: cargo test
+
+    - name: Create release archive
+      run: |
+        mkdir -p release
+        cp target/release/catch-pokemon release/
+        cp README.md release/
+        cp install.sh release/
+        cp -r static release/
+        tar -czf catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz -C release .
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ needs.check-version.outputs.version }}
+        release_name: Release v${{ needs.check-version.outputs.version }}
+        body: |
+          ## What's New in v${{ needs.check-version.outputs.version }}
+          
+          🎮 **Catch Pokemon CLI Tool** - A fun terminal-based Pokemon catching game!
+          
+          ### Features
+          - Animated ASCII art Pokeball throwing and catching
+          - Multiple Pokeball types with different catch rates
+          - PC storage system with detailed statistics
+          - Highlighted catch rate display
+          - Pokemon counting by ball type used
+          
+          ### Installation
+          1. Download the release archive
+          2. Extract the files
+          3. Run `./install.sh` to install globally
+          4. Use `catch-pokemon --help` for usage instructions
+          
+          ### Examples
+          ```bash
+          catch-pokemon catch pikachu
+          catch-pokemon catch charizard --ball ultra
+          catch-pokemon pc
+          ```
+          
+          **Full Changelog**: https://github.com/matthewmyrick/catch-pokemon/compare/v${{ needs.check-version.outputs.version }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz
+        asset_name: catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz
+        asset_content_type: application/gzip
+
+  build-cross-platform:
+    needs: [check-version, release]
+    if: needs.check-version.outputs.should-release == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: linux
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            suffix: macos
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: windows
+            ext: .exe
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build release binary
+      run: cargo build --release --target ${{ matrix.target }}
+
+    - name: Create release archive (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        mkdir -p release
+        cp target/${{ matrix.target }}/release/catch-pokemon release/
+        cp README.md release/
+        cp install.sh release/
+        cp -r static release/
+        tar -czf catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.tar.gz -C release .
+
+    - name: Create release archive (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        mkdir release
+        copy target\${{ matrix.target }}\release\catch-pokemon.exe release\
+        copy README.md release\
+        copy install.sh release\
+        xcopy static release\static\ /E /I
+        powershell Compress-Archive -Path release\* -DestinationPath catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
+
+    - name: Upload Release Asset (Unix)
+      if: matrix.os != 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.release.outputs.upload_url }}
+        asset_path: ./catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.tar.gz
+        asset_name: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload Release Asset (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.release.outputs.upload_url }}
+        asset_path: ./catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
+        asset_name: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
+        asset_content_type: application/zip
