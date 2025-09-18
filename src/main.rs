@@ -336,7 +336,7 @@ fn catch_pokemon(pokemon: String, ball_str: String, skip_animation: bool, hide_p
         "{}",
         format!("Throwing {} at {}!", ball.display_name(), pokemon).cyan().bold()
     );
-    println!("Catch chance: {:.1}%", catch_chance);
+    println!("Catch chance: {}", format!("{:.1}%", catch_chance).bright_yellow().bold());
     println!();
 
     let mut rng = rand::thread_rng();
@@ -403,25 +403,51 @@ fn show_pc() {
     println!("{}", "║            Pokemon PC Storage                ║".cyan().bold());
     println!("{}", "╠══════════════════════════════════════════════╣".cyan());
     
-    let mut pokemon_counts: HashMap<String, usize> = HashMap::new();
+    // Create nested HashMap: Pokemon name -> Ball type -> Count
+    let mut pokemon_ball_counts: HashMap<String, HashMap<String, usize>> = HashMap::new();
     for p in &storage.pokemon {
-        *pokemon_counts.entry(p.name.clone()).or_insert(0) += 1;
+        pokemon_ball_counts
+            .entry(p.name.clone())
+            .or_insert_with(HashMap::new)
+            .entry(p.ball_used.clone())
+            .and_modify(|e| *e += 1)
+            .or_insert(1);
     }
     
-    let mut sorted_pokemon: Vec<_> = pokemon_counts.into_iter().collect();
-    sorted_pokemon.sort_by(|a, b| a.0.cmp(&b.0));
+    let mut sorted_pokemon: Vec<_> = pokemon_ball_counts.iter().collect();
+    sorted_pokemon.sort_by(|a, b| a.0.cmp(b.0));
     
-    for (name, count) in sorted_pokemon {
-        let display = if count > 1 {
-            format!("{} (x{})", name, count)
+    for (name, ball_counts) in sorted_pokemon {
+        let total_count: usize = ball_counts.values().sum();
+        
+        if total_count > 1 {
+            println!("║ • {} (x{}):", name.green().bold(), total_count.to_string().yellow());
+            for (ball, count) in ball_counts {
+                println!("║   └─ {} with {}", 
+                        format!("x{}", count).cyan(), 
+                        ball.magenta());
+            }
         } else {
-            name.clone()
-        };
-        println!("║ • {:<43} ║", display.green());
+            let (ball, _) = ball_counts.iter().next().unwrap();
+            println!("║ • {} (caught with {})", name.green(), ball.magenta());
+        }
     }
     
     println!("{}", "╠══════════════════════════════════════════════╣".cyan());
     println!("║ Total Pokemon caught: {:<22} ║", storage.pokemon.len().to_string().yellow().bold());
+    
+    // Ball type summary
+    let mut ball_summary: HashMap<String, usize> = HashMap::new();
+    for p in &storage.pokemon {
+        *ball_summary.entry(p.ball_used.clone()).or_insert(0) += 1;
+    }
+    
+    println!("║                                              ║");
+    println!("║ Catches by ball type:                        ║");
+    for (ball, count) in ball_summary {
+        println!("║   • {}: {:<31} ║", ball.magenta(), count.to_string().cyan());
+    }
+    
     println!("{}", "╚══════════════════════════════════════════════╝".cyan());
     
     println!();
