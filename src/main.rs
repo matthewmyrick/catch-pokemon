@@ -42,6 +42,22 @@ enum Commands {
     /// Show all caught Pokemon in your PC
     Pc,
     
+    /// Release Pokemon from your PC
+    Release {
+        /// Name of the Pokemon to release
+        pokemon: String,
+        
+        /// Number of this Pokemon to release (default: 1)
+        #[arg(short = 'n', long, default_value = "1")]
+        number: usize,
+    },
+    
+    /// Check if a Pokemon has been caught before
+    Check {
+        /// Name of the Pokemon to check
+        pokemon: String,
+    },
+    
     /// Clear your PC storage (start fresh)
     Clear,
 }
@@ -138,6 +154,29 @@ impl PcStorage {
             caught_at: Local::now(),
             ball_used: ball.display_name().to_string(),
         });
+    }
+    
+    fn release_pokemon(&mut self, name: &str, count: usize) -> usize {
+        let mut released = 0;
+        
+        self.pokemon.retain(|p| {
+            if p.name.to_lowercase() == name.to_lowercase() && released < count {
+                released += 1;
+                false // Remove this Pokemon
+            } else {
+                true // Keep this Pokemon
+            }
+        });
+        
+        released
+    }
+    
+    fn has_pokemon(&self, name: &str) -> bool {
+        self.pokemon.iter().any(|p| p.name.to_lowercase() == name.to_lowercase())
+    }
+    
+    fn count_pokemon(&self, name: &str) -> usize {
+        self.pokemon.iter().filter(|p| p.name.to_lowercase() == name.to_lowercase()).count()
     }
 }
 
@@ -460,6 +499,81 @@ fn show_pc() {
     }
 }
 
+fn release_pokemon(pokemon_name: String, number: usize) {
+    let mut storage = PcStorage::load();
+    
+    if storage.pokemon.is_empty() {
+        println!("{}", "Your PC is empty. No Pokemon to release!".yellow());
+        return;
+    }
+    
+    let available_count = storage.count_pokemon(&pokemon_name);
+    if available_count == 0 {
+        println!("{}", format!("You don't have any {} in your PC.", pokemon_name).red());
+        return;
+    }
+    
+    let to_release = number.min(available_count);
+    if number > available_count {
+        println!("{}", format!("You only have {} {} in your PC, releasing all of them.", 
+                 available_count, pokemon_name).yellow());
+    }
+    
+    println!("{}", 
+             format!("Are you sure you want to release {} {}{}? This cannot be undone!", 
+                     to_release, pokemon_name, if to_release > 1 { "s" } else { "" }).red().bold());
+    print!("Type 'yes' to confirm: ");
+    stdout().flush().unwrap();
+    
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap();
+    
+    if input.trim().to_lowercase() == "yes" {
+        let released = storage.release_pokemon(&pokemon_name, to_release);
+        
+        if let Err(e) = storage.save() {
+            eprintln!("Warning: Could not save to PC: {}", e);
+        } else {
+            println!();
+            println!("{}", 
+                     format!("Released {} {}{}! They've returned to the wild.", 
+                             released, pokemon_name, if released > 1 { "s" } else { "" }).green().bold());
+            
+            if storage.count_pokemon(&pokemon_name) > 0 {
+                println!("You still have {} {} remaining in your PC.", 
+                        storage.count_pokemon(&pokemon_name), pokemon_name);
+            }
+        }
+    } else {
+        println!("Release cancelled.");
+    }
+}
+
+fn check_pokemon(pokemon_name: String) {
+    let storage = PcStorage::load();
+    
+    if storage.has_pokemon(&pokemon_name) {
+        let count = storage.count_pokemon(&pokemon_name);
+        println!("{}", 
+                format!("✅ You have caught {} before! You have {} in your PC.", 
+                        pokemon_name, 
+                        if count == 1 { "1".to_string() } else { count.to_string() }).green().bold());
+        
+        // Show most recent catch
+        if let Some(most_recent) = storage.pokemon.iter()
+            .filter(|p| p.name.to_lowercase() == pokemon_name.to_lowercase())
+            .max_by_key(|p| p.caught_at) {
+            println!("Most recent catch: {} with {} at {}", 
+                    most_recent.name.cyan(),
+                    most_recent.ball_used.magenta(),
+                    most_recent.caught_at.format("%Y-%m-%d %H:%M"));
+        }
+    } else {
+        println!("{}", 
+                format!("❌ You haven't caught {} yet. Go catch one!", pokemon_name).red());
+    }
+}
+
 fn clear_pc() {
     println!("{}", "Are you sure you want to clear your PC? This cannot be undone!".red().bold());
     print!("Type 'yes' to confirm: ");
@@ -493,6 +607,12 @@ fn main() {
         },
         Commands::Pc => {
             show_pc();
+        },
+        Commands::Release { pokemon, number } => {
+            release_pokemon(pokemon, number);
+        },
+        Commands::Check { pokemon } => {
+            check_pokemon(pokemon);
         },
         Commands::Clear => {
             clear_pc();

@@ -7,13 +7,16 @@ A terminal-based Pokemon catching game that uses `pokemon-colorscripts` to displ
 - **Pokemon Catching**: Catch Pokemon with different types of Pokeballs
 - **Multiple Pokeball Types**: Regular, Great, Ultra, and Master balls with increasing catch rates
 - **Pokemon-Specific Catch Rates**: Different Pokemon have different catch difficulties based on their rarity
-- **PC Storage System**: All caught Pokemon are stored in your PC
-- **View Collection**: Display all your caught Pokemon with counts and catch history
+- **PC Storage System**: All caught Pokemon are stored in your PC with detailed statistics
+- **View Collection**: Display all your caught Pokemon with counts and catch history by ball type
+- **Release Pokemon**: Release Pokemon back to the wild (single or multiple at once)
+- **Check Pokemon Status**: Verify if you've caught a Pokemon before and see catch details
 - **Animated ASCII Pokeball**: Watch detailed ASCII art pokeballs shake left and right during catch attempts
 - **Dynamic Wiggle Count**: More wiggles for harder-to-catch Pokemon (2-4 based on catch chance)
 - **Catch Result Animations**: Unique ASCII art for successful catches (with stars) and escapes (pokeball opens)
 - **Hide Pokemon Option**: Choose whether to display the Pokemon when it appears
 - **Skip Animation Option**: Fast mode for quick catching without animations
+- **Highlighted Catch Rates**: Catch percentages displayed in bright colors for visibility
 
 ## Installation
 
@@ -97,6 +100,32 @@ This shows:
 - Recent catch history with timestamps and ball used
 - Highlighted catch rate display
 
+### Release Pokemon
+
+Release Pokemon from your PC back to the wild:
+
+```bash
+# Release a single Pokemon
+catch-pokemon release pikachu
+
+# Release multiple Pokemon of the same type
+catch-pokemon release pikachu --number 3
+catch-pokemon release rattata -n 5
+```
+
+### Check if Pokemon was Caught
+
+Check if you've caught a specific Pokemon before:
+
+```bash
+catch-pokemon check charizard
+```
+
+This will show:
+- Whether you've caught this Pokemon before
+- How many you have in your PC
+- Details of your most recent catch
+
 ### Clear PC Storage
 
 Start fresh by clearing all caught Pokemon:
@@ -161,6 +190,15 @@ catch-pokemon catch rattata --skip-animation
 # Check your collection
 catch-pokemon pc
 
+# Check if you've caught a Pokemon before
+catch-pokemon check mewtwo
+
+# Release a Pokemon back to the wild
+catch-pokemon release pidgey
+
+# Release multiple Pokemon at once
+catch-pokemon release rattata --number 10
+
 # Clear your PC and start over
 catch-pokemon clear
 ```
@@ -173,6 +211,8 @@ catch-pokemon --help
 
 # Get help for a specific command
 catch-pokemon catch --help
+catch-pokemon release --help
+catch-pokemon check --help
 ```
 
 ## Animation Details
