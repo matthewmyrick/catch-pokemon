@@ -56,6 +56,10 @@ enum Commands {
     Status {
         /// Name of the Pokemon to check
         pokemon: String,
+        
+        /// Return only true/false instead of detailed output
+        #[arg(long)]
+        boolean: bool,
     },
     
     /// Clear your PC storage (start fresh)
@@ -549,8 +553,14 @@ fn release_pokemon(pokemon_name: String, number: usize) {
     }
 }
 
-fn check_pokemon(pokemon_name: String) {
+fn check_pokemon(pokemon_name: String, boolean_mode: bool) {
     let storage = PcStorage::load();
+    
+    if boolean_mode {
+        // Just return true or false
+        println!("{}", storage.has_pokemon(&pokemon_name));
+        return;
+    }
     
     if storage.has_pokemon(&pokemon_name) {
         let count = storage.count_pokemon(&pokemon_name);
@@ -611,8 +621,8 @@ fn main() {
         Commands::Release { pokemon, number } => {
             release_pokemon(pokemon, number);
         },
-        Commands::Status { pokemon } => {
-            check_pokemon(pokemon);
+        Commands::Status { pokemon, boolean } => {
+            check_pokemon(pokemon, boolean);
         },
         Commands::Clear => {
             clear_pc();

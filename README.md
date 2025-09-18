@@ -118,13 +118,19 @@ catch-pokemon release rattata -n 5
 Check if you've caught a specific Pokemon before:
 
 ```bash
+# Detailed status
 catch-pokemon status charizard
+
+# Simple true/false output (useful for scripts)
+catch-pokemon status charizard --boolean
 ```
 
-This will show:
+The detailed mode shows:
 - Whether you've caught this Pokemon before
 - How many you have in your PC
 - Details of your most recent catch
+
+The boolean mode simply returns `true` or `false` for easy scripting.
 
 ### Clear PC Storage
 
