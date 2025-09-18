@@ -53,7 +53,7 @@ enum Commands {
     },
     
     /// Check if a Pokemon has been caught before
-    Check {
+    Status {
         /// Name of the Pokemon to check
         pokemon: String,
     },
@@ -611,7 +611,7 @@ fn main() {
         Commands::Release { pokemon, number } => {
             release_pokemon(pokemon, number);
         },
-        Commands::Check { pokemon } => {
+        Commands::Status { pokemon } => {
             check_pokemon(pokemon);
         },
         Commands::Clear => {

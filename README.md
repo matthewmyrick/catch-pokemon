@@ -113,12 +113,12 @@ catch-pokemon release pikachu --number 3
 catch-pokemon release rattata -n 5
 ```
 
-### Check if Pokemon was Caught
+### Check Pokemon Status
 
 Check if you've caught a specific Pokemon before:
 
 ```bash
-catch-pokemon check charizard
+catch-pokemon status charizard
 ```
 
 This will show:
@@ -191,7 +191,7 @@ catch-pokemon catch rattata --skip-animation
 catch-pokemon pc
 
 # Check if you've caught a Pokemon before
-catch-pokemon check mewtwo
+catch-pokemon status mewtwo
 
 # Release a Pokemon back to the wild
 catch-pokemon release pidgey
@@ -212,7 +212,7 @@ catch-pokemon --help
 # Get help for a specific command
 catch-pokemon catch --help
 catch-pokemon release --help
-catch-pokemon check --help
+catch-pokemon status --help
 ```
 
 ## Animation Details
