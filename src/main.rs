@@ -180,6 +180,12 @@ impl PokeballType {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+struct PokemonData {
+    catch_rate: u8,
+    category: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 struct CaughtPokemon {
     name: String,
     caught_at: DateTime<Local>,
@@ -264,6 +270,9 @@ const POKEBALL_RIGHT: &str = include_str!("../static/art/pokeball-right.txt");
 const POKEBALL_CAUGHT: &str = include_str!("../static/art/pokeball-caught.txt");
 const POKEBALL_NOT_CAUGHT: &str = include_str!("../static/art/pokeball-not-caught.txt");
 
+// Embed the Pokemon data directly in the binary
+const POKEMON_DATA: &str = include_str!("../pokemon_data.json");
+
 fn load_pokeball_art(art_type: &str) -> Vec<String> {
     let content = match art_type {
         "still" => POKEBALL_STILL,
@@ -293,45 +302,23 @@ fn display_pokeball_art(lines: &[String]) {
 }
 
 fn get_pokemon_catch_rate(pokemon_name: &str) -> u8 {
-    let legendary = vec!["articuno", "zapdos", "moltres", "mewtwo", "mew", "lugia", 
-                         "ho-oh", "celebi", "kyogre", "groudon", "rayquaza", "dialga", 
-                         "palkia", "giratina", "arceus", "zekrom", "reshiram", "kyurem",
-                         "xerneas", "yveltal", "zygarde", "solgaleo", "lunala", "necrozma"];
+    // Parse the embedded Pokemon data once
+    let pokemon_db: HashMap<String, PokemonData> = match serde_json::from_str(POKEMON_DATA) {
+        Ok(data) => data,
+        Err(_) => return 120, // Default catch rate if JSON parsing fails
+    };
     
-    let mythical = vec!["mew", "celebi", "jirachi", "deoxys", "manaphy", "darkrai", 
-                        "shaymin", "arceus", "victini", "keldeo", "meloetta", "genesect",
-                        "diancie", "hoopa", "volcanion", "magearna", "marshadow", "zeraora"];
+    // Normalize the Pokemon name to match our data format
+    let normalized_name = pokemon_name.to_lowercase()
+        .replace("'", "")
+        .replace(".", "")
+        .replace(" ", "_")
+        .replace("-", "_");
     
-    let starters = vec!["bulbasaur", "charmander", "squirtle", "chikorita", "cyndaquil", 
-                        "totodile", "treecko", "torchic", "mudkip", "turtwig", "chimchar", 
-                        "piplup", "snivy", "tepig", "oshawott", "chespin", "fennekin", 
-                        "froakie", "rowlet", "litten", "popplio", "grookey", "scorbunny", "sobble"];
-    
-    let pseudo_legendary = vec!["dragonite", "tyranitar", "salamence", "metagross", 
-                                "garchomp", "hydreigon", "goodra", "kommo-o", "dragapult"];
-    
-    let lower_name = pokemon_name.to_lowercase();
-    
-    if legendary.contains(&lower_name.as_str()) {
-        3
-    } else if mythical.contains(&lower_name.as_str()) {
-        3
-    } else if pseudo_legendary.contains(&lower_name.as_str()) {
-        45
-    } else if starters.contains(&lower_name.as_str()) {
-        45
-    } else if lower_name.contains("pikachu") {
-        190
-    } else if lower_name.contains("eevee") {
-        45
-    } else {
-        let common = vec!["pidgey", "rattata", "caterpie", "weedle", "wurmple", 
-                         "zigzagoon", "bidoof", "patrat", "bunnelby", "rookidee"];
-        if common.contains(&lower_name.as_str()) {
-            255
-        } else {
-            120
-        }
+    // Look up the Pokemon in our database
+    match pokemon_db.get(&normalized_name) {
+        Some(data) => data.catch_rate,
+        None => 120, // Default catch rate for unknown Pokemon
     }
 }
 
