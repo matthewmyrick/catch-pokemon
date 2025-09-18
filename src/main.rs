@@ -271,7 +271,7 @@ const POKEBALL_CAUGHT: &str = include_str!("../static/art/pokeball-caught.txt");
 const POKEBALL_NOT_CAUGHT: &str = include_str!("../static/art/pokeball-not-caught.txt");
 
 // Embed the Pokemon data directly in the binary
-const POKEMON_DATA: &str = include_str!("../pokemon_data.json");
+const POKEMON_DATA: &str = include_str!("../data/pokemon.json");
 
 fn load_pokeball_art(art_type: &str) -> Vec<String> {
     let content = match art_type {

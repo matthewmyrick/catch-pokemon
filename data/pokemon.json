@@ -4,11 +4,11 @@
     "category": "starter"
   },
   "ivysaur": {
-    "catch_rate": 45,
+    "catch_rate": 25,
     "category": "starter_evolution"
   },
   "venusaur": {
-    "catch_rate": 45,
+    "catch_rate": 15,
     "category": "starter_evolution"
   },
   "charmander": {
@@ -16,11 +16,11 @@
     "category": "starter"
   },
   "charmeleon": {
-    "catch_rate": 45,
+    "catch_rate": 25,
     "category": "starter_evolution"
   },
   "charizard": {
-    "catch_rate": 45,
+    "catch_rate": 15,
     "category": "starter_evolution"
   },
   "squirtle": {
@@ -28,11 +28,11 @@
     "category": "starter"
   },
   "wartortle": {
-    "catch_rate": 45,
+    "catch_rate": 25,
     "category": "starter_evolution"
   },
   "blastoise": {
-    "catch_rate": 45,
+    "catch_rate": 15,
     "category": "starter_evolution"
   },
   "caterpie": {
