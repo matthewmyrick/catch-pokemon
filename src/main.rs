@@ -10,7 +10,10 @@ use std::process::Command;
 use std::thread;
 use std::time::Duration;
 use chrono::{DateTime, Local};
-use crossterm::{cursor, terminal, ExecutableCommand};
+use crossterm::{
+    cursor, terminal, ExecutableCommand,
+    event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
+};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -78,9 +81,15 @@ Shows detailed information including:\n\
 - Breakdown of catches by ball type for each Pokemon\n\
 - Summary statistics of total catches by ball type\n\
 - Recent catch history with timestamps\n\n\
-Example:\n\
-  catch-pokemon pc")]
-    Pc,
+Examples:\n\
+  catch-pokemon pc\n\
+  catch-pokemon pc --search\n\
+  catch-pokemon pc -s")]
+    Pc {
+        /// Launch interactive fuzzy search interface
+        #[arg(short = 's', long, help = "Launch interactive fuzzy search interface")]
+        search: bool,
+    },
     
     /// Release Pokemon from your PC back to the wild
     #[command(long_about = "Release Pokemon from your PC storage back to the wild.\n\n\
@@ -523,7 +532,214 @@ fn catch_pokemon(pokemon: String, ball_str: String, skip_animation: bool, hide_p
     }
 }
 
-fn show_pc() {
+fn fuzzy_match(text: &str, pattern: &str) -> bool {
+    let text = text.to_lowercase();
+    let pattern = pattern.to_lowercase();
+    
+    // Simple fuzzy matching: check if all characters in pattern appear in order in text
+    let mut pattern_chars = pattern.chars();
+    let mut current_char = pattern_chars.next();
+    
+    for text_char in text.chars() {
+        if let Some(pattern_char) = current_char {
+            if text_char == pattern_char {
+                current_char = pattern_chars.next();
+            }
+        }
+    }
+    
+    current_char.is_none()
+}
+
+fn interactive_pokemon_search(storage: &PcStorage) -> Result<(), Box<dyn std::error::Error>> {
+    // Get unique Pokemon names
+    let mut pokemon_names: Vec<String> = storage.pokemon
+        .iter()
+        .map(|p| p.name.clone())
+        .collect();
+    pokemon_names.sort();
+    pokemon_names.dedup();
+    
+    let mut search_term = String::new();
+    let mut selected_index = 0;
+    
+    // Enable raw mode for direct input handling
+    terminal::enable_raw_mode()?;
+    
+    // Hide cursor for cleaner display
+    print!("\x1B[?25l");
+    stdout().flush()?;
+    
+    loop {
+        // Clear screen completely
+        print!("\x1B[2J\x1B[1;1H");
+        
+        // Filter Pokemon based on current search term
+        let filtered: Vec<&String> = if search_term.is_empty() {
+            pokemon_names.iter().collect()
+        } else {
+            pokemon_names
+                .iter()
+                .filter(|name| fuzzy_match(name, &search_term))
+                .collect()
+        };
+        
+        // Update selected index if it's out of bounds
+        if selected_index >= filtered.len() && !filtered.is_empty() {
+            selected_index = filtered.len() - 1;
+        }
+        
+        // Display search line with highlighting
+        print!("Search: ");
+        print!("\x1B[33m{}\x1B[0m", search_term); // Yellow search term
+        print!("\x1B[90m_\x1B[0m"); // Gray cursor
+        println!();
+        
+        if !filtered.is_empty() {
+            println!("\x1B[36m{}/{}\x1B[0m", selected_index + 1, filtered.len()); // Cyan counter
+        } else {
+            println!("\x1B[31m0/0\x1B[0m"); // Red when no results
+        }
+        println!(); // Empty line
+        
+        // Display results with clear highlighting
+        let display_count = 8.min(filtered.len());
+        for (i, pokemon_name) in filtered.iter().take(display_count).enumerate() {
+            if i == selected_index {
+                // Bright highlighted selection with background
+                print!("\x1B[1;37;44m"); // Bold white text on blue background
+                println!(" ► {} ", pokemon_name);
+                print!("\x1B[0m"); // Reset
+            } else {
+                // Regular white text
+                println!("\x1B[37m   {}\x1B[0m", pokemon_name);
+            }
+        }
+        
+        if filtered.len() > display_count {
+            println!("\x1B[90m   ... {} more\x1B[0m", filtered.len() - display_count); // Gray
+        }
+        
+        stdout().flush()?;
+        
+        // Handle input
+        if let Ok(Event::Key(KeyEvent { code, modifiers, .. })) = event::read() {
+            match code {
+                KeyCode::Esc => break,
+                KeyCode::Enter => {
+                    if !filtered.is_empty() && selected_index < filtered.len() {
+                        let selected_pokemon = filtered[selected_index];
+                        
+                        // Show cursor and disable raw mode
+                        print!("\x1B[?25h");
+                        terminal::disable_raw_mode()?;
+                        
+                        // Clear screen and show details
+                        print!("\x1B[2J\x1B[1;1H");
+                        stdout().flush()?;
+                        
+                        // Get ball counts for this Pokemon
+                        let mut ball_counts: HashMap<String, usize> = HashMap::new();
+                        for p in &storage.pokemon {
+                            if p.name == *selected_pokemon {
+                                *ball_counts.entry(p.ball_used.clone()).or_insert(0) += 1;
+                            }
+                        }
+                        
+                        show_pokemon_details(selected_pokemon, &ball_counts, storage);
+                        return Ok(());
+                    }
+                }
+                KeyCode::Up => {
+                    if !filtered.is_empty() && selected_index > 0 {
+                        selected_index -= 1;
+                    }
+                }
+                KeyCode::Down => {
+                    if !filtered.is_empty() && selected_index < filtered.len() - 1 {
+                        selected_index += 1;
+                    }
+                }
+                KeyCode::Backspace => {
+                    if search_term.pop().is_some() {
+                        selected_index = 0;
+                    }
+                }
+                KeyCode::Char(c) => {
+                    if modifiers.contains(KeyModifiers::CONTROL) && c == 'c' {
+                        break;
+                    } else {
+                        search_term.push(c);
+                        selected_index = 0;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    
+    // Restore cursor and disable raw mode
+    print!("\x1B[?25h");
+    terminal::disable_raw_mode()?;
+    print!("\x1B[2J\x1B[1;1H");
+    println!("Search cancelled.");
+    Ok(())
+}
+
+fn show_pokemon_details(pokemon_name: &str, ball_counts: &HashMap<String, usize>, storage: &PcStorage) {
+    let total_count: usize = ball_counts.values().sum();
+    
+    println!();
+    println!("{}", format!("=== {} ===", pokemon_name).green().bold());
+    println!();
+    
+    // Show Pokemon sprite using pokemon-colorscripts
+    let output = Command::new("pokemon-colorscripts")
+        .args(&["-n", pokemon_name, "--no-title"])
+        .output();
+    
+    if let Ok(result) = output {
+        if result.status.success() {
+            print!("{}", String::from_utf8_lossy(&result.stdout));
+        }
+    }
+    
+    println!();
+    println!("{}", format!("Total caught: {}", total_count).cyan().bold());
+    println!();
+    
+    // Show breakdown by ball type
+    println!("Caught with:");
+    for (ball, count) in ball_counts {
+        if *count == 1 {
+            println!("  • {} with {}", "1".yellow(), ball.magenta());
+        } else {
+            println!("  • {} with {}", count.to_string().yellow(), ball.magenta());
+        }
+    }
+    
+    println!();
+    
+    // Show catch history for this Pokemon
+    let pokemon_catches: Vec<_> = storage.pokemon
+        .iter()
+        .filter(|p| p.name.to_lowercase() == pokemon_name.to_lowercase())
+        .collect();
+    
+    println!("Catch history:");
+    for (i, pokemon) in pokemon_catches.iter().rev().enumerate() {
+        if i >= 5 { break; } // Show only last 5 catches
+        println!("  • {} at {}", 
+                pokemon.ball_used.cyan(),
+                pokemon.caught_at.format("%Y-%m-%d %H:%M"));
+    }
+    
+    if pokemon_catches.len() > 5 {
+        println!("  ... and {} more", pokemon_catches.len() - 5);
+    }
+}
+
+fn show_pc(search: bool) {
     let storage = PcStorage::load();
     
     if storage.pokemon.is_empty() {
@@ -546,27 +762,54 @@ fn show_pc() {
             .or_insert(1);
     }
     
-    let mut sorted_pokemon: Vec<_> = pokemon_ball_counts.iter().collect();
+    // If search flag is provided, launch interactive search
+    if search {
+        if let Err(e) = interactive_pokemon_search(&storage) {
+            eprintln!("Error in interactive search: {}", e);
+        }
+        return;
+    }
+    
+    let filtered_pokemon = pokemon_ball_counts;
+    
+    let mut sorted_pokemon: Vec<_> = filtered_pokemon.iter().collect();
     sorted_pokemon.sort_by(|a, b| a.0.cmp(b.0));
     
     for (name, ball_counts) in sorted_pokemon {
         let total_count: usize = ball_counts.values().sum();
         
         if total_count > 1 {
-            println!("║ • {} (x{}):", name.green().bold(), total_count.to_string().yellow());
+            let line = format!("║ • {} (x{}):", name.green().bold(), total_count.to_string().yellow());
+            // Calculate padding needed to reach the right border (46 chars total inside)
+            let visible_len = format!("║ • {} (x{}):", name, total_count).len();
+            let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
+            println!("{}{}║", line, " ".repeat(padding));
+            
             for (ball, count) in ball_counts {
-                println!("║   └─ {} with {}", 
+                let line = format!("║   └─ {} with {}", 
                         format!("x{}", count).cyan(), 
                         ball.magenta());
+                let visible_len = format!("║   └─ x{} with {}", count, ball).len();
+                let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
+                println!("{}{}║", line, " ".repeat(padding));
             }
         } else {
             let (ball, _) = ball_counts.iter().next().unwrap();
-            println!("║ • {} (caught with {})", name.green(), ball.magenta());
+            let line = format!("║ • {} (caught with {})", name.green(), ball.magenta());
+            let visible_len = format!("║ • {} (caught with {})", name, ball).len();
+            let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
+            println!("{}{}║", line, " ".repeat(padding));
         }
     }
     
     println!("{}", "╠══════════════════════════════════════════════╣".cyan());
-    println!("║ Total Pokemon caught: {:<22} ║", storage.pokemon.len().to_string().yellow().bold());
+    
+    let total_text = format!("Total Pokemon caught: {}", storage.pokemon.len());
+    
+    let total_line = format!("║ {}", total_text.yellow().bold());
+    let visible_len = format!("║ {}", total_text).len();
+    let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
+    println!("{}{}║", total_line, " ".repeat(padding));
     
     // Ball type summary
     let mut ball_summary: HashMap<String, usize> = HashMap::new();
@@ -577,7 +820,10 @@ fn show_pc() {
     println!("║                                              ║");
     println!("║ Catches by ball type:                        ║");
     for (ball, count) in ball_summary {
-        println!("║   • {}: {:<31} ║", ball.magenta(), count.to_string().cyan());
+        let line = format!("║   • {}: {}", ball.magenta(), count.to_string().cyan());
+        let visible_len = format!("║   • {}: {}", ball, count).len();
+        let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
+        println!("{}{}║", line, " ".repeat(padding));
     }
     
     println!("{}", "╚══════════════════════════════════════════════╝".cyan());
@@ -704,8 +950,8 @@ fn main() {
         Commands::Catch { pokemon, ball, skip_animation, hide_pokemon } => {
             catch_pokemon(pokemon, ball, skip_animation, hide_pokemon);
         },
-        Commands::Pc => {
-            show_pc();
+        Commands::Pc { search } => {
+            show_pc(search);
         },
         Commands::Release { pokemon, number } => {
             release_pokemon(pokemon, number);
