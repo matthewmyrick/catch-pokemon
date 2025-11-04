@@ -66,10 +66,13 @@ if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     echo -e "${YELLOW}🔧 Configuring PATH...${NC}"
     
     # Detect shell and add to appropriate config file
-    if [ -n "$ZSH_VERSION" ]; then
+    # Check user's login shell, not the script's execution shell
+    USER_SHELL=$(basename "$SHELL")
+
+    if [[ "$USER_SHELL" == "zsh" ]]; then
         SHELL_CONFIG="$HOME/.zshrc"
         SHELL_NAME="Zsh"
-    elif [ -n "$BASH_VERSION" ]; then
+    elif [[ "$USER_SHELL" == "bash" ]]; then
         SHELL_CONFIG="$HOME/.bashrc"
         SHELL_NAME="Bash"
     else
