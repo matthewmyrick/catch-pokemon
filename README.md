@@ -22,8 +22,32 @@ A terminal-based Pokemon catching game that uses `pokemon-colorscripts` to displ
 
 ### Prerequisites
 
-- [pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts) (for displaying Pokemon ASCII art)
-- Rust 1.70+ (for cargo install or building from source)
+**Required:**
+- **Python 3** - Required by pokemon-colorscripts to display Pokemon ASCII art
+- **Terminal with true color support** - Most modern terminals (iTerm2, Terminal.app, GNOME Terminal, etc.) support this
+- **[pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts)** - For displaying Pokemon ASCII art
+
+  **Install pokemon-colorscripts:**
+
+  *Arch/Arch-based:*
+  ```bash
+  yay -S pokemon-colorscripts-git
+  ```
+
+  *Other Linux/macOS:*
+  ```bash
+  git clone https://gitlab.com/phoneybadger/pokemon-colorscripts.git
+  cd pokemon-colorscripts
+  sudo ./install.sh
+  ```
+
+**For installation:**
+- **Rust 1.70+** - Required for cargo install or building from source
+
+  Install Rust from [rustup.rs](https://rustup.rs/):
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
 
 ### Method 1: Cargo Install (Easiest)
 
