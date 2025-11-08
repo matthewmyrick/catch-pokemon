@@ -23,12 +23,30 @@ A terminal-based Pokemon catching game that uses `pokemon-colorscripts` to displ
 ### Prerequisites
 
 - [pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts) (for displaying Pokemon ASCII art)
-- Rust 1.70+ (for building from source)
+- Rust 1.70+ (for cargo install or building from source)
 
-### Quick Install (Recommended)
+### Method 1: Cargo Install (Easiest)
+
+Install directly using Cargo:
 
 ```bash
-# Clone and install globally
+# Install from GitHub (available now)
+cargo install --git https://github.com/matthewmyrick/catch-pokemon
+
+# Or install from crates.io (once published)
+cargo install catch-pokemon
+```
+
+This automatically:
+- Downloads and compiles the latest version
+- Installs to `~/.cargo/bin/catch-pokemon`
+- Makes `catch-pokemon` available globally (if `~/.cargo/bin` is in your PATH)
+
+### Method 2: Build and Install Script
+
+Clone the repository and use the installation script:
+
+```bash
 git clone https://github.com/matthewmyrick/catch-pokemon.git
 cd catch-pokemon
 chmod +x install.sh
@@ -38,20 +56,15 @@ chmod +x install.sh
 This will:
 - Build the optimized release binary
 - Install it to `~/.local/bin/catch-pokemon`
-- Add `~/.local/bin` to your PATH if needed
+- Automatically add `~/.local/bin` to your PATH (in `.zshrc` or `.bashrc`)
 - Allow you to use `catch-pokemon` from anywhere in your terminal
 
-### Download Release
+**Note:** After running the install script, either restart your terminal or run:
+```bash
+source ~/.zshrc  # or source ~/.bashrc
+```
 
-1. Go to [Releases](https://github.com/matthewmyrick/catch-pokemon/releases)
-2. Download the latest release for your platform:
-   - `catch-pokemon-vX.X.X-linux.tar.gz` (Linux)
-   - `catch-pokemon-vX.X.X-macos.tar.gz` (macOS)
-   - `catch-pokemon-vX.X.X-windows.zip` (Windows)
-3. Extract the archive
-4. Run `./install.sh` (Unix) or copy the binary to your PATH
-
-### Build from Source
+### Method 3: Manual Build from Source
 
 ```bash
 git clone https://github.com/matthewmyrick/catch-pokemon.git
@@ -59,7 +72,9 @@ cd catch-pokemon
 cargo build --release
 ```
 
-The binary will be available at `target/release/catch-pokemon`
+The binary will be available at `target/release/catch-pokemon`. You can then:
+- Run it directly: `./target/release/catch-pokemon`
+- Copy it to a directory in your PATH: `cp target/release/catch-pokemon ~/.local/bin/`
 
 ## Usage
 

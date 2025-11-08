@@ -42,6 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@v4
 
@@ -93,11 +95,22 @@ jobs:
           - Pokemon counting by ball type used
           
           ### Installation
-          1. Download the release archive
+
+          **Option 1: Cargo Install (Easiest)**
+          ```bash
+          # Install from GitHub
+          cargo install --git https://github.com/matthewmyrick/catch-pokemon
+
+          # Or from crates.io (if published)
+          cargo install catch-pokemon
+          ```
+
+          **Option 2: Download and Install**
+          1. Download the release archive for your platform
           2. Extract the files
           3. Run `./install.sh` to install globally
           4. Use `catch-pokemon --help` for usage instructions
-          
+
           ### Examples
           ```bash
           catch-pokemon catch pikachu
@@ -118,6 +131,29 @@ jobs:
         asset_path: ./catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz
         asset_name: catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz
         asset_content_type: application/gzip
+
+  publish-crates-io:
+    needs: [check-version, release]
+    if: needs.check-version.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Publish to crates.io
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      run: |
+        if [ -n "$CARGO_REGISTRY_TOKEN" ]; then
+          echo "Publishing to crates.io..."
+          cargo publish --token $CARGO_REGISTRY_TOKEN
+        else
+          echo "Skipping crates.io publish - CARGO_REGISTRY_TOKEN not set"
+          echo "To enable automatic publishing, add CARGO_REGISTRY_TOKEN to repository secrets"
+        fi
 
   build-cross-platform:
     needs: [check-version, release]
