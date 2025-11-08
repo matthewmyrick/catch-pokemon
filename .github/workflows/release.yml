@@ -42,8 +42,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@v4
 
@@ -75,25 +73,22 @@ jobs:
         tar -czf catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz -C release .
 
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ needs.check-version.outputs.version }}
-        release_name: Release v${{ needs.check-version.outputs.version }}
+        name: Release v${{ needs.check-version.outputs.version }}
         body: |
           ## What's New in v${{ needs.check-version.outputs.version }}
-          
+
           🎮 **Catch Pokemon CLI Tool** - A fun terminal-based Pokemon catching game!
-          
+
           ### Features
           - Animated ASCII art Pokeball throwing and catching
           - Multiple Pokeball types with different catch rates
           - PC storage system with detailed statistics
           - Highlighted catch rate display
           - Pokemon counting by ball type used
-          
+
           ### Installation
 
           **Option 1: Cargo Install (Easiest)**
@@ -117,20 +112,12 @@ jobs:
           catch-pokemon catch charizard --ball ultra
           catch-pokemon pc
           ```
-          
-          **Full Changelog**: https://github.com/matthewmyrick/catch-pokemon/compare/v${{ needs.check-version.outputs.version }}
+
+          **Full Changelog**: https://github.com/matthewmyrick/catch-pokemon/commits/v${{ needs.check-version.outputs.version }}
+        files: |
+          catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz
-        asset_name: catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz
-        asset_content_type: application/gzip
 
   publish-crates-io:
     needs: [check-version, release]
@@ -159,6 +146,8 @@ jobs:
     needs: [check-version, release]
     if: needs.check-version.outputs.should-release == 'true'
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       matrix:
         include:
@@ -215,22 +204,14 @@ jobs:
 
     - name: Upload Release Asset (Unix)
       if: matrix.os != 'windows-latest'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        upload_url: ${{ needs.release.outputs.upload_url }}
-        asset_path: ./catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.tar.gz
-        asset_name: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.tar.gz
-        asset_content_type: application/gzip
+        tag_name: v${{ needs.check-version.outputs.version }}
+        files: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.tar.gz
 
     - name: Upload Release Asset (Windows)
       if: matrix.os == 'windows-latest'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        upload_url: ${{ needs.release.outputs.upload_url }}
-        asset_path: ./catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
-        asset_name: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
-        asset_content_type: application/zip
+        tag_name: v${{ needs.check-version.outputs.version }}
+        files: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
