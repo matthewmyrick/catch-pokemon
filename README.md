@@ -44,9 +44,28 @@ A terminal-based Pokemon catching game that uses `pokemon-colorscripts` to displ
 **For installation:**
 - **Rust 1.70+** - Required for cargo install or building from source
 
-  Install Rust from [rustup.rs](https://rustup.rs/):
+  **Install Rust from [rustup.rs](https://rustup.rs/):**
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
+
+  **IMPORTANT:** After installing Rust, you need to add Cargo's bin directory to your PATH:
+
+  *For zsh (macOS default):*
+  ```bash
+  echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
+  source ~/.zshrc
+  ```
+
+  *For bash:*
+  ```bash
+  echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+  source ~/.bashrc
+  ```
+
+  Verify Rust is installed:
+  ```bash
+  cargo --version
   ```
 
 ### Method 1: Cargo Install (Easiest)
@@ -64,7 +83,14 @@ cargo install catch-pokemon
 This automatically:
 - Downloads and compiles the latest version
 - Installs to `~/.cargo/bin/catch-pokemon`
-- Makes `catch-pokemon` available globally (if `~/.cargo/bin` is in your PATH)
+- Makes `catch-pokemon` available globally
+
+**After installation, verify it works:**
+```bash
+catch-pokemon --version
+```
+
+**If you get "command not found":** Make sure `~/.cargo/bin` is in your PATH (see Rust installation instructions above)
 
 ### Method 2: Build and Install Script
 
