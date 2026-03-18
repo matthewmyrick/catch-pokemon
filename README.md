@@ -68,31 +68,37 @@ A terminal-based Pokemon catching game that uses `pokemon-colorscripts` to displ
   cargo --version
   ```
 
-### Method 1: Cargo Install (Easiest)
+### Method 1: One-Line Install (Easiest)
 
-Install directly using Cargo:
+Install everything with a single command:
 
 ```bash
-# Install from GitHub (available now)
-cargo install --git https://github.com/matthewmyrick/catch-pokemon
-
-# Or install from crates.io (once published)
-cargo install catch-pokemon
+curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install-remote.sh | bash
 ```
 
 This automatically:
-- Downloads and compiles the latest version
-- Installs to `~/.cargo/bin/catch-pokemon`
-- Makes `catch-pokemon` available globally
+- Installs Rust if not already present
+- Builds and installs `catch-pokemon` via cargo
+- Sets up shell functions (`catch`, `pc`, `pokemon_encounter`, etc.)
+- Configures your `.zshrc` or `.bashrc`
 
-**After installation, verify it works:**
+After installation, restart your terminal and you're ready to play!
+
+### Method 2: Cargo Install
+
+If you already have Rust installed:
+
 ```bash
-catch-pokemon --version
+# Install the binary
+cargo install --git https://github.com/matthewmyrick/catch-pokemon
+
+# Set up shell functions (catch, pc, pokemon_encounter, etc.)
+catch-pokemon setup
 ```
 
 **If you get "command not found":** Make sure `~/.cargo/bin` is in your PATH (see Rust installation instructions above)
 
-### Method 2: Build and Install Script
+### Method 3: Build and Install Script
 
 Clone the repository and use the installation script:
 
@@ -107,6 +113,15 @@ This will:
 - Build the optimized release binary
 - Install it to `~/.local/bin/catch-pokemon`
 - Automatically add `~/.local/bin` to your PATH (in `.zshrc` or `.bashrc`)
+- Install shell functions with convenient shortcuts:
+  - `catch` - Attempt to catch the current wild Pokemon
+  - `pc` - View your Pokemon collection (shortcut for `catch-pokemon pc`)
+  - `pokemon_encounter` - Generate a new wild Pokemon encounter
+  - `pokemon_new` - Force a new encounter
+  - `pokemon_status` - Show current Pokemon status
+  - `pokemon_check <name>` - Check if you own a specific Pokemon
+  - `pokemon_clear` - Clear current encounter (for testing)
+  - `pokemon_help` - Show all available commands
 - Allow you to use `catch-pokemon` from anywhere in your terminal
 
 **Note:** After running the install script, either restart your terminal or run:
@@ -114,7 +129,7 @@ This will:
 source ~/.zshrc  # or source ~/.bashrc
 ```
 
-### Method 3: Manual Build from Source
+### Method 4: Manual Build from Source
 
 ```bash
 git clone https://github.com/matthewmyrick/catch-pokemon.git

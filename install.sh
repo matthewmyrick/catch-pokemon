@@ -90,6 +90,38 @@ else
     echo -e "${GREEN}✅ PATH already configured${NC}"
 fi
 
+# Install shell functions
+SHELL_FUNCTIONS_DIR="$HOME/.local/share/catch-pokemon"
+SHELL_FUNCTIONS_SRC="$(cd "$(dirname "$0")" && pwd)/shell/functions.sh"
+
+echo -e "${YELLOW}🐚 Installing shell functions...${NC}"
+mkdir -p "$SHELL_FUNCTIONS_DIR"
+cp "$SHELL_FUNCTIONS_SRC" "$SHELL_FUNCTIONS_DIR/functions.sh"
+chmod +x "$SHELL_FUNCTIONS_DIR/functions.sh"
+echo -e "${GREEN}✅ Shell functions installed to $SHELL_FUNCTIONS_DIR${NC}"
+
+# Add source line to shell config if not already present
+SOURCE_LINE="source \"$SHELL_FUNCTIONS_DIR/functions.sh\""
+USER_SHELL=$(basename "$SHELL")
+
+if [[ "$USER_SHELL" == "zsh" ]]; then
+    SHELL_CONFIG="$HOME/.zshrc"
+elif [[ "$USER_SHELL" == "bash" ]]; then
+    SHELL_CONFIG="$HOME/.bashrc"
+else
+    SHELL_CONFIG="$HOME/.profile"
+fi
+
+if ! grep -qF "catch-pokemon/functions.sh" "$SHELL_CONFIG" 2>/dev/null; then
+    echo "" >> "$SHELL_CONFIG"
+    echo "# catch-pokemon shell functions (catch, pokemon_encounter, etc.)" >> "$SHELL_CONFIG"
+    echo "$SOURCE_LINE" >> "$SHELL_CONFIG"
+    echo -e "${GREEN}✅ Shell functions added to $SHELL_CONFIG${NC}"
+    echo -e "${YELLOW}⚠️  Restart your terminal or run: ${CYAN}source $SHELL_CONFIG${NC}"
+else
+    echo -e "${GREEN}✅ Shell functions already configured in $SHELL_CONFIG${NC}"
+fi
+
 echo ""
 echo -e "${GREEN}${BOLD}🎉 Installation complete!${NC}"
 echo -e "${GREEN}You can now use '${CYAN}catch-pokemon${GREEN}' from anywhere in your terminal.${NC}"

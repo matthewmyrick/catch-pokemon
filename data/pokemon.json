@@ -1952,7 +1952,7 @@
     "category": "legendary"
   },
   "phione": {
-    "catch_rate": 30,
+    "catch_rate": 3,
     "category": "mythical"
   },
   "manaphy": {
@@ -1964,7 +1964,7 @@
     "category": "mythical"
   },
   "shaymin": {
-    "catch_rate": 45,
+    "catch_rate": 3,
     "category": "mythical"
   },
   "arceus": {
@@ -2860,11 +2860,11 @@
     "category": "uncommon"
   },
   "xerneas": {
-    "catch_rate": 45,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "yveltal": {
-    "catch_rate": 45,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "zygarde": {
@@ -3152,23 +3152,23 @@
     "category": "legendary"
   },
   "cosmog": {
-    "catch_rate": 45,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "cosmoem": {
-    "catch_rate": 45,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "solgaleo": {
-    "catch_rate": 45,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "lunala": {
-    "catch_rate": 45,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "necrozma": {
-    "catch_rate": 255,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "magearna": {
@@ -3520,15 +3520,15 @@
     "category": "pseudo_legendary"
   },
   "zacian": {
-    "catch_rate": 10,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "zamazenta": {
-    "catch_rate": 10,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "eternatus": {
-    "catch_rate": 255,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "kubfu": {
@@ -4060,7 +4060,7 @@
     "category": "legendary"
   },
   "terapagos": {
-    "catch_rate": 255,
+    "catch_rate": 3,
     "category": "legendary"
   },
   "pecharunt": {

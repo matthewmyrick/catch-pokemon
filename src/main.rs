@@ -139,6 +139,43 @@ You will be prompted to confirm before deletion.\n\n\
 Example:\n\
   catch-pokemon clear")]
     Clear,
+
+    /// Set up shell functions (catch, pc, pokemon_encounter, etc.)
+    #[command(long_about = "Install shell functions for the Pokemon catching game.\n\n\
+This sets up convenient shell commands:\n\
+- catch: Attempt to catch the current wild Pokemon\n\
+- pc: View your Pokemon collection\n\
+- pokemon_encounter: Generate a new wild Pokemon encounter\n\
+- pokemon_new: Force a new encounter\n\
+- pokemon_status: Show current Pokemon status\n\
+- pokemon_check <name>: Check if you own a specific Pokemon\n\
+- pokemon_help: Show all available commands\n\n\
+The shell functions are installed to ~/.local/share/catch-pokemon/functions.sh\n\
+and automatically sourced from your shell config (.zshrc or .bashrc).\n\n\
+Example:\n\
+  catch-pokemon setup")]
+    Setup,
+
+    /// Generate a weighted random Pokemon encounter
+    #[command(long_about = "Generate a random Pokemon encounter weighted by rarity.\n\n\
+Common Pokemon (high catch rate) appear more often than rare ones.\n\
+Legendary and mythical Pokemon are extremely rare encounters.\n\n\
+Encounter weights are based on catch rates:\n\
+- Common (catch_rate 255): Very frequent\n\
+- Uncommon (catch_rate 120): Moderate\n\
+- Rare (catch_rate 45-75): Uncommon\n\
+- Legendary/Mythical (catch_rate 3): Extremely rare\n\n\
+Output modes:\n\
+- Default: Prints only the Pokemon name (for scripting)\n\
+- --show-pokemon: Also displays the Pokemon sprite\n\n\
+Examples:\n\
+  catch-pokemon encounter\n\
+  catch-pokemon encounter --show-pokemon")]
+    Encounter {
+        /// Display the Pokemon sprite alongside the name
+        #[arg(long, help = "Show the Pokemon sprite using pokemon-colorscripts")]
+        show_pokemon: bool,
+    },
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -281,6 +318,9 @@ const POKEBALL_NOT_CAUGHT: &str = include_str!("../static/art/pokeball-not-caugh
 
 // Embed the Pokemon data directly in the binary
 const POKEMON_DATA: &str = include_str!("../data/pokemon.json");
+
+// Embed the shell functions directly in the binary
+const SHELL_FUNCTIONS: &str = include_str!("../shell/functions.sh");
 
 fn load_pokeball_art(art_type: &str) -> Vec<String> {
     let content = match art_type {
@@ -919,6 +959,138 @@ fn check_pokemon(pokemon_name: String, boolean_mode: bool) {
     }
 }
 
+fn encounter_pokemon(show_pokemon: bool) {
+    // Parse the Pokemon database
+    let pokemon_db: HashMap<String, PokemonData> = match serde_json::from_str(POKEMON_DATA) {
+        Ok(data) => data,
+        Err(_) => {
+            eprintln!("{}", "Error: Could not load Pokemon database.".red());
+            return;
+        }
+    };
+
+    // Build weighted list: each Pokemon's catch_rate is its encounter weight
+    // Higher catch_rate = more common = more likely to encounter
+    let pokemon_list: Vec<(&String, &PokemonData)> = pokemon_db.iter().collect();
+    let total_weight: u32 = pokemon_list.iter().map(|(_, data)| data.catch_rate as u32).sum();
+
+    let mut rng = rand::thread_rng();
+    let roll = rng.gen_range(0..total_weight);
+
+    let mut cumulative: u32 = 0;
+    let mut chosen_name = "";
+    for (name, data) in &pokemon_list {
+        cumulative += data.catch_rate as u32;
+        if roll < cumulative {
+            chosen_name = name;
+            break;
+        }
+    }
+
+    // Convert internal name format back to display format (underscores to hyphens for pokemon-colorscripts)
+    let display_name = chosen_name.replace('_', "-");
+
+    // Always print the name (for scripting use)
+    println!("{}", display_name);
+
+    if show_pokemon {
+        let output = Command::new("pokemon-colorscripts")
+            .args(&["-n", &display_name, "--no-title"])
+            .output();
+
+        if let Ok(result) = output {
+            if result.status.success() {
+                print!("{}", String::from_utf8_lossy(&result.stdout));
+            }
+        }
+
+        // Show category and catch info
+        if let Some(data) = pokemon_db.get(chosen_name) {
+            let category_display = match data.category.as_str() {
+                "legendary" => format!("Legendary").red().bold().to_string(),
+                "mythical" => format!("Mythical").magenta().bold().to_string(),
+                "pseudo_legendary" => format!("Pseudo-Legendary").yellow().bold().to_string(),
+                "starter" => format!("Starter").green().bold().to_string(),
+                "starter_evolution" => format!("Starter Evolution").green().to_string(),
+                "rare" => format!("Rare").cyan().bold().to_string(),
+                "baby" => format!("Baby").bright_magenta().to_string(),
+                "uncommon" => format!("Uncommon").white().to_string(),
+                "common" => format!("Common").bright_black().to_string(),
+                other => other.to_string(),
+            };
+            println!("Category: {}", category_display);
+            let catch_pct = data.catch_rate as f32 / 255.0 * 100.0;
+            println!("Base catch rate: {}", format!("{:.1}%", catch_pct).bright_yellow().bold());
+        }
+    }
+}
+
+fn setup_shell() {
+    // Determine install directory
+    let mut functions_dir = dirs::data_local_dir().unwrap_or_else(|| PathBuf::from("."));
+    functions_dir.push("catch-pokemon");
+
+    // Create directory
+    if let Err(e) = fs::create_dir_all(&functions_dir) {
+        eprintln!("{}", format!("Error creating directory: {}", e).red());
+        return;
+    }
+
+    // Write shell functions
+    let functions_path = functions_dir.join("functions.sh");
+    if let Err(e) = fs::write(&functions_path, SHELL_FUNCTIONS) {
+        eprintln!("{}", format!("Error writing shell functions: {}", e).red());
+        return;
+    }
+    println!("{}", format!("Shell functions installed to {}", functions_path.display()).green());
+
+    // Detect shell config
+    let shell = std::env::var("SHELL").unwrap_or_default();
+    let shell_config = if shell.ends_with("zsh") {
+        dirs::home_dir().map(|h| h.join(".zshrc"))
+    } else if shell.ends_with("bash") {
+        dirs::home_dir().map(|h| h.join(".bashrc"))
+    } else {
+        dirs::home_dir().map(|h| h.join(".profile"))
+    };
+
+    let Some(config_path) = shell_config else {
+        eprintln!("{}", "Could not determine shell config path.".yellow());
+        println!("Add this line to your shell config manually:");
+        println!("  source \"{}\"", functions_path.display());
+        return;
+    };
+
+    // Check if already configured
+    let source_line = format!("source \"{}\"", functions_path.display());
+    if let Ok(contents) = fs::read_to_string(&config_path) {
+        if contents.contains("catch-pokemon/functions.sh") {
+            println!("{}", format!("Shell config already configured in {}", config_path.display()).green());
+            println!();
+            println!("{}", "Setup complete! Restart your terminal or run:".cyan().bold());
+            println!("  source {}", config_path.display());
+            return;
+        }
+    }
+
+    // Append source line
+    let addition = format!("\n# catch-pokemon shell functions (catch, pc, pokemon_encounter, etc.)\n{}\n", source_line);
+    if let Err(e) = fs::OpenOptions::new().append(true).open(&config_path).and_then(|mut f| {
+        use std::io::Write;
+        f.write_all(addition.as_bytes())
+    }) {
+        eprintln!("{}", format!("Error updating {}: {}", config_path.display(), e).red());
+        println!("Add this line manually:");
+        println!("  {}", source_line);
+        return;
+    }
+
+    println!("{}", format!("Added to {}", config_path.display()).green());
+    println!();
+    println!("{}", "Setup complete! Restart your terminal or run:".cyan().bold());
+    println!("  source {}", config_path.display());
+}
+
 fn clear_pc() {
     println!("{}", "Are you sure you want to clear your PC? This cannot be undone!".red().bold());
     print!("Type 'yes' to confirm: ");
@@ -961,6 +1133,12 @@ fn main() {
         },
         Commands::Clear => {
             clear_pc();
+        },
+        Commands::Setup => {
+            setup_shell();
+        },
+        Commands::Encounter { show_pokemon } => {
+            encounter_pokemon(show_pokemon);
         }
     }
 }
