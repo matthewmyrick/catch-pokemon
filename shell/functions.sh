@@ -13,12 +13,16 @@ pokemon_encounter() {
     local current_pokemon
     local category=""
 
+    local is_shiny="false"
+
     # Use catch-pokemon encounter for weighted random selection if available
     if command -v catch-pokemon &>/dev/null; then
-        # Use --show-pokemon to get both name and category in one call
+        # Use --show-pokemon to get both name, shiny status, and category in one call
         local encounter_output
         encounter_output=$(catch-pokemon encounter --show-pokemon 2>/dev/null)
         current_pokemon=$(echo "$encounter_output" | head -1)
+        # Extract shiny status (second line)
+        is_shiny=$(echo "$encounter_output" | sed -n '2p' | sed 's/Shiny: //')
         # Extract category, stripping ANSI color codes
         category=$(echo "$encounter_output" | grep "^Category:" | sed 's/Category: //' | sed 's/\x1b\[[0-9;]*m//g' | tr '[:upper:]' '[:lower:]')
     fi
@@ -31,32 +35,59 @@ pokemon_encounter() {
 
     # Store current pokemon and reset states
     export CURRENT_WILD_POKEMON="$current_pokemon"
+    export POKEMON_IS_SHINY="$is_shiny"
     export POKEMON_ESCAPED=false
     export POKEMON_RAN_AWAY=false
     export POKEMON_CAUGHT=false
 
-    # Display announcement based on category
-    if [[ "$category" == "legendary" ]]; then
+    # Shiny announcement (before category)
+    local shiny_tag=""
+    if [[ "$is_shiny" == "true" ]]; then
         echo ""
-        echo -e "\033[1;5;31m⚡ A LEGENDARY POKEMON HAS APPEARED! ⚡\033[0m"
-        echo -e "\033[1;31m════════════════════════════════════════\033[0m"
-        echo -e "A wild \033[1;31m$current_pokemon\033[0m appeared!"
-    elif [[ "$category" == "mythical" ]]; then
-        echo ""
-        echo -e "\033[1;5;35m✨ A MYTHICAL POKEMON HAS APPEARED! ✨\033[0m"
-        echo -e "\033[1;35m════════════════════════════════════════\033[0m"
-        echo -e "A wild \033[1;35m$current_pokemon\033[0m appeared!"
-    elif [[ "$category" == "pseudo-legendary" ]]; then
-        echo ""
-        echo -e "\033[1;33m⭐ A rare Pokemon has appeared!\033[0m"
-        echo -e "A wild \033[1;33m$current_pokemon\033[0m appeared!"
-    else
-        echo -e "A wild \033[1;33m$current_pokemon\033[0m appeared!"
+        echo -e "\033[1;5;33m~ A SHINY POKEMON HAS APPEARED! ~\033[0m"
+        echo -e "\033[1;33m════════════════════════════════════════\033[0m"
+        shiny_tag=" \033[1;33m[Shiny]\033[0m"
     fi
 
-    # Display the Pokemon sprite
+    # Display announcement based on category
+    if [[ "$category" == "legendary" ]]; then
+        if [[ "$is_shiny" != "true" ]]; then
+            echo ""
+            echo -e "\033[1;5;31m⚡ A LEGENDARY POKEMON HAS APPEARED! ⚡\033[0m"
+            echo -e "\033[1;31m════════════════════════════════════════\033[0m"
+        fi
+        echo -e "A wild \033[1;31m$current_pokemon\033[0m appeared! \033[1;31m[Legendary]\033[0m$shiny_tag"
+    elif [[ "$category" == "mythical" ]]; then
+        if [[ "$is_shiny" != "true" ]]; then
+            echo ""
+            echo -e "\033[1;5;35m✨ A MYTHICAL POKEMON HAS APPEARED! ✨\033[0m"
+            echo -e "\033[1;35m════════════════════════════════════════\033[0m"
+        fi
+        echo -e "A wild \033[1;35m$current_pokemon\033[0m appeared! \033[1;35m[Mythical]\033[0m$shiny_tag"
+    elif [[ "$category" == "pseudo-legendary" ]]; then
+        if [[ "$is_shiny" != "true" ]]; then echo ""; fi
+        echo -e "A wild \033[1;33m$current_pokemon\033[0m appeared! \033[1;33m[Pseudo-Legendary]\033[0m$shiny_tag"
+    elif [[ "$category" == "starter" ]]; then
+        echo -e "A wild \033[1;32m$current_pokemon\033[0m appeared! \033[1;32m[Starter]\033[0m$shiny_tag"
+    elif [[ "$category" == "starter evolution" ]]; then
+        echo -e "A wild \033[1;32m$current_pokemon\033[0m appeared! \033[1;32m[Starter Evolution]\033[0m$shiny_tag"
+    elif [[ "$category" == "rare" ]]; then
+        echo -e "A wild \033[1;36m$current_pokemon\033[0m appeared! \033[1;36m[Rare]\033[0m$shiny_tag"
+    elif [[ "$category" == "baby" ]]; then
+        echo -e "A wild \033[1;35m$current_pokemon\033[0m appeared! \033[1;35m[Baby]\033[0m$shiny_tag"
+    elif [[ "$category" == "uncommon" ]]; then
+        echo -e "A wild \033[1;33m$current_pokemon\033[0m appeared! \033[2m[Uncommon]\033[0m$shiny_tag"
+    else
+        echo -e "A wild \033[1;33m$current_pokemon\033[0m appeared! \033[2m[Common]\033[0m$shiny_tag"
+    fi
+
+    # Display the Pokemon sprite (shiny version if shiny)
     if command -v pokemon-colorscripts &>/dev/null; then
-        pokemon-colorscripts -n "$current_pokemon" --no-title 2>/dev/null
+        if [[ "$is_shiny" == "true" ]]; then
+            pokemon-colorscripts -n "$current_pokemon" --no-title -s 2>/dev/null
+        else
+            pokemon-colorscripts -n "$current_pokemon" --no-title 2>/dev/null
+        fi
     fi
 
     # Check if we already have this Pokemon
@@ -104,8 +135,14 @@ catch() {
     # Use a temporary file to capture output while still showing it live
     local temp_output=$(mktemp)
 
+    # Build catch command with shiny flag if applicable
+    local catch_cmd="catch-pokemon catch $CURRENT_WILD_POKEMON --hide-pokemon"
+    if [[ "$POKEMON_IS_SHINY" == "true" ]]; then
+        catch_cmd="$catch_cmd --shiny"
+    fi
+
     # Run the command with tee to show output live AND capture it
-    catch-pokemon catch "$CURRENT_WILD_POKEMON" --hide-pokemon 2>&1 | tee "$temp_output"
+    eval "$catch_cmd" 2>&1 | tee "$temp_output"
     local catch_result=${PIPESTATUS[0]}
 
     # Read the captured output for analysis

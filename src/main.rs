@@ -1,7 +1,9 @@
 use clap::{Parser, Subcommand};
 use colored::*;
+use hmac::{Hmac, Mac};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use sha2::Sha256;
 use std::collections::HashMap;
 use std::fs;
 use std::io::{stdout, Write};
@@ -14,6 +16,11 @@ use crossterm::{
     cursor, terminal, ExecutableCommand,
     event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
 };
+
+// Build-time generated secret — never exists in source code
+include!(concat!(env!("OUT_DIR"), "/build_secret.rs"));
+
+type HmacSha256 = Hmac<Sha256>;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -41,37 +48,30 @@ struct Args {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Try to catch a Pokemon with animated Pokeball throwing
-    #[command(long_about = "Attempt to catch a Pokemon using different types of Pokeballs.\n\n\
+    #[command(long_about = "Attempt to catch a Pokemon using a Poke Ball.\n\n\
 Each Pokemon has different catch rates based on rarity:\n\
 - Legendary/Mythical: 3% base rate (very hard)\n\
 - Pseudo-legendary/Starters: 45% base rate (hard)\n\
 - Common Pokemon: 120-255% base rate (easy)\n\n\
-Pokeball types and modifiers:\n\
-- pokeball/poke: 1x modifier (red ball)\n\
-- great/greatball: 1.5x modifier (blue ball)\n\
-- ultra/ultraball: 2x modifier (yellow ball)\n\
-- master/masterball: guaranteed catch (purple ball)\n\n\
 Examples:\n\
   catch-pokemon catch pikachu\n\
-  catch-pokemon catch mewtwo --ball master\n\
-  catch-pokemon catch charizard --ball ultra --skip-animation\n\
-  catch-pokemon catch bulbasaur --hide-pokemon")]
+  catch-pokemon catch bulbasaur --hide-pokemon\n\
+  catch-pokemon catch charizard --skip-animation")]
     Catch {
         /// Name of the Pokemon to catch (case insensitive)
         pokemon: String,
-        
-        /// Type of Pokeball to use: pokeball, great, ultra, master
-        #[arg(short = 'b', long, default_value = "pokeball", 
-              help = "Pokeball type (pokeball=1x, great=1.5x, ultra=2x, master=guaranteed)")]
-        ball: String,
-        
+
         /// Skip the animated Pokeball throwing sequence
         #[arg(short = 's', long, help = "Skip animations for faster catching")]
         skip_animation: bool,
-        
+
         /// Hide the Pokemon ASCII art when it appears
         #[arg(long, default_value = "false", help = "Don't show Pokemon sprite, only catching animation")]
         hide_pokemon: bool,
+
+        /// Mark this Pokemon as shiny (set by encounter system)
+        #[arg(long, default_value = "false", hide = true)]
+        shiny: bool,
     },
     
     /// Display your Pokemon collection with detailed statistics
@@ -140,6 +140,16 @@ Example:\n\
   catch-pokemon clear")]
     Clear,
 
+    /// Verify the integrity of your PC storage
+    #[command(long_about = "Verify the cryptographic integrity chain of your Pokemon storage.\n\n\
+Checks that:\n\
+- No Pokemon entries have been added, removed, or reordered\n\
+- No entry fields have been tampered with\n\
+- The chain is complete from genesis to the latest entry\n\n\
+Example:\n\
+  catch-pokemon verify")]
+    Verify,
+
     /// Set up shell functions (catch, pc, pokemon_encounter, etc.)
     #[command(long_about = "Install shell functions for the Pokemon catching game.\n\n\
 This sets up convenient shell commands:\n\
@@ -181,46 +191,24 @@ Examples:\n\
 #[derive(Debug, Clone, Copy)]
 enum PokeballType {
     Pokeball,
-    GreatBall,
-    UltraBall,
-    MasterBall,
 }
 
 impl PokeballType {
-    fn from_string(s: &str) -> Option<Self> {
-        match s.to_lowercase().as_str() {
-            "pokeball" | "poke" => Some(PokeballType::Pokeball),
-            "great" | "greatball" => Some(PokeballType::GreatBall),
-            "ultra" | "ultraball" => Some(PokeballType::UltraBall),
-            "master" | "masterball" => Some(PokeballType::MasterBall),
-            _ => None,
-        }
-    }
-    
     fn catch_modifier(&self) -> f32 {
         match self {
             PokeballType::Pokeball => 1.0,
-            PokeballType::GreatBall => 1.5,
-            PokeballType::UltraBall => 2.0,
-            PokeballType::MasterBall => 255.0,
         }
     }
-    
+
     fn display_name(&self) -> &str {
         match self {
             PokeballType::Pokeball => "Poké Ball",
-            PokeballType::GreatBall => "Great Ball",
-            PokeballType::UltraBall => "Ultra Ball",
-            PokeballType::MasterBall => "Master Ball",
         }
     }
-    
+
     fn ball_symbol(&self) -> String {
         match self {
             PokeballType::Pokeball => "◓".red().to_string(),
-            PokeballType::GreatBall => "◓".blue().to_string(),
-            PokeballType::UltraBall => "◓".yellow().to_string(),
-            PokeballType::MasterBall => "◓".magenta().to_string(),
         }
     }
 }
@@ -231,33 +219,84 @@ struct PokemonData {
     category: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct CaughtPokemon {
     name: String,
     caught_at: DateTime<Local>,
     ball_used: String,
+    #[serde(default)]
+    shiny: bool,
+    #[serde(default)]
+    prev_hash: Option<String>,
+    #[serde(default)]
+    signature: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PcStorage {
     pokemon: Vec<CaughtPokemon>,
+    #[serde(default)]
+    chain_hash: Option<String>,
 }
 
 impl PcStorage {
     fn new() -> Self {
-        PcStorage { pokemon: Vec::new() }
+        PcStorage { pokemon: Vec::new(), chain_hash: None }
     }
     
     fn load() -> Self {
         let path = get_storage_path();
         if path.exists() {
             if let Ok(contents) = fs::read_to_string(&path) {
-                if let Ok(storage) = serde_json::from_str(&contents) {
+                if let Ok(storage) = serde_json::from_str::<PcStorage>(&contents) {
+                    // Detect unsigned legacy storage and offer migration
+                    if !storage.pokemon.is_empty() && storage.chain_hash.is_none() {
+                        return storage.handle_migration();
+                    }
                     return storage;
                 }
             }
         }
         PcStorage::new()
+    }
+
+    fn handle_migration(mut self) -> Self {
+        println!("{}", "Unsigned PC storage detected!".yellow().bold());
+        println!("Your Pokemon data predates the integrity system.");
+        println!();
+        println!("Options:");
+        println!("  1) Migrate - Re-sign existing Pokemon with the integrity chain");
+        println!("  2) Fresh start - Clear storage and start over");
+        println!("  3) Continue unsigned - Load without integrity (verify will fail)");
+        print!("Choose [1/2/3]: ");
+        stdout().flush().unwrap();
+
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).unwrap();
+
+        match input.trim() {
+            "1" => {
+                self.resign_chain();
+                if let Err(e) = self.save() {
+                    eprintln!("Warning: Could not save migrated PC: {}", e);
+                } else {
+                    println!("{}", "Migration complete! Your Pokemon are now signed.".green().bold());
+                }
+                self
+            }
+            "2" => {
+                let fresh = PcStorage::new();
+                if let Err(e) = fresh.save() {
+                    eprintln!("Warning: Could not save: {}", e);
+                }
+                println!("{}", "Fresh start! Your PC is now empty.".green());
+                fresh
+            }
+            _ => {
+                println!("{}", "Continuing with unsigned storage.".yellow());
+                self
+            }
+        }
     }
     
     fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
@@ -270,27 +309,58 @@ impl PcStorage {
         Ok(())
     }
     
-    fn add_pokemon(&mut self, name: String, ball: PokeballType) {
-        self.pokemon.push(CaughtPokemon {
+    fn add_pokemon(&mut self, name: String, ball: PokeballType, shiny: bool) {
+        let key = derive_signing_key();
+        let prev_hash = self.chain_hash.clone().unwrap_or_else(|| "genesis".to_string());
+
+        let mut entry = CaughtPokemon {
             name,
             caught_at: Local::now(),
             ball_used: ball.display_name().to_string(),
-        });
+            shiny,
+            prev_hash: Some(prev_hash.clone()),
+            signature: None,
+        };
+
+        entry.signature = Some(sign_entry(&key, &entry, &prev_hash));
+        self.chain_hash = Some(compute_entry_hash(&entry, &prev_hash));
+        self.pokemon.push(entry);
     }
     
     fn release_pokemon(&mut self, name: &str, count: usize) -> usize {
         let mut released = 0;
-        
+
         self.pokemon.retain(|p| {
             if p.name.to_lowercase() == name.to_lowercase() && released < count {
                 released += 1;
-                false // Remove this Pokemon
+                false
             } else {
-                true // Keep this Pokemon
+                true
             }
         });
-        
+
+        if released > 0 {
+            self.resign_chain();
+        }
+
         released
+    }
+
+    fn resign_chain(&mut self) {
+        let key = derive_signing_key();
+        let mut prev_hash = String::from("genesis");
+
+        for entry in self.pokemon.iter_mut() {
+            entry.prev_hash = Some(prev_hash.clone());
+            entry.signature = Some(sign_entry(&key, entry, &prev_hash));
+            prev_hash = compute_entry_hash(entry, &prev_hash);
+        }
+
+        self.chain_hash = if self.pokemon.is_empty() {
+            None
+        } else {
+            Some(prev_hash)
+        };
     }
     
     fn has_pokemon(&self, name: &str) -> bool {
@@ -309,6 +379,91 @@ fn get_storage_path() -> PathBuf {
     path
 }
 
+// --- INTEGRITY SYSTEM ---
+
+/// Derive a per-machine signing key from the build secret + machine identity
+fn derive_signing_key() -> Vec<u8> {
+    let hostname = hostname::get()
+        .map(|h| h.to_string_lossy().to_string())
+        .unwrap_or_else(|_| "unknown-host".to_string());
+    let username = std::env::var("USER")
+        .or_else(|_| std::env::var("USERNAME"))
+        .unwrap_or_else(|_| "unknown-user".to_string());
+
+    let salt = format!("{}:{}", hostname, username);
+
+    let mut mac = HmacSha256::new_from_slice(&BUILD_SECRET)
+        .expect("HMAC accepts any key length");
+    mac.update(salt.as_bytes());
+    mac.finalize().into_bytes().to_vec()
+}
+
+/// Canonical data string for signing (excludes signature and prev_hash fields)
+fn entry_canonical_data(entry: &CaughtPokemon) -> String {
+    format!(
+        "{}|{}|{}|{}",
+        entry.name,
+        entry.caught_at.to_rfc3339(),
+        entry.ball_used,
+        entry.shiny
+    )
+}
+
+/// Compute the chain hash for an entry
+fn compute_entry_hash(entry: &CaughtPokemon, prev_hash: &str) -> String {
+    use sha2::Digest;
+    let mut hasher = Sha256::new();
+    hasher.update(entry_canonical_data(entry).as_bytes());
+    hasher.update(prev_hash.as_bytes());
+    hex::encode(hasher.finalize())
+}
+
+/// HMAC-sign an entry with the derived key
+fn sign_entry(key: &[u8], entry: &CaughtPokemon, prev_hash: &str) -> String {
+    let mut mac = HmacSha256::new_from_slice(key)
+        .expect("HMAC accepts any key length");
+    mac.update(entry_canonical_data(entry).as_bytes());
+    mac.update(prev_hash.as_bytes());
+    hex::encode(mac.finalize().into_bytes())
+}
+
+/// Verify the entire integrity chain. Returns Ok or an error description.
+fn verify_chain(storage: &PcStorage) -> Result<(), String> {
+    let key = derive_signing_key();
+    let mut prev_hash = String::from("genesis");
+
+    for (i, entry) in storage.pokemon.iter().enumerate() {
+        let entry_prev = entry.prev_hash.as_deref().unwrap_or("genesis");
+        if entry_prev != prev_hash {
+            return Err(format!(
+                "Chain broken at entry {} ({}): prev_hash mismatch",
+                i, entry.name
+            ));
+        }
+
+        let expected_sig = sign_entry(&key, entry, &prev_hash);
+        let actual_sig = entry.signature.as_deref().unwrap_or("");
+        if actual_sig != expected_sig {
+            return Err(format!(
+                "Invalid signature at entry {} ({}). Storage may have been tampered with.",
+                i, entry.name
+            ));
+        }
+
+        prev_hash = compute_entry_hash(entry, &prev_hash);
+    }
+
+    if let Some(ref stored_hash) = storage.chain_hash {
+        if stored_hash != &prev_hash {
+            return Err("Final chain hash mismatch. Entries may have been added or removed.".to_string());
+        }
+    } else if !storage.pokemon.is_empty() {
+        return Err("Missing chain hash on non-empty storage.".to_string());
+    }
+
+    Ok(())
+}
+
 // Embed the art files directly in the binary
 const POKEBALL_STILL: &str = include_str!("../static/art/pokeball-still.txt");
 const POKEBALL_LEFT: &str = include_str!("../static/art/pokeball-left.txt");
@@ -318,6 +473,9 @@ const POKEBALL_NOT_CAUGHT: &str = include_str!("../static/art/pokeball-not-caugh
 
 // Embed the Pokemon data directly in the binary
 const POKEMON_DATA: &str = include_str!("../data/pokemon.json");
+
+// Embed valid pokemon-colorscripts names (for encounter filtering)
+const VALID_POKEMON: &str = include_str!("../data/valid_pokemon.txt");
 
 // Embed the shell functions directly in the binary
 const SHELL_FUNCTIONS: &str = include_str!("../shell/functions.sh");
@@ -368,6 +526,41 @@ fn get_pokemon_catch_rate(pokemon_name: &str) -> u8 {
     match pokemon_db.get(&normalized_name) {
         Some(data) => data.catch_rate,
         None => 120, // Default catch rate for unknown Pokemon
+    }
+}
+
+fn get_pokemon_category(pokemon_name: &str) -> String {
+    let pokemon_db: HashMap<String, PokemonData> = match serde_json::from_str(POKEMON_DATA) {
+        Ok(data) => data,
+        Err(_) => return "common".to_string(),
+    };
+
+    let normalized_name = pokemon_name.to_lowercase()
+        .replace("'", "")
+        .replace(".", "")
+        .replace(" ", "_")
+        .replace("-", "_");
+
+    match pokemon_db.get(&normalized_name) {
+        Some(data) => data.category.clone(),
+        None => "common".to_string(),
+    }
+}
+
+/// Flee rate based on rarity — rarer Pokemon are more likely to run
+fn get_flee_rate(pokemon_name: &str) -> f32 {
+    let category = get_pokemon_category(pokemon_name);
+    match category.as_str() {
+        "legendary"        => 50.0,  // 50% chance to flee
+        "mythical"         => 60.0,  // 60% chance to flee
+        "pseudo_legendary" => 35.0,  // 35% chance to flee
+        "starter"          => 25.0,  // 25% chance to flee
+        "starter_evolution" => 20.0, // 20% chance to flee
+        "rare"             => 15.0,  // 15% chance to flee
+        "baby"             => 10.0,  // 10% chance to flee
+        "uncommon"         => 8.0,   // 8% chance to flee
+        "common"           => 5.0,   // 5% chance to flee
+        _                  => 10.0,
     }
 }
 
@@ -461,15 +654,8 @@ fn wiggle_animation(wiggle_num: u8, ball: PokeballType, caught: bool) {
 }
 
 
-fn catch_pokemon(pokemon: String, ball_str: String, skip_animation: bool, hide_pokemon: bool) {
-    let ball = match PokeballType::from_string(&ball_str) {
-        Some(b) => b,
-        None => {
-            println!("{}", format!("Invalid ball type: {}. Use pokeball, great, ultra, or master", ball_str).red());
-            return;
-        }
-    };
-    
+fn catch_pokemon(pokemon: String, skip_animation: bool, hide_pokemon: bool, shiny: bool) {
+    let ball = PokeballType::Pokeball;
     let catch_chance = calculate_catch_chance(&pokemon, ball);
     
     if !hide_pokemon {
@@ -521,27 +707,41 @@ fn catch_pokemon(pokemon: String, ball_str: String, skip_animation: bool, hide_p
 
     if caught {
         println!();
-        println!(
-            "{}",
-            format!("Gotcha! {} was caught!", pokemon)
-                .green()
-                .bold()
-        );
+        if shiny {
+            println!(
+                "{}",
+                format!("Gotcha! A shiny {} was caught!", pokemon)
+                    .yellow()
+                    .bold()
+            );
+        } else {
+            println!(
+                "{}",
+                format!("Gotcha! {} was caught!", pokemon)
+                    .green()
+                    .bold()
+            );
+        }
         println!();
 
         let mut storage = PcStorage::load();
-        storage.add_pokemon(pokemon.clone(), ball);
+        storage.add_pokemon(pokemon.clone(), ball, shiny);
         if let Err(e) = storage.save() {
             eprintln!("Warning: Could not save to PC: {}", e);
         } else {
             println!();
-            println!("{} has been sent to your PC!", pokemon.cyan());
+            if shiny {
+                println!("{}", format!("A shiny {} has been sent to your PC!", pokemon).yellow().bold());
+            } else {
+                println!("{} has been sent to your PC!", pokemon.cyan());
+            }
         }
 
     } else {
-        // 10% chance the Pokemon runs away, 90% chance it just breaks free
+        // Flee rate based on rarity — rarer Pokemon flee more often
+        let flee_rate = get_flee_rate(&pokemon);
         let run_away_chance = rng.gen_range(0.0..100.0);
-        if run_away_chance < 10.0 {
+        if run_away_chance < flee_rate {
             println!(
                 "{}",
                 format!("Oh no! The wild {} broke free and ran away!", pokemon).red()
@@ -781,10 +981,20 @@ fn show_pokemon_details(pokemon_name: &str, ball_counts: &HashMap<String, usize>
 
 fn show_pc(search: bool) {
     let storage = PcStorage::load();
-    
+
     if storage.pokemon.is_empty() {
         println!("{}", "Your PC is empty. Go catch some Pokemon!".yellow());
         return;
+    }
+
+    // Verify integrity before displaying
+    if storage.chain_hash.is_some() {
+        if let Err(msg) = verify_chain(&storage) {
+            println!("{}", format!("PC integrity check FAILED: {}", msg).red().bold());
+            println!("{}", "Your PC storage appears to have been tampered with.".red());
+            println!("Run 'catch-pokemon verify' for details.");
+            return;
+        }
     }
     
     println!("{}", "╔══════════════════════════════════════════════╗".cyan());
@@ -969,9 +1179,17 @@ fn encounter_pokemon(show_pokemon: bool) {
         }
     };
 
-    // Build weighted list: each Pokemon's catch_rate is its encounter weight
-    // Higher catch_rate = more common = more likely to encounter
-    let pokemon_list: Vec<(&String, &PokemonData)> = pokemon_db.iter().collect();
+    // Load valid pokemon-colorscripts names and filter to only encounterable Pokemon
+    let valid_names: std::collections::HashSet<&str> = VALID_POKEMON
+        .lines()
+        .filter(|l| !l.is_empty())
+        .collect();
+
+    // Build weighted list: only include Pokemon that pokemon-colorscripts supports
+    let pokemon_list: Vec<(&String, &PokemonData)> = pokemon_db
+        .iter()
+        .filter(|(name, _)| valid_names.contains(name.as_str()))
+        .collect();
     let total_weight: u32 = pokemon_list.iter().map(|(_, data)| data.catch_rate as u32).sum();
 
     let mut rng = rand::thread_rng();
@@ -990,12 +1208,24 @@ fn encounter_pokemon(show_pokemon: bool) {
     // Convert internal name format back to display format (underscores to hyphens for pokemon-colorscripts)
     let display_name = chosen_name.replace('_', "-");
 
+    // 3% chance of shiny encounter
+    // 1% chance of shiny encounter
+    let is_shiny = rng.gen_range(0.0..100.0) < 1.0;
+
     // Always print the name (for scripting use)
     println!("{}", display_name);
 
+    // Print shiny status on second line (for scripting use)
+    println!("Shiny: {}", is_shiny);
+
     if show_pokemon {
+        let mut args = vec!["-n", &display_name, "--no-title"];
+        if is_shiny {
+            args.push("-s");
+        }
+
         let output = Command::new("pokemon-colorscripts")
-            .args(&["-n", &display_name, "--no-title"])
+            .args(&args)
             .output();
 
         if let Ok(result) = output {
@@ -1021,6 +1251,53 @@ fn encounter_pokemon(show_pokemon: bool) {
             println!("Category: {}", category_display);
             let catch_pct = data.catch_rate as f32 / 255.0 * 100.0;
             println!("Base catch rate: {}", format!("{:.1}%", catch_pct).bright_yellow().bold());
+        }
+    }
+}
+
+fn verify_pc() {
+    let path = get_storage_path();
+    if !path.exists() {
+        println!("{}", "No PC storage found. Nothing to verify.".yellow());
+        return;
+    }
+
+    let contents = match fs::read_to_string(&path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("{}", format!("Could not read storage: {}", e).red());
+            return;
+        }
+    };
+
+    let storage: PcStorage = match serde_json::from_str(&contents) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("{}", format!("Could not parse storage: {}", e).red());
+            return;
+        }
+    };
+
+    if storage.pokemon.is_empty() {
+        println!("{}", "PC is empty. Nothing to verify.".yellow());
+        return;
+    }
+
+    if storage.chain_hash.is_none() {
+        println!("{}", "Storage is unsigned (legacy format). Run any command to trigger migration.".yellow());
+        return;
+    }
+
+    match verify_chain(&storage) {
+        Ok(()) => {
+            println!("{}", format!(
+                "Integrity check PASSED. All {} entries verified.",
+                storage.pokemon.len()
+            ).green().bold());
+        }
+        Err(msg) => {
+            println!("{}", format!("Integrity check FAILED: {}", msg).red().bold());
+            std::process::exit(1);
         }
     }
 }
@@ -1119,8 +1396,8 @@ fn main() {
     let args = Args::parse();
     
     match args.command {
-        Commands::Catch { pokemon, ball, skip_animation, hide_pokemon } => {
-            catch_pokemon(pokemon, ball, skip_animation, hide_pokemon);
+        Commands::Catch { pokemon, skip_animation, hide_pokemon, shiny } => {
+            catch_pokemon(pokemon, skip_animation, hide_pokemon, shiny);
         },
         Commands::Pc { search } => {
             show_pc(search);
@@ -1133,6 +1410,9 @@ fn main() {
         },
         Commands::Clear => {
             clear_pc();
+        },
+        Commands::Verify => {
+            verify_pc();
         },
         Commands::Setup => {
             setup_shell();
