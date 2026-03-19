@@ -259,3 +259,9 @@ pokemon_help() {
     echo -e "\033[2mGame ends when Pokemon is caught or runs away.\033[0m"
     echo -e "\033[2mOwnership status is shown when wild Pokemon appear.\033[0m"
 }
+
+# --- AUTO ENCOUNTER ON SHELL START ---
+# Trigger a Pokemon encounter when this file is sourced (new terminal)
+if [[ -z "$CURRENT_WILD_POKEMON" ]]; then
+    pokemon_encounter
+fi
