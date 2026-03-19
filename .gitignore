@@ -1,6 +1,5 @@
 # Rust build artifacts
-/target/
-Cargo.lock
+cli/target/
 
 # IDE files
 .vscode/
@@ -17,4 +16,5 @@ Thumbs.db
 .env.local
 
 # Build secret (cached key for integrity system)
+cli/.build_secret
 .build_secret

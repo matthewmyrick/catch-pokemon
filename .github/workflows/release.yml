@@ -23,7 +23,7 @@ jobs:
       id: bump
       run: |
         COMMIT_MSG="${{ github.event.head_commit.message }}"
-        CURRENT=$(grep "^version =" Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+        CURRENT=$(grep "^version =" cli/Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
         IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
 
         echo "Current version: $CURRENT"
@@ -57,9 +57,9 @@ jobs:
       if: steps.bump.outputs.should_release == 'true'
       run: |
         NEW_VERSION=${{ steps.bump.outputs.new_version }}
-        sed -i "s/^version = \".*\"/version = \"$NEW_VERSION\"/" Cargo.toml
-        echo "Updated Cargo.toml to $NEW_VERSION"
-        grep "^version" Cargo.toml
+        sed -i "s/^version = \".*\"/version = \"$NEW_VERSION\"/" cli/Cargo.toml
+        echo "Updated cli/Cargo.toml to $NEW_VERSION"
+        grep "^version" cli/Cargo.toml
 
     - name: Commit version bump
       if: steps.bump.outputs.should_release == 'true'
@@ -67,7 +67,7 @@ jobs:
         NEW_VERSION=${{ steps.bump.outputs.new_version }}
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add Cargo.toml
+        git add cli/Cargo.toml
         git commit -m "v${NEW_VERSION} [auto-version-bump]"
         git push
 
@@ -149,26 +149,27 @@ jobs:
         path: |
           ~/.cargo/registry
           ~/.cargo/git
-          target
-        key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          cli/target
+        key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('cli/Cargo.lock') }}
 
     - name: Build release binary
       env:
         BUILD_SECRET_KEY: ${{ secrets.BUILD_SECRET_KEY }}
+      working-directory: cli
       run: cargo build --release --target ${{ matrix.target }}
 
     - name: Create release archive (Unix)
       if: matrix.os != 'windows-latest'
       run: |
         mkdir -p release
-        cp target/${{ matrix.target }}/release/catch-pokemon release/
+        cp cli/target/${{ matrix.target }}/release/catch-pokemon release/
         tar -czf catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.tar.gz -C release .
 
     - name: Create release archive (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         mkdir release
-        copy target\${{ matrix.target }}\release\catch-pokemon.exe release\
+        copy cli\target\${{ matrix.target }}\release\catch-pokemon.exe release\
         powershell Compress-Archive -Path release\* -DestinationPath catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
 
     - name: Upload Release Asset (Unix)
@@ -184,4 +185,3 @@ jobs:
       with:
         tag_name: v${{ needs.check-version.outputs.version }}
         files: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
-
