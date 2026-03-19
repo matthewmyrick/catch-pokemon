@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Remote installer for catch-pokemon CLI
+# Installer for catch-pokemon CLI
 # Usage: curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install.sh | bash
 set -e
 
@@ -26,7 +26,6 @@ case "$OS" in
     darwin) PLATFORM="macos" ;;
     *)
         echo -e "${RED}Unsupported OS: $OS${NC}"
-        echo "Please build from source: cargo install --git https://github.com/$REPO"
         exit 1
         ;;
 esac
@@ -36,7 +35,6 @@ case "$ARCH" in
     arm64|aarch64)   ARCH_SUFFIX="arm64" ;;
     *)
         echo -e "${RED}Unsupported architecture: $ARCH${NC}"
-        echo "Please build from source: cargo install --git https://github.com/$REPO"
         exit 1
         ;;
 esac
@@ -49,45 +47,30 @@ echo -e "${YELLOW}Fetching latest release...${NC}"
 LATEST_TAG=$(curl -sSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name"' | sed 's/.*"tag_name": "\(.*\)".*/\1/')
 
 if [ -z "$LATEST_TAG" ]; then
-    echo -e "${YELLOW}No release found. Falling back to building from source...${NC}"
-
-    # Fallback: install via cargo
-    if ! command -v cargo &> /dev/null; then
-        echo -e "${YELLOW}Installing Rust...${NC}"
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        source "$HOME/.cargo/env"
-    fi
-
-    cargo install --git "https://github.com/$REPO"
-else
-    # --- Download pre-built binary ---
-    ARCHIVE="catch-pokemon-${LATEST_TAG}-${SUFFIX}.tar.gz"
-    URL="https://github.com/$REPO/releases/download/${LATEST_TAG}/${ARCHIVE}"
-
-    echo -e "${GREEN}Downloading ${LATEST_TAG} for ${SUFFIX}...${NC}"
-
-    TMPDIR=$(mktemp -d)
-    trap "rm -rf $TMPDIR" EXIT
-
-    if curl -sSL --fail -o "$TMPDIR/$ARCHIVE" "$URL"; then
-        # Extract and install binary
-        mkdir -p "$BIN_DIR"
-        tar -xzf "$TMPDIR/$ARCHIVE" -C "$TMPDIR"
-        cp "$TMPDIR/catch-pokemon" "$BIN_DIR/"
-        chmod +x "$BIN_DIR/catch-pokemon"
-        echo -e "${GREEN}Binary installed to $BIN_DIR/catch-pokemon${NC}"
-    else
-        echo -e "${YELLOW}Pre-built binary not available for ${SUFFIX}. Building from source...${NC}"
-
-        if ! command -v cargo &> /dev/null; then
-            echo -e "${YELLOW}Installing Rust...${NC}"
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-            source "$HOME/.cargo/env"
-        fi
-
-        cargo install --git "https://github.com/$REPO"
-    fi
+    echo -e "${RED}No release found. Please check https://github.com/$REPO/releases${NC}"
+    exit 1
 fi
+
+# --- Download pre-built binary ---
+ARCHIVE="catch-pokemon-${LATEST_TAG}-${SUFFIX}.tar.gz"
+URL="https://github.com/$REPO/releases/download/${LATEST_TAG}/${ARCHIVE}"
+
+echo -e "${GREEN}Downloading ${LATEST_TAG} for ${SUFFIX}...${NC}"
+
+TMPDIR=$(mktemp -d)
+trap "rm -rf $TMPDIR" EXIT
+
+if ! curl -sSL --fail -o "$TMPDIR/$ARCHIVE" "$URL"; then
+    echo -e "${RED}Download failed. Binary may not be available for ${SUFFIX}.${NC}"
+    echo -e "${RED}Check https://github.com/$REPO/releases${NC}"
+    exit 1
+fi
+
+mkdir -p "$BIN_DIR"
+tar -xzf "$TMPDIR/$ARCHIVE" -C "$TMPDIR"
+cp "$TMPDIR/catch-pokemon" "$BIN_DIR/"
+chmod +x "$BIN_DIR/catch-pokemon"
+echo -e "${GREEN}Binary installed to $BIN_DIR/catch-pokemon${NC}"
 
 # --- Ensure ~/.local/bin is in PATH ---
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
@@ -115,7 +98,6 @@ if ! command -v pokemon-colorscripts &> /dev/null; then
     echo ""
     echo -e "${YELLOW}Installing pokemon-colorscripts (required for Pokemon sprites)...${NC}"
 
-    # Check for Python 3
     if ! command -v python3 &> /dev/null; then
         echo -e "${RED}Python 3 is required for pokemon-colorscripts but not found.${NC}"
         echo -e "${YELLOW}Please install Python 3 and re-run this installer.${NC}"
