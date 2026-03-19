@@ -25,6 +25,9 @@ pokemon_encounter() {
         is_shiny=$(echo "$encounter_output" | sed -n '2p' | sed 's/Shiny: //')
         # Extract category, stripping ANSI color codes
         category=$(echo "$encounter_output" | grep "^Category:" | sed 's/Category: //' | sed 's/\x1b\[[0-9;]*m//g' | tr '[:upper:]' '[:lower:]')
+        # Extract type line (keep ANSI colors for display)
+        local pokemon_type
+        pokemon_type=$(echo "$encounter_output" | grep "^Type:")
     fi
 
     # Fallback to pokemon-colorscripts random if catch-pokemon is not available
@@ -40,32 +43,25 @@ pokemon_encounter() {
     export POKEMON_RAN_AWAY=false
     export POKEMON_CAUGHT=false
 
-    # Shiny announcement (before category)
+    # Shiny tag only appears if shiny
     local shiny_tag=""
     if [[ "$is_shiny" == "true" ]]; then
-        echo ""
-        echo -e "\033[1;5;33m~ A SHINY POKEMON HAS APPEARED! ~\033[0m"
-        echo -e "\033[1;33m════════════════════════════════════════\033[0m"
         shiny_tag=" \033[1;33m[Shiny]\033[0m"
     fi
 
     # Display announcement based on category
     if [[ "$category" == "legendary" ]]; then
-        if [[ "$is_shiny" != "true" ]]; then
-            echo ""
-            echo -e "\033[1;5;31m⚡ A LEGENDARY POKEMON HAS APPEARED! ⚡\033[0m"
-            echo -e "\033[1;31m════════════════════════════════════════\033[0m"
-        fi
+        echo ""
+        echo -e "\033[1;5;31m⚡ A LEGENDARY POKEMON HAS APPEARED! ⚡\033[0m"
+        echo -e "\033[1;31m════════════════════════════════════════\033[0m"
         echo -e "A wild \033[1;31m$current_pokemon\033[0m appeared! \033[1;31m[Legendary]\033[0m$shiny_tag"
     elif [[ "$category" == "mythical" ]]; then
-        if [[ "$is_shiny" != "true" ]]; then
-            echo ""
-            echo -e "\033[1;5;35m✨ A MYTHICAL POKEMON HAS APPEARED! ✨\033[0m"
-            echo -e "\033[1;35m════════════════════════════════════════\033[0m"
-        fi
+        echo ""
+        echo -e "\033[1;5;35m✨ A MYTHICAL POKEMON HAS APPEARED! ✨\033[0m"
+        echo -e "\033[1;35m════════════════════════════════════════\033[0m"
         echo -e "A wild \033[1;35m$current_pokemon\033[0m appeared! \033[1;35m[Mythical]\033[0m$shiny_tag"
     elif [[ "$category" == "pseudo-legendary" ]]; then
-        if [[ "$is_shiny" != "true" ]]; then echo ""; fi
+        echo ""
         echo -e "A wild \033[1;33m$current_pokemon\033[0m appeared! \033[1;33m[Pseudo-Legendary]\033[0m$shiny_tag"
     elif [[ "$category" == "starter" ]]; then
         echo -e "A wild \033[1;32m$current_pokemon\033[0m appeared! \033[1;32m[Starter]\033[0m$shiny_tag"
@@ -88,6 +84,11 @@ pokemon_encounter() {
         else
             pokemon-colorscripts -n "$current_pokemon" --no-title 2>/dev/null
         fi
+    fi
+
+    # Display type
+    if [[ -n "$pokemon_type" ]]; then
+        echo -e "$pokemon_type"
     fi
 
     # Check if we already have this Pokemon

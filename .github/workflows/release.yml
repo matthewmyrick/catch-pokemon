@@ -58,6 +58,8 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Build release binary
+      env:
+        BUILD_SECRET_KEY: ${{ secrets.BUILD_SECRET_KEY }}
       run: cargo build --release
 
     - name: Run tests
@@ -180,6 +182,8 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Build release binary
+      env:
+        BUILD_SECRET_KEY: ${{ secrets.BUILD_SECRET_KEY }}
       run: cargo build --release --target ${{ matrix.target }}
 
     - name: Create release archive (Unix)

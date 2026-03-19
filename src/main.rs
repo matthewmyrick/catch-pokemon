@@ -217,6 +217,14 @@ impl PokeballType {
 struct PokemonData {
     catch_rate: u8,
     category: String,
+    #[serde(default = "default_flee_rate")]
+    flee_rate: u8,
+    #[serde(default)]
+    types: Vec<String>,
+}
+
+fn default_flee_rate() -> u8 {
+    10
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -529,10 +537,11 @@ fn get_pokemon_catch_rate(pokemon_name: &str) -> u8 {
     }
 }
 
-fn get_pokemon_category(pokemon_name: &str) -> String {
+/// Flee rate read from pokemon.json — rarer Pokemon are more likely to run
+fn get_flee_rate(pokemon_name: &str) -> f32 {
     let pokemon_db: HashMap<String, PokemonData> = match serde_json::from_str(POKEMON_DATA) {
         Ok(data) => data,
-        Err(_) => return "common".to_string(),
+        Err(_) => return 10.0,
     };
 
     let normalized_name = pokemon_name.to_lowercase()
@@ -542,25 +551,8 @@ fn get_pokemon_category(pokemon_name: &str) -> String {
         .replace("-", "_");
 
     match pokemon_db.get(&normalized_name) {
-        Some(data) => data.category.clone(),
-        None => "common".to_string(),
-    }
-}
-
-/// Flee rate based on rarity — rarer Pokemon are more likely to run
-fn get_flee_rate(pokemon_name: &str) -> f32 {
-    let category = get_pokemon_category(pokemon_name);
-    match category.as_str() {
-        "legendary"        => 50.0,  // 50% chance to flee
-        "mythical"         => 60.0,  // 60% chance to flee
-        "pseudo_legendary" => 35.0,  // 35% chance to flee
-        "starter"          => 25.0,  // 25% chance to flee
-        "starter_evolution" => 20.0, // 20% chance to flee
-        "rare"             => 15.0,  // 15% chance to flee
-        "baby"             => 10.0,  // 10% chance to flee
-        "uncommon"         => 8.0,   // 8% chance to flee
-        "common"           => 5.0,   // 5% chance to flee
-        _                  => 10.0,
+        Some(data) => data.flee_rate as f32,
+        None => 10.0,
     }
 }
 
@@ -1249,6 +1241,35 @@ fn encounter_pokemon(show_pokemon: bool) {
                 other => other.to_string(),
             };
             println!("Category: {}", category_display);
+
+            // Display types with color coding
+            if !data.types.is_empty() {
+                let type_strings: Vec<String> = data.types.iter().map(|t| {
+                    match t.as_str() {
+                        "fire"     => format!("{}", t.red().bold()),
+                        "water"    => format!("{}", t.blue().bold()),
+                        "grass"    => format!("{}", t.green().bold()),
+                        "electric" => format!("{}", t.yellow().bold()),
+                        "ice"      => format!("{}", t.cyan().bold()),
+                        "fighting" => format!("{}", t.red()),
+                        "poison"   => format!("{}", t.purple()),
+                        "ground"   => format!("{}", t.yellow()),
+                        "flying"   => format!("{}", t.cyan()),
+                        "psychic"  => format!("{}", t.magenta().bold()),
+                        "bug"      => format!("{}", t.green()),
+                        "rock"     => format!("{}", t.yellow().dimmed()),
+                        "ghost"    => format!("{}", t.purple().bold()),
+                        "dragon"   => format!("{}", t.blue().bold()),
+                        "dark"     => format!("{}", t.white().dimmed()),
+                        "steel"    => format!("{}", t.white()),
+                        "fairy"    => format!("{}", t.magenta()),
+                        "normal"   => format!("{}", t.white()),
+                        _          => t.to_string(),
+                    }
+                }).collect();
+                println!("Type: {}", type_strings.join(" / "));
+            }
+
             let catch_pct = data.catch_rate as f32 / 255.0 * 100.0;
             println!("Base catch rate: {}", format!("{:.1}%", catch_pct).bright_yellow().bold());
         }

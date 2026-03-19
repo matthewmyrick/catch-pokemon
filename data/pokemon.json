@@ -1,4070 +1,8648 @@
 {
   "bulbasaur": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "ivysaur": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "venusaur": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "charmander": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "charmeleon": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "fire"
+    ]
   },
   "charizard": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "fire",
+      "flying"
+    ]
   },
   "squirtle": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "wartortle": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "water"
+    ]
   },
   "blastoise": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "water"
+    ]
   },
   "caterpie": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "metapod": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug"
+    ]
   },
   "butterfree": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "weedle": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "kakuna": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "beedrill": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "pidgey": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "pidgeotto": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "pidgeot": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "rattata": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "raticate": {
     "catch_rate": 127,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal"
+    ]
   },
   "spearow": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "fearow": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "ekans": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison"
+    ]
   },
   "arbok": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison"
+    ]
   },
   "pikachu": {
     "catch_rate": 190,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "electric"
+    ]
   },
   "raichu": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "electric"
+    ]
   },
   "sandshrew": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground"
+    ]
   },
   "sandslash": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ground"
+    ]
   },
   "nidoran_f": {
     "catch_rate": 235,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison"
+    ]
   },
   "nidorina": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison"
+    ]
   },
   "nidoqueen": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "poison",
+      "ground"
+    ]
   },
   "nidoran_m": {
     "catch_rate": 235,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison"
+    ]
   },
   "nidorino": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison"
+    ]
   },
   "nidoking": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "poison",
+      "ground"
+    ]
   },
   "clefairy": {
     "catch_rate": 150,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "fairy"
+    ]
   },
   "clefable": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "fairy"
+    ]
   },
   "vulpix": {
     "catch_rate": 190,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "fire"
+    ]
   },
   "ninetales": {
     "catch_rate": 75,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "fire"
+    ]
   },
   "jigglypuff": {
     "catch_rate": 170,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal",
+      "fairy"
+    ]
   },
   "wigglytuff": {
     "catch_rate": 50,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal",
+      "fairy"
+    ]
   },
   "zubat": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison",
+      "flying"
+    ]
   },
   "golbat": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison",
+      "flying"
+    ]
   },
   "oddish": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "gloom": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "vileplume": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "paras": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "grass"
+    ]
   },
   "parasect": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "grass"
+    ]
   },
   "venonat": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "venomoth": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "diglett": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground"
+    ]
   },
   "dugtrio": {
     "catch_rate": 50,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ground"
+    ]
   },
   "meowth": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "persian": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "psyduck": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "golduck": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water"
+    ]
   },
   "mankey": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fighting"
+    ]
   },
   "primeape": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fighting"
+    ]
   },
   "growlithe": {
     "catch_rate": 190,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "fire"
+    ]
   },
   "arcanine": {
     "catch_rate": 75,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "fire"
+    ]
   },
   "poliwag": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "poliwhirl": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water"
+    ]
   },
   "poliwrath": {
     "catch_rate": 60,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "water",
+      "fighting"
+    ]
   },
   "abra": {
     "catch_rate": 200,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "psychic"
+    ]
   },
   "kadabra": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic"
+    ]
   },
   "alakazam": {
     "catch_rate": 50,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic"
+    ]
   },
   "machop": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fighting"
+    ]
   },
   "machoke": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fighting"
+    ]
   },
   "machamp": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting"
+    ]
   },
   "bellsprout": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "weepinbell": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "victreebel": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "tentacool": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "poison"
+    ]
   },
   "tentacruel": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "poison"
+    ]
   },
   "geodude": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "rock",
+      "ground"
+    ]
   },
   "graveler": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "rock",
+      "ground"
+    ]
   },
   "golem": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "rock",
+      "ground"
+    ]
   },
   "ponyta": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fire"
+    ]
   },
   "rapidash": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fire"
+    ]
   },
   "slowpoke": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "psychic"
+    ]
   },
   "slowbro": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "psychic"
+    ]
   },
   "magnemite": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric",
+      "steel"
+    ]
   },
   "magneton": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "electric",
+      "steel"
+    ]
   },
   "farfetchd": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "doduo": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "dodrio": {
     "catch_rate": 48,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "seel": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "dewgong": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "ice"
+    ]
   },
   "grimer": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison"
+    ]
   },
   "muk": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison"
+    ]
   },
   "shellder": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "cloyster": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "ice"
+    ]
   },
   "gastly": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost",
+      "poison"
+    ]
   },
   "haunter": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ghost",
+      "poison"
+    ]
   },
   "gengar": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ghost",
+      "poison"
+    ]
   },
   "onix": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "ground"
+    ]
   },
   "drowzee": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic"
+    ]
   },
   "hypno": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic"
+    ]
   },
   "krabby": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "kingler": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "voltorb": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric"
+    ]
   },
   "electrode": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "electric"
+    ]
   },
   "exeggcute": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "psychic"
+    ]
   },
   "exeggutor": {
     "catch_rate": 48,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "grass",
+      "psychic"
+    ]
   },
   "cubone": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground"
+    ]
   },
   "marowak": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ground"
+    ]
   },
   "hitmonlee": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting"
+    ]
   },
   "hitmonchan": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting"
+    ]
   },
   "lickitung": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "koffing": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison"
+    ]
   },
   "weezing": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "poison"
+    ]
   },
   "rhyhorn": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground",
+      "rock"
+    ]
   },
   "rhydon": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ground",
+      "rock"
+    ]
   },
   "chansey": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "normal"
+    ]
   },
   "tangela": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "grass"
+    ]
   },
   "kangaskhan": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "horsea": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "seadra": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water"
+    ]
   },
   "goldeen": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "seaking": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "staryu": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "starmie": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "psychic"
+    ]
   },
   "mr_mime": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic",
+      "fairy"
+    ]
   },
   "scyther": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "jynx": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ice",
+      "psychic"
+    ]
   },
   "electabuzz": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "electric"
+    ]
   },
   "magmar": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "pinsir": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "bug"
+    ]
   },
   "tauros": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "magikarp": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "gyarados": {
     "catch_rate": 64,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "water",
+      "flying"
+    ]
   },
   "lapras": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "water",
+      "ice"
+    ]
   },
   "ditto": {
     "catch_rate": 35,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "eevee": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "vaporeon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "jolteon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "electric"
+    ]
   },
   "flareon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "porygon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "omanyte": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "water"
+    ]
   },
   "omastar": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "water"
+    ]
   },
   "kabuto": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "water"
+    ]
   },
   "kabutops": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "water"
+    ]
   },
   "aerodactyl": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "flying"
+    ]
   },
   "snorlax": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "normal"
+    ]
   },
   "articuno": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ice",
+      "flying"
+    ]
   },
   "zapdos": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "electric",
+      "flying"
+    ]
   },
   "moltres": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fire",
+      "flying"
+    ]
   },
   "dratini": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon"
+    ]
   },
   "dragonair": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon"
+    ]
   },
   "dragonite": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "flying"
+    ]
   },
   "mewtwo": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic"
+    ]
   },
   "mew": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "psychic"
+    ]
   },
   "chikorita": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "grass"
+    ]
   },
   "bayleef": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "grass"
+    ]
   },
   "meganium": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "grass"
+    ]
   },
   "cyndaquil": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "quilava": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "fire"
+    ]
   },
   "typhlosion": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "fire"
+    ]
   },
   "totodile": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "croconaw": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "water"
+    ]
   },
   "feraligatr": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "water"
+    ]
   },
   "sentret": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "furret": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "hoothoot": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "noctowl": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "ledyba": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "ledian": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "spinarak": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "ariados": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "crobat": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison",
+      "flying"
+    ]
   },
   "chinchou": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "electric"
+    ]
   },
   "lanturn": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "electric"
+    ]
   },
   "pichu": {
     "catch_rate": 190,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "electric"
+    ]
   },
   "cleffa": {
     "catch_rate": 190,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "fairy"
+    ]
   },
   "igglybuff": {
     "catch_rate": 190,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "fairy"
+    ]
   },
   "togepi": {
     "catch_rate": 190,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "fairy"
+    ]
   },
   "togetic": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fairy",
+      "flying"
+    ]
   },
   "natu": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic",
+      "flying"
+    ]
   },
   "xatu": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic",
+      "flying"
+    ]
   },
   "mareep": {
     "catch_rate": 235,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric"
+    ]
   },
   "flaaffy": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "electric"
+    ]
   },
   "ampharos": {
     "catch_rate": 60,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "electric"
+    ]
   },
   "bellossom": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass"
+    ]
   },
   "marill": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "fairy"
+    ]
   },
   "azumarill": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "fairy"
+    ]
   },
   "sudowoodo": {
     "catch_rate": 65,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "rock"
+    ]
   },
   "politoed": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "hoppip": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "flying"
+    ]
   },
   "skiploom": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "flying"
+    ]
   },
   "jumpluff": {
     "catch_rate": 65,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "flying"
+    ]
   },
   "aipom": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "sunkern": {
     "catch_rate": 235,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "sunflora": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass"
+    ]
   },
   "yanma": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "wooper": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "ground"
+    ]
   },
   "quagsire": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "ground"
+    ]
   },
   "espeon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic"
+    ]
   },
   "umbreon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "dark"
+    ]
   },
   "murkrow": {
     "catch_rate": 30,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "dark",
+      "flying"
+    ]
   },
   "slowking": {
     "catch_rate": 70,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "water",
+      "psychic"
+    ]
   },
   "misdreavus": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ghost"
+    ]
   },
   "unown": {
     "catch_rate": 225,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "psychic"
+    ]
   },
   "wobbuffet": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic"
+    ]
   },
   "girafarig": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "psychic"
+    ]
   },
   "pineco": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "forretress": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "steel"
+    ]
   },
   "dunsparce": {
     "catch_rate": 190,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal"
+    ]
   },
   "gligar": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ground",
+      "flying"
+    ]
   },
   "steelix": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "steel",
+      "ground"
+    ]
   },
   "snubbull": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fairy"
+    ]
   },
   "granbull": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fairy"
+    ]
   },
   "qwilfish": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "poison"
+    ]
   },
   "scizor": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "bug",
+      "steel"
+    ]
   },
   "shuckle": {
     "catch_rate": 190,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "bug",
+      "rock"
+    ]
   },
   "heracross": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "bug",
+      "fighting"
+    ]
   },
   "sneasel": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "dark",
+      "ice"
+    ]
   },
   "teddiursa": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "ursaring": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "slugma": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fire"
+    ]
   },
   "magcargo": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fire",
+      "rock"
+    ]
   },
   "swinub": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ice",
+      "ground"
+    ]
   },
   "piloswine": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ice",
+      "ground"
+    ]
   },
   "corsola": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "rock"
+    ]
   },
   "remoraid": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "octillery": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water"
+    ]
   },
   "delibird": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ice",
+      "flying"
+    ]
   },
   "mantine": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "water",
+      "flying"
+    ]
   },
   "skarmory": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "steel",
+      "flying"
+    ]
   },
   "houndour": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark",
+      "fire"
+    ]
   },
   "houndoom": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "dark",
+      "fire"
+    ]
   },
   "kingdra": {
     "catch_rate": 48,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "water",
+      "dragon"
+    ]
   },
   "phanpy": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground"
+    ]
   },
   "donphan": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ground"
+    ]
   },
   "porygon2": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "stantler": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "smeargle": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "tyrogue": {
     "catch_rate": 75,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "fighting"
+    ]
   },
   "hitmontop": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting"
+    ]
   },
   "smoochum": {
     "catch_rate": 45,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "ice",
+      "psychic"
+    ]
   },
   "elekid": {
     "catch_rate": 45,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "electric"
+    ]
   },
   "magby": {
     "catch_rate": 45,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "fire"
+    ]
   },
   "miltank": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "blissey": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "normal"
+    ]
   },
   "raikou": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "electric"
+    ]
   },
   "entei": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fire"
+    ]
   },
   "suicune": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "water"
+    ]
   },
   "larvitar": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "rock",
+      "ground"
+    ]
   },
   "pupitar": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "rock",
+      "ground"
+    ]
   },
   "tyranitar": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "rock",
+      "dark"
+    ]
   },
   "lugia": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic",
+      "flying"
+    ]
   },
   "ho_oh": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fire",
+      "flying"
+    ]
   },
   "celebi": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "psychic",
+      "grass"
+    ]
   },
   "treecko": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "grass"
+    ]
   },
   "grovyle": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "grass"
+    ]
   },
   "sceptile": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "grass"
+    ]
   },
   "torchic": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "combusken": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "fire",
+      "fighting"
+    ]
   },
   "blaziken": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "fire",
+      "fighting"
+    ]
   },
   "mudkip": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "marshtomp": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "water",
+      "ground"
+    ]
   },
   "swampert": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "water",
+      "ground"
+    ]
   },
   "poochyena": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark"
+    ]
   },
   "mightyena": {
     "catch_rate": 127,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "dark"
+    ]
   },
   "zigzagoon": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "linoone": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "wurmple": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "silcoon": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug"
+    ]
   },
   "beautifly": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "cascoon": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug"
+    ]
   },
   "dustox": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "lotad": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "grass"
+    ]
   },
   "lombre": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "grass"
+    ]
   },
   "ludicolo": {
     "catch_rate": 48,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "grass"
+    ]
   },
   "seedot": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "nuzleaf": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "dark"
+    ]
   },
   "shiftry": {
     "catch_rate": 48,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "dark"
+    ]
   },
   "taillow": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "swellow": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "wingull": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "flying"
+    ]
   },
   "pelipper": {
     "catch_rate": 48,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "flying"
+    ]
   },
   "ralts": {
     "catch_rate": 235,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "psychic",
+      "fairy"
+    ]
   },
   "kirlia": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic",
+      "fairy"
+    ]
   },
   "gardevoir": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic",
+      "fairy"
+    ]
   },
   "surskit": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "water"
+    ]
   },
   "masquerain": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "shroomish": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "breloom": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "fighting"
+    ]
   },
   "slakoth": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "vigoroth": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "slaking": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "nincada": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "ground"
+    ]
   },
   "ninjask": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "shedinja": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "bug",
+      "ghost"
+    ]
   },
   "whismur": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "loudred": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "exploud": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "makuhita": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fighting"
+    ]
   },
   "hariyama": {
     "catch_rate": 200,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "fighting"
+    ]
   },
   "azurill": {
     "catch_rate": 150,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "fairy"
+    ]
   },
   "nosepass": {
     "catch_rate": 255,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "rock"
+    ]
   },
   "skitty": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "delcatty": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "sableye": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "dark",
+      "ghost"
+    ]
   },
   "mawile": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "steel",
+      "fairy"
+    ]
   },
   "aron": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "steel",
+      "rock"
+    ]
   },
   "lairon": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "steel",
+      "rock"
+    ]
   },
   "aggron": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "steel",
+      "rock"
+    ]
   },
   "meditite": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fighting",
+      "psychic"
+    ]
   },
   "medicham": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fighting",
+      "psychic"
+    ]
   },
   "electrike": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric"
+    ]
   },
   "manectric": {
     "catch_rate": 48,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "electric"
+    ]
   },
   "plusle": {
     "catch_rate": 200,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "electric"
+    ]
   },
   "minun": {
     "catch_rate": 200,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "electric"
+    ]
   },
   "volbeat": {
     "catch_rate": 150,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "bug"
+    ]
   },
   "illumise": {
     "catch_rate": 150,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "bug"
+    ]
   },
   "roselia": {
     "catch_rate": 150,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "gulpin": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison"
+    ]
   },
   "swalot": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison"
+    ]
   },
   "carvanha": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "dark"
+    ]
   },
   "sharpedo": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "dark"
+    ]
   },
   "wailmer": {
     "catch_rate": 125,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "wailord": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "numel": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fire",
+      "ground"
+    ]
   },
   "camerupt": {
     "catch_rate": 150,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "fire",
+      "ground"
+    ]
   },
   "torkoal": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fire"
+    ]
   },
   "spoink": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic"
+    ]
   },
   "grumpig": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "psychic"
+    ]
   },
   "spinda": {
     "catch_rate": 255,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal"
+    ]
   },
   "trapinch": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground"
+    ]
   },
   "vibrava": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ground",
+      "dragon"
+    ]
   },
   "flygon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ground",
+      "dragon"
+    ]
   },
   "cacnea": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "cacturne": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "dark"
+    ]
   },
   "swablu": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "altaria": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "dragon",
+      "flying"
+    ]
   },
   "zangoose": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "seviper": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison"
+    ]
   },
   "lunatone": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "psychic"
+    ]
   },
   "solrock": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "psychic"
+    ]
   },
   "barboach": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "ground"
+    ]
   },
   "whiscash": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "ground"
+    ]
   },
   "corphish": {
     "catch_rate": 205,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "crawdaunt": {
     "catch_rate": 155,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "water",
+      "dark"
+    ]
   },
   "baltoy": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground",
+      "psychic"
+    ]
   },
   "claydol": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ground",
+      "psychic"
+    ]
   },
   "lileep": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "grass"
+    ]
   },
   "cradily": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "grass"
+    ]
   },
   "anorith": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "bug"
+    ]
   },
   "armaldo": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "bug"
+    ]
   },
   "feebas": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "milotic": {
     "catch_rate": 60,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "water"
+    ]
   },
   "castform": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "kecleon": {
     "catch_rate": 200,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal"
+    ]
   },
   "shuppet": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost"
+    ]
   },
   "banette": {
     "catch_rate": 48,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ghost"
+    ]
   },
   "duskull": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost"
+    ]
   },
   "dusclops": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ghost"
+    ]
   },
   "tropius": {
     "catch_rate": 200,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "grass",
+      "flying"
+    ]
   },
   "chimecho": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic"
+    ]
   },
   "absol": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "dark"
+    ]
   },
   "wynaut": {
     "catch_rate": 125,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "psychic"
+    ]
   },
   "snorunt": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ice"
+    ]
   },
   "glalie": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ice"
+    ]
   },
   "spheal": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ice",
+      "water"
+    ]
   },
   "sealeo": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ice",
+      "water"
+    ]
   },
   "walrein": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ice",
+      "water"
+    ]
   },
   "clamperl": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "huntail": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "gorebyss": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "relicanth": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "water",
+      "rock"
+    ]
   },
   "luvdisc": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "bagon": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon"
+    ]
   },
   "shelgon": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon"
+    ]
   },
   "salamence": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "flying"
+    ]
   },
   "beldum": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "steel",
+      "psychic"
+    ]
   },
   "metang": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "steel",
+      "psychic"
+    ]
   },
   "metagross": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "steel",
+      "psychic"
+    ]
   },
   "regirock": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "rock"
+    ]
   },
   "regice": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ice"
+    ]
   },
   "registeel": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "steel"
+    ]
   },
   "latias": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dragon",
+      "psychic"
+    ]
   },
   "latios": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dragon",
+      "psychic"
+    ]
   },
   "kyogre": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "water"
+    ]
   },
   "groudon": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ground"
+    ]
   },
   "rayquaza": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dragon",
+      "flying"
+    ]
   },
   "jirachi": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "steel",
+      "psychic"
+    ]
   },
   "deoxys": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "psychic"
+    ]
   },
   "turtwig": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "grass"
+    ]
   },
   "grotle": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "grass"
+    ]
   },
   "torterra": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "grass",
+      "ground"
+    ]
   },
   "chimchar": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "monferno": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "fire",
+      "fighting"
+    ]
   },
   "infernape": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "fire",
+      "fighting"
+    ]
   },
   "piplup": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "prinplup": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "water"
+    ]
   },
   "empoleon": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "water",
+      "steel"
+    ]
   },
   "starly": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "staravia": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "staraptor": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "bidoof": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "bibarel": {
     "catch_rate": 127,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal",
+      "water"
+    ]
   },
   "kricketot": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "kricketune": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug"
+    ]
   },
   "shinx": {
     "catch_rate": 235,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric"
+    ]
   },
   "luxio": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "electric"
+    ]
   },
   "luxray": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "electric"
+    ]
   },
   "budew": {
     "catch_rate": 255,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "roserade": {
     "catch_rate": 75,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "cranidos": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock"
+    ]
   },
   "rampardos": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock"
+    ]
   },
   "shieldon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "steel"
+    ]
   },
   "bastiodon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "steel"
+    ]
   },
   "burmy": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "wormadam": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "grass"
+    ]
   },
   "mothim": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "combee": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "vespiquen": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "pachirisu": {
     "catch_rate": 200,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "electric"
+    ]
   },
   "buizel": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "floatzel": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water"
+    ]
   },
   "cherubi": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "cherrim": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass"
+    ]
   },
   "shellos": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "gastrodon": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "ground"
+    ]
   },
   "ambipom": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "drifloon": {
     "catch_rate": 125,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "ghost",
+      "flying"
+    ]
   },
   "drifblim": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ghost",
+      "flying"
+    ]
   },
   "buneary": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "lopunny": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "mismagius": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ghost"
+    ]
   },
   "honchkrow": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "dark",
+      "flying"
+    ]
   },
   "glameow": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "purugly": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "chingling": {
     "catch_rate": 120,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "psychic"
+    ]
   },
   "stunky": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison",
+      "dark"
+    ]
   },
   "skuntank": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "poison",
+      "dark"
+    ]
   },
   "bronzor": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "steel",
+      "psychic"
+    ]
   },
   "bronzong": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "steel",
+      "psychic"
+    ]
   },
   "bonsly": {
     "catch_rate": 255,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "rock"
+    ]
   },
   "mime_jr": {
     "catch_rate": 145,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "psychic",
+      "fairy"
+    ]
   },
   "happiny": {
     "catch_rate": 130,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "chatot": {
     "catch_rate": 30,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "spiritomb": {
     "catch_rate": 100,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "ghost",
+      "dark"
+    ]
   },
   "gible": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "ground"
+    ]
   },
   "gabite": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "ground"
+    ]
   },
   "garchomp": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "ground"
+    ]
   },
   "munchlax": {
     "catch_rate": 50,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "riolu": {
     "catch_rate": 75,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "fighting"
+    ]
   },
   "lucario": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting",
+      "steel"
+    ]
   },
   "hippopotas": {
     "catch_rate": 140,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground"
+    ]
   },
   "hippowdon": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ground"
+    ]
   },
   "skorupi": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison",
+      "bug"
+    ]
   },
   "drapion": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "poison",
+      "dark"
+    ]
   },
   "croagunk": {
     "catch_rate": 140,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison",
+      "fighting"
+    ]
   },
   "toxicroak": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison",
+      "fighting"
+    ]
   },
   "carnivine": {
     "catch_rate": 200,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "grass"
+    ]
   },
   "finneon": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "lumineon": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water"
+    ]
   },
   "mantyke": {
     "catch_rate": 25,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "flying"
+    ]
   },
   "snover": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "ice"
+    ]
   },
   "abomasnow": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "ice"
+    ]
   },
   "weavile": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "dark",
+      "ice"
+    ]
   },
   "magnezone": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "electric",
+      "steel"
+    ]
   },
   "lickilicky": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "normal"
+    ]
   },
   "rhyperior": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "ground",
+      "rock"
+    ]
   },
   "tangrowth": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "grass"
+    ]
   },
   "electivire": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "electric"
+    ]
   },
   "magmortar": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "fire"
+    ]
   },
   "togekiss": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "fairy",
+      "flying"
+    ]
   },
   "yanmega": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "leafeon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "grass"
+    ]
   },
   "glaceon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ice"
+    ]
   },
   "gliscor": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "ground",
+      "flying"
+    ]
   },
   "mamoswine": {
     "catch_rate": 50,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ice",
+      "ground"
+    ]
   },
   "porygon_z": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "normal"
+    ]
   },
   "gallade": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic",
+      "fighting"
+    ]
   },
   "probopass": {
     "catch_rate": 60,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "rock",
+      "steel"
+    ]
   },
   "dusknoir": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ghost"
+    ]
   },
   "froslass": {
     "catch_rate": 75,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "ice",
+      "ghost"
+    ]
   },
   "rotom": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "electric",
+      "ghost"
+    ]
   },
   "uxie": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic"
+    ]
   },
   "mesprit": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic"
+    ]
   },
   "azelf": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic"
+    ]
   },
   "dialga": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "steel",
+      "dragon"
+    ]
   },
   "palkia": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "water",
+      "dragon"
+    ]
   },
   "heatran": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fire",
+      "steel"
+    ]
   },
   "regigigas": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "normal"
+    ]
   },
   "giratina": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ghost",
+      "dragon"
+    ]
   },
   "cresselia": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic"
+    ]
   },
   "phione": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "water"
+    ]
   },
   "manaphy": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "water"
+    ]
   },
   "darkrai": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "dark"
+    ]
   },
   "shaymin": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "grass"
+    ]
   },
   "arceus": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "normal"
+    ]
   },
   "victini": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "psychic",
+      "fire"
+    ]
   },
   "snivy": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "grass"
+    ]
   },
   "servine": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "grass"
+    ]
   },
   "serperior": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "grass"
+    ]
   },
   "tepig": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "pignite": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "fire",
+      "fighting"
+    ]
   },
   "emboar": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "fire",
+      "fighting"
+    ]
   },
   "oshawott": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "dewott": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "water"
+    ]
   },
   "samurott": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "water"
+    ]
   },
   "patrat": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "watchog": {
     "catch_rate": 255,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal"
+    ]
   },
   "lillipup": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "herdier": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "stoutland": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "purrloin": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark"
+    ]
   },
   "liepard": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "dark"
+    ]
   },
   "pansage": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "simisage": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass"
+    ]
   },
   "pansear": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fire"
+    ]
   },
   "simisear": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fire"
+    ]
   },
   "panpour": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "simipour": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water"
+    ]
   },
   "munna": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic"
+    ]
   },
   "musharna": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic"
+    ]
   },
   "pidove": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "tranquill": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "unfezant": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "blitzle": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric"
+    ]
   },
   "zebstrika": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "electric"
+    ]
   },
   "roggenrola": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "rock"
+    ]
   },
   "boldore": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "rock"
+    ]
   },
   "gigalith": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "rock"
+    ]
   },
   "woobat": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic",
+      "flying"
+    ]
   },
   "swoobat": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "psychic",
+      "flying"
+    ]
   },
   "drilbur": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground"
+    ]
   },
   "excadrill": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ground",
+      "steel"
+    ]
   },
   "audino": {
     "catch_rate": 255,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal"
+    ]
   },
   "timburr": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fighting"
+    ]
   },
   "gurdurr": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fighting"
+    ]
   },
   "conkeldurr": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting"
+    ]
   },
   "tympole": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "palpitoad": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "ground"
+    ]
   },
   "seismitoad": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "ground"
+    ]
   },
   "throh": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting"
+    ]
   },
   "sawk": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting"
+    ]
   },
   "sewaddle": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "grass"
+    ]
   },
   "swadloon": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "grass"
+    ]
   },
   "leavanny": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "grass"
+    ]
   },
   "venipede": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "whirlipede": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "scolipede": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "poison"
+    ]
   },
   "cottonee": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "fairy"
+    ]
   },
   "whimsicott": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "fairy"
+    ]
   },
   "petilil": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "lilligant": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass"
+    ]
   },
   "basculin": {
     "catch_rate": 25,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "sandile": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground",
+      "dark"
+    ]
   },
   "krokorok": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ground",
+      "dark"
+    ]
   },
   "krookodile": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ground",
+      "dark"
+    ]
   },
   "darumaka": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fire"
+    ]
   },
   "darmanitan": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fire"
+    ]
   },
   "maractus": {
     "catch_rate": 255,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "grass"
+    ]
   },
   "dwebble": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "rock"
+    ]
   },
   "crustle": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "rock"
+    ]
   },
   "scraggy": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark",
+      "fighting"
+    ]
   },
   "scrafty": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "dark",
+      "fighting"
+    ]
   },
   "sigilyph": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic",
+      "flying"
+    ]
   },
   "yamask": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost"
+    ]
   },
   "cofagrigus": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ghost"
+    ]
   },
   "tirtouga": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "water",
+      "rock"
+    ]
   },
   "carracosta": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "water",
+      "rock"
+    ]
   },
   "archen": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "flying"
+    ]
   },
   "archeops": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "flying"
+    ]
   },
   "trubbish": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison"
+    ]
   },
   "garbodor": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "poison"
+    ]
   },
   "zorua": {
     "catch_rate": 75,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "dark"
+    ]
   },
   "zoroark": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "dark"
+    ]
   },
   "minccino": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "cinccino": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "gothita": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic"
+    ]
   },
   "gothorita": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic"
+    ]
   },
   "gothitelle": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic"
+    ]
   },
   "solosis": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic"
+    ]
   },
   "duosion": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic"
+    ]
   },
   "reuniclus": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic"
+    ]
   },
   "ducklett": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "flying"
+    ]
   },
   "swanna": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "flying"
+    ]
   },
   "vanillite": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ice"
+    ]
   },
   "vanillish": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ice"
+    ]
   },
   "vanilluxe": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ice"
+    ]
   },
   "deerling": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "grass"
+    ]
   },
   "sawsbuck": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal",
+      "grass"
+    ]
   },
   "emolga": {
     "catch_rate": 200,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "electric",
+      "flying"
+    ]
   },
   "karrablast": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "escavalier": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "steel"
+    ]
   },
   "foongus": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "amoonguss": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "poison"
+    ]
   },
   "frillish": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "ghost"
+    ]
   },
   "jellicent": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water",
+      "ghost"
+    ]
   },
   "alomomola": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water"
+    ]
   },
   "joltik": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "electric"
+    ]
   },
   "galvantula": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "electric"
+    ]
   },
   "ferroseed": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "steel"
+    ]
   },
   "ferrothorn": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "steel"
+    ]
   },
   "klink": {
     "catch_rate": 130,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "steel"
+    ]
   },
   "klang": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "steel"
+    ]
   },
   "klinklang": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "steel"
+    ]
   },
   "tynamo": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric"
+    ]
   },
   "eelektrik": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "electric"
+    ]
   },
   "eelektross": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "electric"
+    ]
   },
   "elgyem": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic"
+    ]
   },
   "beheeyem": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic"
+    ]
   },
   "litwick": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost",
+      "fire"
+    ]
   },
   "lampent": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ghost",
+      "fire"
+    ]
   },
   "chandelure": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ghost",
+      "fire"
+    ]
   },
   "axew": {
     "catch_rate": 75,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dragon"
+    ]
   },
   "fraxure": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "dragon"
+    ]
   },
   "haxorus": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "dragon"
+    ]
   },
   "cubchoo": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ice"
+    ]
   },
   "beartic": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ice"
+    ]
   },
   "cryogonal": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "ice"
+    ]
   },
   "shelmet": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "accelgor": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug"
+    ]
   },
   "stunfisk": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ground",
+      "electric"
+    ]
   },
   "mienfoo": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fighting"
+    ]
   },
   "mienshao": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fighting"
+    ]
   },
   "druddigon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "dragon"
+    ]
   },
   "golett": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground",
+      "ghost"
+    ]
   },
   "golurk": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ground",
+      "ghost"
+    ]
   },
   "pawniard": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark",
+      "steel"
+    ]
   },
   "bisharp": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "dark",
+      "steel"
+    ]
   },
   "bouffalant": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "rufflet": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "braviary": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "vullaby": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark",
+      "flying"
+    ]
   },
   "mandibuzz": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "dark",
+      "flying"
+    ]
   },
   "heatmor": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fire"
+    ]
   },
   "durant": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "steel"
+    ]
   },
   "deino": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dark",
+      "dragon"
+    ]
   },
   "zweilous": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dark",
+      "dragon"
+    ]
   },
   "hydreigon": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dark",
+      "dragon"
+    ]
   },
   "larvesta": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "bug",
+      "fire"
+    ]
   },
   "volcarona": {
     "catch_rate": 15,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "bug",
+      "fire"
+    ]
   },
   "cobalion": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "steel",
+      "fighting"
+    ]
   },
   "terrakion": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "rock",
+      "fighting"
+    ]
   },
   "virizion": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "grass",
+      "fighting"
+    ]
   },
   "tornadus": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "flying"
+    ]
   },
   "thundurus": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "electric",
+      "flying"
+    ]
   },
   "reshiram": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dragon",
+      "fire"
+    ]
   },
   "zekrom": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dragon",
+      "electric"
+    ]
   },
   "landorus": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ground",
+      "flying"
+    ]
   },
   "kyurem": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dragon",
+      "ice"
+    ]
   },
   "keldeo": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "water",
+      "fighting"
+    ]
   },
   "meloetta": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "normal",
+      "psychic"
+    ]
   },
   "genesect": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "bug",
+      "steel"
+    ]
   },
   "chespin": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "grass"
+    ]
   },
   "quilladin": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "grass"
+    ]
   },
   "chesnaught": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "grass",
+      "fighting"
+    ]
   },
   "fennekin": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "braixen": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "fire"
+    ]
   },
   "delphox": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "fire",
+      "psychic"
+    ]
   },
   "froakie": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "frogadier": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "water"
+    ]
   },
   "greninja": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "water",
+      "dark"
+    ]
   },
   "bunnelby": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "diggersby": {
     "catch_rate": 127,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal",
+      "ground"
+    ]
   },
   "fletchling": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "fletchinder": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fire",
+      "flying"
+    ]
   },
   "talonflame": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fire",
+      "flying"
+    ]
   },
   "scatterbug": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "spewpa": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug"
+    ]
   },
   "vivillon": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "flying"
+    ]
   },
   "litleo": {
     "catch_rate": 220,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fire",
+      "normal"
+    ]
   },
   "pyroar": {
     "catch_rate": 65,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fire",
+      "normal"
+    ]
   },
   "flabebe": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fairy"
+    ]
   },
   "floette": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fairy"
+    ]
   },
   "florges": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fairy"
+    ]
   },
   "skiddo": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "gogoat": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass"
+    ]
   },
   "pancham": {
     "catch_rate": 220,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fighting"
+    ]
   },
   "pangoro": {
     "catch_rate": 65,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fighting",
+      "dark"
+    ]
   },
   "furfrou": {
     "catch_rate": 160,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal"
+    ]
   },
   "espurr": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic"
+    ]
   },
   "meowstic": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic"
+    ]
   },
   "honedge": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "steel",
+      "ghost"
+    ]
   },
   "doublade": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "steel",
+      "ghost"
+    ]
   },
   "aegislash": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "steel",
+      "ghost"
+    ]
   },
   "spritzee": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fairy"
+    ]
   },
   "aromatisse": {
     "catch_rate": 140,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "fairy"
+    ]
   },
   "swirlix": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fairy"
+    ]
   },
   "slurpuff": {
     "catch_rate": 140,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "fairy"
+    ]
   },
   "inkay": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark",
+      "psychic"
+    ]
   },
   "malamar": {
     "catch_rate": 80,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "dark",
+      "psychic"
+    ]
   },
   "binacle": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "rock",
+      "water"
+    ]
   },
   "barbaracle": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "rock",
+      "water"
+    ]
   },
   "skrelp": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison",
+      "water"
+    ]
   },
   "dragalge": {
     "catch_rate": 55,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "poison",
+      "dragon"
+    ]
   },
   "clauncher": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "clawitzer": {
     "catch_rate": 55,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "helioptile": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric",
+      "normal"
+    ]
   },
   "heliolisk": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "electric",
+      "normal"
+    ]
   },
   "tyrunt": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "dragon"
+    ]
   },
   "tyrantrum": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "dragon"
+    ]
   },
   "amaura": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "ice"
+    ]
   },
   "aurorus": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "ice"
+    ]
   },
   "sylveon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fairy"
+    ]
   },
   "hawlucha": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fighting",
+      "flying"
+    ]
   },
   "dedenne": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric",
+      "fairy"
+    ]
   },
   "carbink": {
     "catch_rate": 60,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "rock",
+      "fairy"
+    ]
   },
   "goomy": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon"
+    ]
   },
   "sliggoo": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon"
+    ]
   },
   "goodra": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon"
+    ]
   },
   "klefki": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "steel",
+      "fairy"
+    ]
   },
   "phantump": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost",
+      "grass"
+    ]
   },
   "trevenant": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ghost",
+      "grass"
+    ]
   },
   "pumpkaboo": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost",
+      "grass"
+    ]
   },
   "gourgeist": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ghost",
+      "grass"
+    ]
   },
   "bergmite": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ice"
+    ]
   },
   "avalugg": {
     "catch_rate": 55,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ice"
+    ]
   },
   "noibat": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "flying",
+      "dragon"
+    ]
   },
   "noivern": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "flying",
+      "dragon"
+    ]
   },
   "xerneas": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fairy"
+    ]
   },
   "yveltal": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dark",
+      "flying"
+    ]
   },
   "zygarde": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dragon",
+      "ground"
+    ]
   },
   "diancie": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "rock",
+      "fairy"
+    ]
   },
   "hoopa": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "psychic",
+      "ghost"
+    ]
   },
   "volcanion": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "fire",
+      "water"
+    ]
   },
   "rowlet": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "grass",
+      "flying"
+    ]
   },
   "dartrix": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "grass",
+      "flying"
+    ]
   },
   "decidueye": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "grass",
+      "ghost"
+    ]
   },
   "litten": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "torracat": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "fire"
+    ]
   },
   "incineroar": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "fire",
+      "dark"
+    ]
   },
   "popplio": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "brionne": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "water"
+    ]
   },
   "primarina": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "water",
+      "fairy"
+    ]
   },
   "pikipek": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "trumbeak": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "toucannon": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "yungoos": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "gumshoos": {
     "catch_rate": 127,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal"
+    ]
   },
   "grubbin": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "charjabug": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "electric"
+    ]
   },
   "vikavolt": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "electric"
+    ]
   },
   "crabrawler": {
     "catch_rate": 225,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fighting"
+    ]
   },
   "crabominable": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fighting",
+      "ice"
+    ]
   },
   "oricorio": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fire",
+      "flying"
+    ]
   },
   "cutiefly": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "fairy"
+    ]
   },
   "ribombee": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "fairy"
+    ]
   },
   "rockruff": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "rock"
+    ]
   },
   "lycanroc": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "rock"
+    ]
   },
   "wishiwashi": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "mareanie": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison",
+      "water"
+    ]
   },
   "toxapex": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison",
+      "water"
+    ]
   },
   "mudbray": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground"
+    ]
   },
   "mudsdale": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ground"
+    ]
   },
   "dewpider": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water",
+      "bug"
+    ]
   },
   "araquanid": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "bug"
+    ]
   },
   "fomantis": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "lurantis": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass"
+    ]
   },
   "morelull": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "fairy"
+    ]
   },
   "shiinotic": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "fairy"
+    ]
   },
   "salandit": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison",
+      "fire"
+    ]
   },
   "salazzle": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "poison",
+      "fire"
+    ]
   },
   "stufful": {
     "catch_rate": 140,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "fighting"
+    ]
   },
   "bewear": {
     "catch_rate": 70,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal",
+      "fighting"
+    ]
   },
   "bounsweet": {
     "catch_rate": 235,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "steenee": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass"
+    ]
   },
   "tsareena": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass"
+    ]
   },
   "comfey": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fairy"
+    ]
   },
   "oranguru": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal",
+      "psychic"
+    ]
   },
   "passimian": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting"
+    ]
   },
   "wimpod": {
     "catch_rate": 90,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug",
+      "water"
+    ]
   },
   "golisopod": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "water"
+    ]
   },
   "sandygast": {
     "catch_rate": 140,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost",
+      "ground"
+    ]
   },
   "palossand": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ghost",
+      "ground"
+    ]
   },
   "pyukumuku": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "type_null": {
     "catch_rate": 3,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "normal"
+    ]
   },
   "silvally": {
     "catch_rate": 3,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "normal"
+    ]
   },
   "minior": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "rock",
+      "flying"
+    ]
   },
   "komala": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal"
+    ]
   },
   "turtonator": {
     "catch_rate": 70,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "fire",
+      "dragon"
+    ]
   },
   "togedemaru": {
     "catch_rate": 180,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "electric",
+      "steel"
+    ]
   },
   "mimikyu": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ghost",
+      "fairy"
+    ]
   },
   "bruxish": {
     "catch_rate": 80,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "psychic"
+    ]
   },
   "drampa": {
     "catch_rate": 70,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "normal",
+      "dragon"
+    ]
   },
   "dhelmise": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "ghost",
+      "grass"
+    ]
   },
   "jangmo_o": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon"
+    ]
   },
   "hakamo_o": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "fighting"
+    ]
   },
   "kommo_o": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "fighting"
+    ]
   },
   "tapu_koko": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "electric",
+      "fairy"
+    ]
   },
   "tapu_lele": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic",
+      "fairy"
+    ]
   },
   "tapu_bulu": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "grass",
+      "fairy"
+    ]
   },
   "tapu_fini": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "water",
+      "fairy"
+    ]
   },
   "cosmog": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic"
+    ]
   },
   "cosmoem": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic"
+    ]
   },
   "solgaleo": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic",
+      "steel"
+    ]
   },
   "lunala": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic",
+      "ghost"
+    ]
   },
   "necrozma": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic"
+    ]
   },
   "magearna": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "steel",
+      "fairy"
+    ]
   },
   "marshadow": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "fighting",
+      "ghost"
+    ]
   },
   "poipole": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "poison"
+    ]
   },
   "naganadel": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "poison",
+      "dragon"
+    ]
   },
   "stakataka": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "rock",
+      "steel"
+    ]
   },
   "blacephalon": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "fire",
+      "ghost"
+    ]
   },
   "zeraora": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "electric"
+    ]
   },
   "meltan": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "steel"
+    ]
   },
   "melmetal": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "steel"
+    ]
   },
   "grookey": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "grass"
+    ]
   },
   "thwackey": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "grass"
+    ]
   },
   "rillaboom": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "grass"
+    ]
   },
   "scorbunny": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "raboot": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "fire"
+    ]
   },
   "cinderace": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "fire"
+    ]
   },
   "sobble": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "drizzile": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "water"
+    ]
   },
   "inteleon": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "water"
+    ]
   },
   "skwovet": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "greedent": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "rookidee": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "flying"
+    ]
   },
   "corvisquire": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "flying"
+    ]
   },
   "corviknight": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "flying",
+      "steel"
+    ]
   },
   "blipbug": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "dottler": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug",
+      "psychic"
+    ]
   },
   "orbeetle": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "psychic"
+    ]
   },
   "nickit": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark"
+    ]
   },
   "thievul": {
     "catch_rate": 127,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "dark"
+    ]
   },
   "gossifleur": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "eldegoss": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass"
+    ]
   },
   "wooloo": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "dubwool": {
     "catch_rate": 127,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "normal"
+    ]
   },
   "chewtle": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "drednaw": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "rock"
+    ]
   },
   "yamper": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric"
+    ]
   },
   "boltund": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "electric"
+    ]
   },
   "rolycoly": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "rock"
+    ]
   },
   "carkol": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "rock",
+      "fire"
+    ]
   },
   "coalossal": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "rock",
+      "fire"
+    ]
   },
   "applin": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "dragon"
+    ]
   },
   "flapple": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "dragon"
+    ]
   },
   "appletun": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "dragon"
+    ]
   },
   "silicobra": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground"
+    ]
   },
   "sandaconda": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ground"
+    ]
   },
   "cramorant": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "flying",
+      "water"
+    ]
   },
   "arrokuda": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "barraskewda": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "toxel": {
     "catch_rate": 75,
-    "category": "baby"
+    "category": "baby",
+    "flee_rate": 8,
+    "types": [
+      "electric",
+      "poison"
+    ]
   },
   "toxtricity": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "electric",
+      "poison"
+    ]
   },
   "sizzlipede": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fire",
+      "bug"
+    ]
   },
   "centiskorch": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fire",
+      "bug"
+    ]
   },
   "clobbopus": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fighting"
+    ]
   },
   "grapploct": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fighting"
+    ]
   },
   "sinistea": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost"
+    ]
   },
   "polteageist": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ghost"
+    ]
   },
   "hatenna": {
     "catch_rate": 235,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic"
+    ]
   },
   "hattrem": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "psychic"
+    ]
   },
   "hatterene": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "psychic",
+      "fairy"
+    ]
   },
   "impidimp": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark",
+      "fairy"
+    ]
   },
   "morgrem": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "dark",
+      "fairy"
+    ]
   },
   "grimmsnarl": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "dark",
+      "fairy"
+    ]
   },
   "obstagoon": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "dark",
+      "normal"
+    ]
   },
   "perrserker": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "steel"
+    ]
   },
   "cursola": {
     "catch_rate": 30,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "ghost"
+    ]
   },
   "sirfetchd": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting"
+    ]
   },
   "mr_rime": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ice",
+      "psychic"
+    ]
   },
   "runerigus": {
     "catch_rate": 90,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "ground",
+      "ghost"
+    ]
   },
   "milcery": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fairy"
+    ]
   },
   "alcremie": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fairy"
+    ]
   },
   "falinks": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fighting"
+    ]
   },
   "pincurchin": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "electric"
+    ]
   },
   "snom": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ice",
+      "bug"
+    ]
   },
   "frosmoth": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "ice",
+      "bug"
+    ]
   },
   "stonjourner": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "rock"
+    ]
   },
   "eiscue": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ice"
+    ]
   },
   "indeedee": {
     "catch_rate": 30,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "psychic",
+      "normal"
+    ]
   },
   "morpeko": {
     "catch_rate": 180,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "electric",
+      "dark"
+    ]
   },
   "cufant": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "steel"
+    ]
   },
   "copperajah": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "steel"
+    ]
   },
   "dracozolt": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "electric",
+      "dragon"
+    ]
   },
   "arctozolt": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "electric",
+      "ice"
+    ]
   },
   "dracovish": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "water",
+      "dragon"
+    ]
   },
   "arctovish": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "water",
+      "ice"
+    ]
   },
   "duraludon": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "steel",
+      "dragon"
+    ]
   },
   "dreepy": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "ghost"
+    ]
   },
   "drakloak": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "ghost"
+    ]
   },
   "dragapult": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "ghost"
+    ]
   },
   "zacian": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fairy"
+    ]
   },
   "zamazenta": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fighting"
+    ]
   },
   "eternatus": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "poison",
+      "dragon"
+    ]
   },
   "kubfu": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fighting"
+    ]
   },
   "urshifu": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fighting",
+      "dark"
+    ]
   },
   "regieleki": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "electric"
+    ]
   },
   "regidrago": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dragon"
+    ]
   },
   "glastrier": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ice"
+    ]
   },
   "spectrier": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ghost"
+    ]
   },
   "calyrex": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "psychic",
+      "grass"
+    ]
   },
   "wyrdeer": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "normal",
+      "psychic"
+    ]
   },
   "kleavor": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "bug",
+      "rock"
+    ]
   },
   "ursaluna": {
     "catch_rate": 60,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 10,
+    "types": [
+      "ground",
+      "normal"
+    ]
   },
   "basculegion": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "water",
+      "ghost"
+    ]
   },
   "sneasler": {
     "catch_rate": 20,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "fighting",
+      "poison"
+    ]
   },
   "overqwil": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "dark",
+      "poison"
+    ]
   },
   "enamorus": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fairy",
+      "flying"
+    ]
   },
   "sprigatito": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "grass"
+    ]
   },
   "floragato": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "grass"
+    ]
   },
   "meowscarada": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "grass",
+      "dark"
+    ]
   },
   "fuecoco": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "fire"
+    ]
   },
   "crocalor": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "fire"
+    ]
   },
   "skeledirge": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "fire",
+      "ghost"
+    ]
   },
   "quaxly": {
     "catch_rate": 45,
-    "category": "starter"
+    "category": "starter",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "quaxwell": {
     "catch_rate": 25,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 15,
+    "types": [
+      "water"
+    ]
   },
   "quaquaval": {
     "catch_rate": 15,
-    "category": "starter_evolution"
+    "category": "starter_evolution",
+    "flee_rate": 18,
+    "types": [
+      "water",
+      "fighting"
+    ]
   },
   "lechonk": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "oinkologne": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "tarountula": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "spidops": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "bug"
+    ]
   },
   "nymble": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "lokix": {
     "catch_rate": 30,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "dark"
+    ]
   },
   "pawmi": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric"
+    ]
   },
   "pawmo": {
     "catch_rate": 80,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "electric",
+      "fighting"
+    ]
   },
   "pawmot": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "electric",
+      "fighting"
+    ]
   },
   "tandemaus": {
     "catch_rate": 150,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal"
+    ]
   },
   "maushold": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "normal"
+    ]
   },
   "fidough": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fairy"
+    ]
   },
   "dachsbun": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "fairy"
+    ]
   },
   "smoliv": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "normal"
+    ]
   },
   "dolliv": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "normal"
+    ]
   },
   "arboliva": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "normal"
+    ]
   },
   "squawkabilly": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "normal",
+      "flying"
+    ]
   },
   "nacli": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "rock"
+    ]
   },
   "naclstack": {
     "catch_rate": 120,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "rock"
+    ]
   },
   "garganacl": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "rock"
+    ]
   },
   "charcadet": {
     "catch_rate": 90,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fire"
+    ]
   },
   "armarouge": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "fire",
+      "psychic"
+    ]
   },
   "ceruledge": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "fire",
+      "ghost"
+    ]
   },
   "tadbulb": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric"
+    ]
   },
   "bellibolt": {
     "catch_rate": 50,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "electric"
+    ]
   },
   "wattrel": {
     "catch_rate": 180,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "electric",
+      "flying"
+    ]
   },
   "kilowattrel": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "electric",
+      "flying"
+    ]
   },
   "maschiff": {
     "catch_rate": 150,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "dark"
+    ]
   },
   "mabosstiff": {
     "catch_rate": 80,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "dark"
+    ]
   },
   "shroodle": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "poison",
+      "normal"
+    ]
   },
   "grafaiai": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison",
+      "normal"
+    ]
   },
   "bramblin": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "ghost"
+    ]
   },
   "brambleghast": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "ghost"
+    ]
   },
   "toedscool": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ground",
+      "grass"
+    ]
   },
   "toedscruel": {
     "catch_rate": 50,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ground",
+      "grass"
+    ]
   },
   "klawf": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "rock"
+    ]
   },
   "capsakid": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass"
+    ]
   },
   "scovillain": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "grass",
+      "fire"
+    ]
   },
   "rellor": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "bug"
+    ]
   },
   "rabsca": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "bug",
+      "psychic"
+    ]
   },
   "flittle": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "psychic"
+    ]
   },
   "espathra": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "psychic"
+    ]
   },
   "tinkatink": {
     "catch_rate": 190,
-    "category": "common"
-  },
-  "tinkaton": {
-    "catch_rate": 90,
-    "category": "uncommon"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "fairy",
+      "steel"
+    ]
   },
   "tinkaton": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "fairy",
+      "steel"
+    ]
   },
   "wiglett": {
     "catch_rate": 255,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "wugtrio": {
     "catch_rate": 50,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "water"
+    ]
   },
   "bombirdier": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "flying",
+      "dark"
+    ]
   },
   "finizen": {
     "catch_rate": 200,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "water"
+    ]
   },
   "palafin": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "water"
+    ]
   },
   "varoom": {
     "catch_rate": 190,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "steel",
+      "poison"
+    ]
   },
   "revavroom": {
     "catch_rate": 75,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "steel",
+      "poison"
+    ]
   },
   "cyclizar": {
     "catch_rate": 190,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 5,
+    "types": [
+      "dragon",
+      "normal"
+    ]
   },
   "orthworm": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "steel"
+    ]
   },
   "glimmet": {
     "catch_rate": 70,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "rock",
+      "poison"
+    ]
   },
   "glimmora": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "rock",
+      "poison"
+    ]
   },
   "greavard": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ghost"
+    ]
   },
   "houndstone": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ghost"
+    ]
   },
   "flamigo": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "flying",
+      "fighting"
+    ]
   },
   "cetoddle": {
     "catch_rate": 150,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "ice"
+    ]
   },
   "cetitan": {
     "catch_rate": 50,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "ice"
+    ]
   },
   "veluza": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "water",
+      "psychic"
+    ]
   },
   "dondozo": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "water"
+    ]
   },
   "tatsugiri": {
     "catch_rate": 100,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "dragon",
+      "water"
+    ]
   },
   "annihilape": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "fighting",
+      "ghost"
+    ]
   },
   "clodsire": {
     "catch_rate": 90,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 6,
+    "types": [
+      "poison",
+      "ground"
+    ]
   },
   "farigiraf": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal",
+      "psychic"
+    ]
   },
   "dudunsparce": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "normal"
+    ]
   },
   "kingambit": {
     "catch_rate": 25,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "dark",
+      "steel"
+    ]
   },
   "great_tusk": {
     "catch_rate": 30,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ground",
+      "fighting"
+    ]
   },
   "scream_tail": {
     "catch_rate": 50,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fairy",
+      "psychic"
+    ]
   },
   "brute_bonnet": {
     "catch_rate": 50,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "grass",
+      "dark"
+    ]
   },
   "flutter_mane": {
     "catch_rate": 30,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ghost",
+      "fairy"
+    ]
   },
   "slither_wing": {
     "catch_rate": 30,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "bug",
+      "fighting"
+    ]
   },
   "sandy_shocks": {
     "catch_rate": 30,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "electric",
+      "ground"
+    ]
   },
   "iron_treads": {
     "catch_rate": 30,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ground",
+      "steel"
+    ]
   },
   "iron_bundle": {
     "catch_rate": 50,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "ice",
+      "water"
+    ]
   },
   "iron_hands": {
     "catch_rate": 50,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fighting",
+      "electric"
+    ]
   },
   "iron_jugulis": {
     "catch_rate": 30,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dark",
+      "flying"
+    ]
   },
   "iron_moth": {
     "catch_rate": 30,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fire",
+      "poison"
+    ]
   },
   "iron_thorns": {
     "catch_rate": 30,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "rock",
+      "electric"
+    ]
   },
   "frigibax": {
     "catch_rate": 25,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "ice"
+    ]
   },
   "arctibax": {
     "catch_rate": 15,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "ice"
+    ]
   },
   "baxcalibur": {
     "catch_rate": 3,
-    "category": "pseudo_legendary"
+    "category": "pseudo_legendary",
+    "flee_rate": 20,
+    "types": [
+      "dragon",
+      "ice"
+    ]
   },
   "gimmighoul": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "ghost"
+    ]
   },
   "gholdengo": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "steel",
+      "ghost"
+    ]
   },
   "wo_chien": {
     "catch_rate": 6,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dark",
+      "grass"
+    ]
   },
   "chien_pao": {
     "catch_rate": 6,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dark",
+      "ice"
+    ]
   },
   "ting_lu": {
     "catch_rate": 6,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dark",
+      "ground"
+    ]
   },
   "chi_yu": {
     "catch_rate": 6,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dark",
+      "fire"
+    ]
   },
   "roaring_moon": {
     "catch_rate": 10,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "dragon",
+      "dark"
+    ]
   },
   "iron_valiant": {
     "catch_rate": 10,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fairy",
+      "fighting"
+    ]
   },
   "koraidon": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fighting",
+      "dragon"
+    ]
   },
   "miraidon": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "electric",
+      "dragon"
+    ]
   },
   "walking_wake": {
     "catch_rate": 5,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "water",
+      "dragon"
+    ]
   },
   "iron_leaves": {
     "catch_rate": 5,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "grass",
+      "psychic"
+    ]
   },
   "dipplin": {
     "catch_rate": 45,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "dragon"
+    ]
   },
   "poltchageist": {
     "catch_rate": 120,
-    "category": "common"
+    "category": "common",
+    "flee_rate": 3,
+    "types": [
+      "grass",
+      "ghost"
+    ]
   },
   "sinistcha": {
     "catch_rate": 60,
-    "category": "uncommon"
+    "category": "uncommon",
+    "flee_rate": 8,
+    "types": [
+      "grass",
+      "ghost"
+    ]
   },
   "okidogi": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "poison",
+      "fighting"
+    ]
   },
   "munkidori": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "poison",
+      "psychic"
+    ]
   },
   "fezandipiti": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "poison",
+      "fairy"
+    ]
   },
   "ogerpon": {
     "catch_rate": 5,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "grass"
+    ]
   },
   "archaludon": {
     "catch_rate": 10,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 14,
+    "types": [
+      "steel",
+      "dragon"
+    ]
   },
   "hydrapple": {
     "catch_rate": 45,
-    "category": "rare"
+    "category": "rare",
+    "flee_rate": 12,
+    "types": [
+      "grass",
+      "dragon"
+    ]
   },
   "gouging_fire": {
     "catch_rate": 5,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "fire",
+      "dragon"
+    ]
   },
   "raging_bolt": {
     "catch_rate": 5,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "electric",
+      "dragon"
+    ]
   },
   "iron_boulder": {
     "catch_rate": 5,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "rock",
+      "psychic"
+    ]
   },
   "iron_crown": {
     "catch_rate": 5,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "steel",
+      "psychic"
+    ]
   },
   "terapagos": {
     "catch_rate": 3,
-    "category": "legendary"
+    "category": "legendary",
+    "flee_rate": 25,
+    "types": [
+      "normal"
+    ]
   },
   "pecharunt": {
     "catch_rate": 3,
-    "category": "mythical"
+    "category": "mythical",
+    "flee_rate": 30,
+    "types": [
+      "poison",
+      "ghost"
+    ]
   }
 }
