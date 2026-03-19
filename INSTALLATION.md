@@ -1,86 +1,50 @@
 # Installation
 
-## Prerequisites
+## Quick Install (Recommended)
 
-**Required:**
-- **Python 3** - Required by pokemon-colorscripts to display Pokemon ASCII art
-- **Terminal with true color support** - Most modern terminals (iTerm2, Terminal.app, GNOME Terminal, etc.) support this
-- **[pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts)** - For displaying Pokemon ASCII art
-
-  **Install pokemon-colorscripts:**
-
-  *Arch/Arch-based:*
-  ```bash
-  yay -S pokemon-colorscripts-git
-  ```
-
-  *Other Linux/macOS:*
-  ```bash
-  git clone https://gitlab.com/phoneybadger/pokemon-colorscripts.git
-  cd pokemon-colorscripts
-  sudo ./install.sh
-  ```
-
-**For installation:**
-- **Rust 1.70+** - Required for cargo install or building from source
-
-  **Install Rust from [rustup.rs](https://rustup.rs/):**
-  ```bash
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-  ```
-
-  **IMPORTANT:** After installing Rust, you need to add Cargo's bin directory to your PATH:
-
-  *For zsh (macOS default):*
-  ```bash
-  echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
-  source ~/.zshrc
-  ```
-
-  *For bash:*
-  ```bash
-  echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
-  source ~/.bashrc
-  ```
-
-  Verify Rust is installed:
-  ```bash
-  cargo --version
-  ```
-
-## Method 1: One-Line Install (Easiest)
-
-Install everything with a single command:
+One command installs everything — the binary, pokemon-colorscripts, and shell functions:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install-remote.sh | bash
 ```
 
 This automatically:
-- Installs Rust if not already present
-- Builds and installs `catch-pokemon` via cargo
+- Downloads the pre-built binary for your platform (macOS/Linux, x86_64/ARM64)
+- Installs [pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts) for Pokemon ASCII sprites
 - Sets up shell functions (`catch`, `pc`, `pokemon_encounter`, etc.)
 - Configures your `.zshrc` or `.bashrc`
 
-After installation, restart your terminal and you're ready to play!
-
-## Method 2: Cargo Install
-
-If you already have Rust installed:
+After installation, restart your terminal and you're ready to play:
 
 ```bash
-# Install the binary
-cargo install --git https://github.com/matthewmyrick/catch-pokemon
+pokemon_encounter    # A wild Pokemon appears!
+catch                # Throw a Poke Ball
+pc                   # View your collection
+```
 
-# Set up shell functions (catch, pc, pokemon_encounter, etc.)
+## Supported Platforms
+
+| Platform | Architecture | Binary |
+|----------|-------------|--------|
+| macOS | Apple Silicon (M1/M2/M3/M4) | macos-arm64 |
+| macOS | Intel | macos-x86_64 |
+| Linux | x86_64 | linux-x86_64 |
+| Windows | x86_64 | windows-x86_64 |
+
+The installer auto-detects your platform. If a pre-built binary isn't available, it falls back to building from source via Cargo.
+
+## Alternative: Cargo Install
+
+If you already have [Rust](https://rustup.rs/) installed:
+
+```bash
+cargo install --git https://github.com/matthewmyrick/catch-pokemon
 catch-pokemon setup
 ```
 
-**If you get "command not found":** Make sure `~/.cargo/bin` is in your PATH (see Rust installation instructions above)
+Note: Building from source generates a unique integrity key for your install. Pre-built binaries from GitHub Releases share a common key.
 
-## Method 3: Build and Install Script
-
-Clone the repository and use the installation script:
+## Alternative: Build from Source
 
 ```bash
 git clone https://github.com/matthewmyrick/catch-pokemon.git
@@ -89,34 +53,31 @@ chmod +x install.sh
 ./install.sh
 ```
 
-This will:
-- Build the optimized release binary
-- Install it to `~/.local/bin/catch-pokemon`
-- Automatically add `~/.local/bin` to your PATH (in `.zshrc` or `.bashrc`)
-- Install shell functions with convenient shortcuts
-- Allow you to use `catch-pokemon` from anywhere in your terminal
+## Prerequisites
 
-**Note:** After running the install script, either restart your terminal or run:
+The installer handles these automatically, but if you need to install manually:
+
+- **Python 3** - Required by pokemon-colorscripts
+- **git** - Required to clone pokemon-colorscripts
+- **Terminal with true color support** - iTerm2, Terminal.app, GNOME Terminal, etc.
+
+### Install pokemon-colorscripts manually
+
+*Arch/Arch-based:*
 ```bash
-source ~/.zshrc  # or source ~/.bashrc
+yay -S pokemon-colorscripts-git
 ```
 
-## Method 4: Manual Build from Source
-
+*Other Linux/macOS:*
 ```bash
-git clone https://github.com/matthewmyrick/catch-pokemon.git
-cd catch-pokemon
-cargo build --release
+git clone https://gitlab.com/phoneybadger/pokemon-colorscripts.git
+cd pokemon-colorscripts
+sudo ./install.sh
 ```
-
-The binary will be available at `target/release/catch-pokemon`. You can then:
-- Run it directly: `./target/release/catch-pokemon`
-- Copy it to a directory in your PATH: `cp target/release/catch-pokemon ~/.local/bin/`
-- Set up shell functions: `catch-pokemon setup`
 
 ## Shell Commands
 
-After installation, these shell commands are available:
+After installation, these commands are available:
 
 | Command | Description |
 |---------|-------------|
@@ -126,7 +87,6 @@ After installation, these shell commands are available:
 | `pokemon_status` | Show current encounter status |
 | `pokemon_check <name>` | Check if you own a specific Pokemon |
 | `pokemon_new` | Force a new encounter |
-| `pokemon_clear` | Clear current encounter (testing) |
 | `pokemon_help` | Show all available commands |
 
 ## Storage Location
@@ -136,15 +96,10 @@ Caught Pokemon are stored persistently in:
 - **Linux**: `~/.local/share/catch-pokemon/pc_storage.json`
 - **Windows**: `%LOCALAPPDATA%\catch-pokemon\pc_storage.json`
 
-## Dependencies
+## Verify Installation
 
-- `clap` - Command line argument parsing
-- `colored` - Terminal color output
-- `rand` - Random number generation
-- `crossterm` - Terminal manipulation for animations
-- `serde` & `serde_json` - PC storage serialization
-- `chrono` - Timestamp tracking
-- `dirs` - Cross-platform directory paths
-- `hmac` & `sha2` - Cryptographic integrity signing
-- `hex` - Hex encoding for signatures
-- `hostname` - Machine identity for key derivation
+```bash
+catch-pokemon --version       # Check binary is installed
+pokemon-colorscripts --help   # Check sprites are available
+catch-pokemon verify          # Check PC integrity
+```

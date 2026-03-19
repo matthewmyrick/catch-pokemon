@@ -8,18 +8,20 @@ fn main() {
     let dest_path = Path::new(&out_dir).join("build_secret.rs");
 
     // Priority 1: Use BUILD_SECRET_KEY env var if set (for CI and stable local builds)
-    // This should be a 64-char hex string (32 bytes)
-    let secret: [u8; 32] = if let Ok(hex_key) = env::var("BUILD_SECRET_KEY") {
-        parse_hex_key(&hex_key)
+    // Accepts any string — it gets hashed into 32 bytes
+    let secret: [u8; 32] = if let Ok(key_str) = env::var("BUILD_SECRET_KEY") {
+        let trimmed = key_str.trim().to_string();
+        assert!(!trimmed.is_empty(), "BUILD_SECRET_KEY must not be empty");
+        hash_key(&trimmed)
     } else {
         // Priority 2: Reuse cached key from a previous build if it exists
         let cache_path = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap()).join(".build_secret");
         if cache_path.exists() {
-            if let Ok(cached_hex) = fs::read_to_string(&cache_path) {
-                let trimmed = cached_hex.trim();
-                if trimmed.len() == 64 {
+            if let Ok(cached) = fs::read_to_string(&cache_path) {
+                let trimmed = cached.trim().to_string();
+                if !trimmed.is_empty() {
                     eprintln!("cargo:warning=Reusing cached build secret from .build_secret");
-                    parse_hex_key(trimmed)
+                    hash_key(&trimmed)
                 } else {
                     generate_and_cache(&cache_path)
                 }
@@ -50,24 +52,47 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 }
 
-fn parse_hex_key(hex: &str) -> [u8; 32] {
-    let hex = hex.trim();
-    assert!(hex.len() == 64, "BUILD_SECRET_KEY must be exactly 64 hex characters (32 bytes)");
-    let mut key = [0u8; 32];
-    for i in 0..32 {
-        key[i] = u8::from_str_radix(&hex[i * 2..i * 2 + 2], 16)
-            .expect("BUILD_SECRET_KEY must be valid hex");
+/// Hash any string into 32 bytes using a simple but effective mixing function.
+/// Uses multiple rounds of byte mixing to produce a well-distributed key
+/// without requiring an external SHA crate in build-dependencies.
+fn hash_key(input: &str) -> [u8; 32] {
+    let bytes = input.as_bytes();
+    let mut state: [u8; 32] = [0u8; 32];
+
+    // Initialize with input bytes spread across state
+    for (i, &b) in bytes.iter().enumerate() {
+        state[i % 32] ^= b;
+        state[(i + 13) % 32] = state[(i + 13) % 32].wrapping_add(b);
+        state[(i + 7) % 32] = state[(i + 7) % 32].wrapping_mul(b | 1);
     }
-    key
+
+    // Mix thoroughly — 256 rounds
+    for round in 0u16..256 {
+        for i in 0..32 {
+            let prev = state[(i + 31) % 32];
+            let next = state[(i + 1) % 32];
+            state[i] = state[i]
+                .wrapping_add(prev.rotate_left(3))
+                .wrapping_add(next.rotate_right(2))
+                .wrapping_add(round as u8)
+                .wrapping_add(i as u8);
+        }
+    }
+
+    state
 }
 
 fn generate_and_cache(cache_path: &Path) -> [u8; 32] {
     let mut rng = rand::thread_rng();
-    let secret: [u8; 32] = rng.gen();
-    let hex: String = secret.iter().map(|b| format!("{:02x}", b)).collect();
+    // Generate alphanumeric key (a-z, A-Z, 0-9)
+    let chars: Vec<char> = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        .chars()
+        .collect();
+    let key: String = (0..64).map(|_| chars[rng.gen_range(0..chars.len())]).collect();
+
     eprintln!("cargo:warning=Generated new build secret, cached to .build_secret");
     eprintln!("cargo:warning=Add this to your shell and GitHub secrets as BUILD_SECRET_KEY:");
-    eprintln!("cargo:warning={}", hex);
-    let _ = fs::write(cache_path, &hex);
-    secret
+    eprintln!("cargo:warning={}", key);
+    let _ = fs::write(cache_path, &key);
+    hash_key(&key)
 }

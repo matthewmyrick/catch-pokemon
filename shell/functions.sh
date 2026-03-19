@@ -39,6 +39,7 @@ pokemon_encounter() {
     # Store current pokemon and reset states
     export CURRENT_WILD_POKEMON="$current_pokemon"
     export POKEMON_IS_SHINY="$is_shiny"
+    export POKEMON_ATTEMPT=1
     export POKEMON_ESCAPED=false
     export POKEMON_RAN_AWAY=false
     export POKEMON_CAUGHT=false
@@ -136,8 +137,8 @@ catch() {
     # Use a temporary file to capture output while still showing it live
     local temp_output=$(mktemp)
 
-    # Build catch command with shiny flag if applicable
-    local catch_cmd="catch-pokemon catch $CURRENT_WILD_POKEMON --hide-pokemon"
+    # Build catch command with attempt count and shiny flag
+    local catch_cmd="catch-pokemon catch $CURRENT_WILD_POKEMON --hide-pokemon --attempt $POKEMON_ATTEMPT"
     if [[ "$POKEMON_IS_SHINY" == "true" ]]; then
         catch_cmd="$catch_cmd --shiny"
     fi
@@ -163,7 +164,9 @@ catch() {
         export CURRENT_WILD_POKEMON=""
     else
         # Pokemon broke free but didn't run away - can try again
+        export POKEMON_ATTEMPT=$((POKEMON_ATTEMPT + 1))
         echo -e "\033[1;33m⚡ The Pokemon broke free! Try again before it escapes!\033[0m"
+        echo -e "\033[2mAttempt $POKEMON_ATTEMPT next throw - flee chance increases!\033[0m"
     fi
 
     return $catch_result

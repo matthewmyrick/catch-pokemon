@@ -72,6 +72,10 @@ Examples:\n\
         /// Mark this Pokemon as shiny (set by encounter system)
         #[arg(long, default_value = "false", hide = true)]
         shiny: bool,
+
+        /// Attempt number for rolling flee rate (set by shell function)
+        #[arg(long, default_value = "1", hide = true)]
+        attempt: u32,
     },
     
     /// Display your Pokemon collection with detailed statistics
@@ -676,7 +680,7 @@ fn wiggle_animation(wiggle_num: u8, ball: PokeballType, caught: bool) {
 }
 
 
-fn catch_pokemon(pokemon: String, skip_animation: bool, hide_pokemon: bool, shiny: bool) {
+fn catch_pokemon(pokemon: String, skip_animation: bool, hide_pokemon: bool, shiny: bool, attempt: u32) {
     let ball = PokeballType::Pokeball;
     let catch_chance = calculate_catch_chance(&pokemon, ball);
     
@@ -760,8 +764,10 @@ fn catch_pokemon(pokemon: String, skip_animation: bool, hide_pokemon: bool, shin
         }
 
     } else {
-        // Flee rate based on rarity — rarer Pokemon flee more often
-        let flee_rate = get_flee_rate(&pokemon);
+        // Rolling flee rate: base + 5% per additional attempt, capped at 80%
+        let base_flee = get_flee_rate(&pokemon);
+        let flee_bonus = (attempt.saturating_sub(1) as f32) * 5.0;
+        let flee_rate = (base_flee + flee_bonus).min(80.0);
         let run_away_chance = rng.gen_range(0.0..100.0);
         if run_away_chance < flee_rate {
             println!(
@@ -1447,8 +1453,8 @@ fn main() {
     let args = Args::parse();
     
     match args.command {
-        Commands::Catch { pokemon, skip_animation, hide_pokemon, shiny } => {
-            catch_pokemon(pokemon, skip_animation, hide_pokemon, shiny);
+        Commands::Catch { pokemon, skip_animation, hide_pokemon, shiny, attempt } => {
+            catch_pokemon(pokemon, skip_animation, hide_pokemon, shiny, attempt);
         },
         Commands::Pc { search } => {
             show_pc(search);

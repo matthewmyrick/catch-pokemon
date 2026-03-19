@@ -3,38 +3,74 @@ name: Release
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   check-version:
     runs-on: ubuntu-latest
+    # Skip if this is an auto-version-bump commit to avoid infinite loop
+    if: "!contains(github.event.head_commit.message, '[auto-version-bump]')"
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      should-release: ${{ steps.check.outputs.should-release }}
+      version: ${{ steps.bump.outputs.new_version }}
+      should-release: ${{ steps.bump.outputs.should_release }}
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Get version from Cargo.toml
-      id: version
+    - name: Determine version bump from commit message
+      id: bump
       run: |
-        VERSION=$(grep "^version =" Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "Current version: $VERSION"
+        COMMIT_MSG="${{ github.event.head_commit.message }}"
+        CURRENT=$(grep "^version =" Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
 
-    - name: Check if version tag exists
-      id: check
-      run: |
-        VERSION=${{ steps.version.outputs.version }}
-        if git tag --list | grep -q "^v$VERSION$"; then
-          echo "Tag v$VERSION already exists, skipping release"
-          echo "should-release=false" >> $GITHUB_OUTPUT
+        echo "Current version: $CURRENT"
+        echo "Commit message: $COMMIT_MSG"
+
+        if echo "$COMMIT_MSG" | grep -qi "^major:"; then
+          MAJOR=$((MAJOR + 1))
+          MINOR=0
+          PATCH=0
+          echo "Bump type: major"
+        elif echo "$COMMIT_MSG" | grep -qi "^minor:"; then
+          MINOR=$((MINOR + 1))
+          PATCH=0
+          echo "Bump type: minor"
+        elif echo "$COMMIT_MSG" | grep -qi "^patch:"; then
+          PATCH=$((PATCH + 1))
+          echo "Bump type: patch"
         else
-          echo "Tag v$VERSION does not exist, will create release"
-          echo "should-release=true" >> $GITHUB_OUTPUT
+          echo "No version keyword found in commit message. Skipping release."
+          echo "should_release=false" >> $GITHUB_OUTPUT
+          echo "new_version=$CURRENT" >> $GITHUB_OUTPUT
+          exit 0
         fi
+
+        NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+        echo "New version: $NEW_VERSION"
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "should_release=true" >> $GITHUB_OUTPUT
+
+    - name: Update Cargo.toml version
+      if: steps.bump.outputs.should_release == 'true'
+      run: |
+        NEW_VERSION=${{ steps.bump.outputs.new_version }}
+        sed -i "s/^version = \".*\"/version = \"$NEW_VERSION\"/" Cargo.toml
+        echo "Updated Cargo.toml to $NEW_VERSION"
+        grep "^version" Cargo.toml
+
+    - name: Commit version bump
+      if: steps.bump.outputs.should_release == 'true'
+      run: |
+        NEW_VERSION=${{ steps.bump.outputs.new_version }}
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add Cargo.toml
+        git commit -m "v${NEW_VERSION} [auto-version-bump]"
+        git push
 
   release:
     needs: check-version
@@ -44,35 +80,8 @@ jobs:
       contents: write
     steps:
     - uses: actions/checkout@v4
-
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-
-    - name: Cache dependencies
-      uses: actions/cache@v3
       with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Build release binary
-      env:
-        BUILD_SECRET_KEY: ${{ secrets.BUILD_SECRET_KEY }}
-      run: cargo build --release
-
-    - name: Run tests
-      run: cargo test
-
-    - name: Create release archive
-      run: |
-        mkdir -p release
-        cp target/release/catch-pokemon release/
-        cp README.md release/
-        cp install.sh release/
-        cp -r static release/
-        tar -czf catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz -C release .
+        ref: main
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
@@ -80,69 +89,27 @@ jobs:
         tag_name: v${{ needs.check-version.outputs.version }}
         name: Release v${{ needs.check-version.outputs.version }}
         body: |
-          ## What's New in v${{ needs.check-version.outputs.version }}
+          ## Catch Pokemon CLI v${{ needs.check-version.outputs.version }}
 
-          🎮 **Catch Pokemon CLI Tool** - A fun terminal-based Pokemon catching game!
+          ### Quick Install
 
-          ### Features
-          - Animated ASCII art Pokeball throwing and catching
-          - Multiple Pokeball types with different catch rates
-          - PC storage system with detailed statistics
-          - Highlighted catch rate display
-          - Pokemon counting by ball type used
-
-          ### Installation
-
-          **Option 1: Cargo Install (Easiest)**
           ```bash
-          # Install from GitHub
-          cargo install --git https://github.com/matthewmyrick/catch-pokemon
-
-          # Or from crates.io (if published)
-          cargo install catch-pokemon
+          curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install-remote.sh | bash
           ```
 
-          **Option 2: Download and Install**
-          1. Download the release archive for your platform
-          2. Extract the files
-          3. Run `./install.sh` to install globally
-          4. Use `catch-pokemon --help` for usage instructions
+          This installs the pre-built binary, pokemon-colorscripts, and shell functions automatically.
 
-          ### Examples
+          ### Play
+
           ```bash
-          catch-pokemon catch pikachu
-          catch-pokemon catch charizard --ball ultra
-          catch-pokemon pc
+          pokemon_encounter    # A wild Pokemon appears!
+          catch                # Throw a Poke Ball
+          pc                   # View your collection
           ```
 
           **Full Changelog**: https://github.com/matthewmyrick/catch-pokemon/commits/v${{ needs.check-version.outputs.version }}
-        files: |
-          catch-pokemon-v${{ needs.check-version.outputs.version }}-linux.tar.gz
         draft: false
         prerelease: false
-
-  publish-crates-io:
-    needs: [check-version, release]
-    if: needs.check-version.outputs.should-release == 'true'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-
-    - name: Publish to crates.io
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      env:
-        CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-      run: |
-        if [ -n "$CARGO_REGISTRY_TOKEN" ]; then
-          echo "Publishing to crates.io..."
-          cargo publish --token $CARGO_REGISTRY_TOKEN
-        else
-          echo "Skipping crates.io publish - CARGO_REGISTRY_TOKEN not set"
-          echo "To enable automatic publishing, add CARGO_REGISTRY_TOKEN to repository secrets"
-        fi
 
   build-cross-platform:
     needs: [check-version, release]
@@ -155,17 +122,22 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            suffix: linux
+            suffix: linux-x86_64
           - os: macos-latest
             target: x86_64-apple-darwin
-            suffix: macos
+            suffix: macos-x86_64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            suffix: macos-arm64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            suffix: windows
+            suffix: windows-x86_64
             ext: .exe
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: main
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -173,7 +145,7 @@ jobs:
         targets: ${{ matrix.target }}
 
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cargo/registry
@@ -191,9 +163,6 @@ jobs:
       run: |
         mkdir -p release
         cp target/${{ matrix.target }}/release/catch-pokemon release/
-        cp README.md release/
-        cp install.sh release/
-        cp -r static release/
         tar -czf catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.tar.gz -C release .
 
     - name: Create release archive (Windows)
@@ -201,9 +170,6 @@ jobs:
       run: |
         mkdir release
         copy target\${{ matrix.target }}\release\catch-pokemon.exe release\
-        copy README.md release\
-        copy install.sh release\
-        xcopy static release\static\ /E /I
         powershell Compress-Archive -Path release\* -DestinationPath catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
 
     - name: Upload Release Asset (Unix)
@@ -219,3 +185,26 @@ jobs:
       with:
         tag_name: v${{ needs.check-version.outputs.version }}
         files: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
+
+  publish-crates-io:
+    needs: [check-version, release]
+    if: needs.check-version.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: main
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Publish to crates.io
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      run: |
+        if [ -n "$CARGO_REGISTRY_TOKEN" ]; then
+          echo "Publishing to crates.io..."
+          cargo publish --token $CARGO_REGISTRY_TOKEN
+        else
+          echo "Skipping crates.io publish - CARGO_REGISTRY_TOKEN not set"
+        fi
