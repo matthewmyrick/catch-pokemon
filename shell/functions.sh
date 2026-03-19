@@ -51,18 +51,16 @@ pokemon_encounter() {
     fi
 
     # Display announcement based on category
+    echo ""
     if [[ "$category" == "legendary" ]]; then
-        echo ""
         echo -e "\033[1;5;31m⚡ A LEGENDARY POKEMON HAS APPEARED! ⚡\033[0m"
         echo -e "\033[1;31m════════════════════════════════════════\033[0m"
         echo -e "A wild \033[1;31m$current_pokemon\033[0m appeared! \033[1;31m[Legendary]\033[0m$shiny_tag"
     elif [[ "$category" == "mythical" ]]; then
-        echo ""
         echo -e "\033[1;5;35m✨ A MYTHICAL POKEMON HAS APPEARED! ✨\033[0m"
         echo -e "\033[1;35m════════════════════════════════════════\033[0m"
         echo -e "A wild \033[1;35m$current_pokemon\033[0m appeared! \033[1;35m[Mythical]\033[0m$shiny_tag"
     elif [[ "$category" == "pseudo-legendary" ]]; then
-        echo ""
         echo -e "A wild \033[1;33m$current_pokemon\033[0m appeared! \033[1;33m[Pseudo-Legendary]\033[0m$shiny_tag"
     elif [[ "$category" == "starter" ]]; then
         echo -e "A wild \033[1;32m$current_pokemon\033[0m appeared! \033[1;32m[Starter]\033[0m$shiny_tag"
