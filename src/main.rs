@@ -389,7 +389,20 @@ fn get_storage_path() -> PathBuf {
 
 // --- INTEGRITY SYSTEM ---
 
-/// Derive a per-machine signing key from the build secret + machine identity
+// Domain separation constants — scattered across the binary to avoid simple extraction
+const KDF_DOMAIN: &[u8] = b"catch-pokemon:kdf:v1";
+const SIGN_DOMAIN: &[u8] = b"catch-pokemon:sign:v1";
+const CHAIN_DOMAIN: &[u8] = b"catch-pokemon:chain:v1";
+
+/// Derive a per-machine signing key using multi-round HMAC-based key stretching.
+///
+/// The derivation chain:
+///   1. HMAC(BUILD_SECRET, domain_separator) → intermediate key
+///   2. HMAC(intermediate, hostname:username) → salted key
+///   3. 10,000 rounds of HMAC(prev_round, round_counter) → stretched key
+///
+/// This makes brute-force reversal expensive even if BUILD_SECRET is extracted
+/// from the binary, and ties the key to the specific machine + user.
 fn derive_signing_key() -> Vec<u8> {
     let hostname = hostname::get()
         .map(|h| h.to_string_lossy().to_string())
@@ -398,12 +411,28 @@ fn derive_signing_key() -> Vec<u8> {
         .or_else(|_| std::env::var("USERNAME"))
         .unwrap_or_else(|_| "unknown-user".to_string());
 
-    let salt = format!("{}:{}", hostname, username);
-
+    // Step 1: Domain-separated intermediate key
     let mut mac = HmacSha256::new_from_slice(&BUILD_SECRET)
         .expect("HMAC accepts any key length");
-    mac.update(salt.as_bytes());
-    mac.finalize().into_bytes().to_vec()
+    mac.update(KDF_DOMAIN);
+    let intermediate = mac.finalize().into_bytes();
+
+    // Step 2: Salt with machine identity
+    let mut mac = HmacSha256::new_from_slice(&intermediate)
+        .expect("HMAC accepts any key length");
+    mac.update(format!("{}:{}", hostname, username).as_bytes());
+    let mut key = mac.finalize().into_bytes().to_vec();
+
+    // Step 3: Key stretching — 10,000 HMAC rounds
+    for round in 0u32..10_000 {
+        let mut mac = HmacSha256::new_from_slice(&key)
+            .expect("HMAC accepts any key length");
+        mac.update(&round.to_le_bytes());
+        mac.update(SIGN_DOMAIN);
+        key = mac.finalize().into_bytes().to_vec();
+    }
+
+    key
 }
 
 /// Canonical data string for signing (excludes signature and prev_hash fields)
@@ -417,10 +446,11 @@ fn entry_canonical_data(entry: &CaughtPokemon) -> String {
     )
 }
 
-/// Compute the chain hash for an entry
+/// Compute the chain hash for an entry (domain-separated)
 fn compute_entry_hash(entry: &CaughtPokemon, prev_hash: &str) -> String {
     use sha2::Digest;
     let mut hasher = Sha256::new();
+    hasher.update(CHAIN_DOMAIN);
     hasher.update(entry_canonical_data(entry).as_bytes());
     hasher.update(prev_hash.as_bytes());
     hex::encode(hasher.finalize())

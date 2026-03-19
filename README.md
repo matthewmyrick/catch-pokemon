@@ -1,337 +1,133 @@
 # Catch Pokemon CLI Game
 
-A terminal-based Pokemon catching game that uses `pokemon-colorscripts` to display Pokemon ASCII art and simulates the classic Pokemon catching mechanics with animated ASCII Pokeball art and a PC storage system.
+A terminal-based Pokemon catching game with weighted encounters, animated ASCII art, shiny Pokemon, and a cryptographically signed PC storage system. Every terminal session is a new encounter.
 
-## Features
+> **[Installation Guide](INSTALLATION.md)** - Get up and running in one command.
 
-- **Pokemon Catching**: Catch Pokemon with different types of Pokeballs
-- **Multiple Pokeball Types**: Regular, Great, Ultra, and Master balls with increasing catch rates
-- **Pokemon-Specific Catch Rates**: Different Pokemon have different catch difficulties based on their rarity
-- **PC Storage System**: All caught Pokemon are stored in your PC with detailed statistics
-- **View Collection**: Display all your caught Pokemon with counts and catch history by ball type
-- **Release Pokemon**: Release Pokemon back to the wild (single or multiple at once)
-- **Check Pokemon Status**: Verify if you've caught a Pokemon before and see catch details
-- **Animated ASCII Pokeball**: Watch detailed ASCII art pokeballs shake left and right during catch attempts
-- **Dynamic Wiggle Count**: More wiggles for harder-to-catch Pokemon (2-4 based on catch chance)
-- **Catch Result Animations**: Unique ASCII art for successful catches (with stars) and escapes (pokeball opens)
-- **Hide Pokemon Option**: Choose whether to display the Pokemon when it appears
-- **Skip Animation Option**: Fast mode for quick catching without animations
-- **Highlighted Catch Rates**: Catch percentages displayed in bright colors for visibility
+## How to Play
 
-## Installation
-
-### Prerequisites
-
-**Required:**
-- **Python 3** - Required by pokemon-colorscripts to display Pokemon ASCII art
-- **Terminal with true color support** - Most modern terminals (iTerm2, Terminal.app, GNOME Terminal, etc.) support this
-- **[pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts)** - For displaying Pokemon ASCII art
-
-  **Install pokemon-colorscripts:**
-
-  *Arch/Arch-based:*
-  ```bash
-  yay -S pokemon-colorscripts-git
-  ```
-
-  *Other Linux/macOS:*
-  ```bash
-  git clone https://gitlab.com/phoneybadger/pokemon-colorscripts.git
-  cd pokemon-colorscripts
-  sudo ./install.sh
-  ```
-
-**For installation:**
-- **Rust 1.70+** - Required for cargo install or building from source
-
-  **Install Rust from [rustup.rs](https://rustup.rs/):**
-  ```bash
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-  ```
-
-  **IMPORTANT:** After installing Rust, you need to add Cargo's bin directory to your PATH:
-
-  *For zsh (macOS default):*
-  ```bash
-  echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
-  source ~/.zshrc
-  ```
-
-  *For bash:*
-  ```bash
-  echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
-  source ~/.bashrc
-  ```
-
-  Verify Rust is installed:
-  ```bash
-  cargo --version
-  ```
-
-### Method 1: One-Line Install (Easiest)
-
-Install everything with a single command:
+Every time you open a terminal, a wild Pokemon appears. Type `catch` to throw a Poke Ball. If it breaks free, try again before it flees. If you catch it, it's stored in your PC forever.
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install-remote.sh | bash
+pokemon_encounter    # A wild Pokemon appears!
+catch                # Throw a Poke Ball
+pc                   # View your collection
 ```
 
-This automatically:
-- Installs Rust if not already present
-- Builds and installs `catch-pokemon` via cargo
-- Sets up shell functions (`catch`, `pc`, `pokemon_encounter`, etc.)
-- Configures your `.zshrc` or `.bashrc`
+## Encounter System
 
-After installation, restart your terminal and you're ready to play!
+Pokemon encounters are **weighted by rarity**. Common Pokemon appear frequently, while legendaries are extremely rare.
 
-### Method 2: Cargo Install
+| Category | Encounter Weight | How Often |
+|----------|-----------------|-----------|
+| Common | 255 | Very frequent |
+| Uncommon | 90-200 | Frequent |
+| Rare | 45-75 | Occasional |
+| Baby | 25-50 | Uncommon |
+| Starter | 45 | Uncommon |
+| Starter Evolution | 15-25 | Rare |
+| Pseudo-Legendary | 3-25 | Very rare |
+| Legendary | 3 | Extremely rare |
+| Mythical | 3 | Extremely rare |
 
-If you already have Rust installed:
+Each encounter displays the Pokemon's **category**, **type(s)**, and ASCII sprite. Legendary and mythical encounters get special announcements.
+
+## Catch Rates
+
+You throw a standard Poke Ball every time. The catch chance is based on the Pokemon's base catch rate:
+
+```
+catch_chance = base_catch_rate / 255 x 100%
+```
+
+| Category | Base Catch Rate | Catch Chance |
+|----------|----------------|--------------|
+| Common (Pidgey, Rattata) | 255 | 100% |
+| Uncommon (Pikachu) | 190 | 74.5% |
+| Uncommon (Pidgeotto) | 120 | 47.1% |
+| Rare (Alakazam) | 50 | 19.6% |
+| Starter (Charmander) | 45 | 17.6% |
+| Starter Evolution (Charizard) | 15 | 5.9% |
+| Pseudo-Legendary (Dragonite) | 3 | 1.2% |
+| Legendary (Mewtwo) | 3 | 1.2% |
+| Mythical (Mew) | 3 | 1.2% |
+
+## Flee Rates
+
+If a Pokemon breaks free, it may flee. Rarer Pokemon are more likely to run. Flee rates are stored per-Pokemon in the game data and scale with evolution stage.
+
+| Category | Flee Rate |
+|----------|-----------|
+| Mythical | 30% |
+| Legendary | 25% |
+| Pseudo-Legendary | 20% |
+| Starter Evolution (final stage) | 18% |
+| Starter Evolution (mid stage) | 15% |
+| Rare (strong) | 14% |
+| Starter | 12% |
+| Rare (base) | 10% |
+| Uncommon (evolved) | 6-8% |
+| Uncommon (base) | 5% |
+| Common | 3% |
+
+Evolved forms flee more often than their base forms. A Charizard (18%) is much harder to hold onto than a Charmander (12%).
+
+## Shiny Pokemon
+
+Every encounter has a **1% chance** of being shiny. Shiny Pokemon display with alternate color sprites and are tagged `[Shiny]` in the encounter. They are recorded as shiny in your PC.
+
+## Pokemon Types
+
+All 1016 Pokemon have their official type(s) stored in the game data. Types are displayed during encounters with color coding:
+
+- **fire** / **water** / **grass** / **electric** / **ice**
+- **fighting** / **poison** / **ground** / **flying** / **psychic**
+- **bug** / **rock** / **ghost** / **dragon** / **dark** / **steel** / **fairy** / **normal**
+
+Dual-type Pokemon display both types (e.g., `grass / poison` for Bulbasaur).
+
+## PC Storage & Integrity
+
+Your caught Pokemon are stored locally with **cryptographic integrity protection**:
+
+- Every catch is signed with **HMAC-SHA256**
+- Entries are linked in a **hash chain** — inserting, deleting, or reordering entries is detected
+- The signing key is **derived at build time** and **never exists in source code**
+- The key is further derived per-machine using **hostname + username salt**
+- **10,000 rounds of HMAC key stretching** make brute-force reversal expensive
+- **Domain separation** prevents cross-protocol attacks
+
+You cannot manually add Pokemon to your PC. The only way to add a Pokemon is to catch it through the game. Run `catch-pokemon verify` to check your chain integrity at any time.
 
 ```bash
-# Install the binary
-cargo install --git https://github.com/matthewmyrick/catch-pokemon
-
-# Set up shell functions (catch, pc, pokemon_encounter, etc.)
-catch-pokemon setup
+catch-pokemon verify    # Verify PC integrity
+catch-pokemon pc        # View collection (also verifies)
+catch-pokemon release pidgey          # Release a Pokemon
+catch-pokemon release rattata -n 5    # Release multiple
+catch-pokemon status mewtwo           # Check if you own one
+catch-pokemon clear                   # Start over (destructive)
 ```
 
-**If you get "command not found":** Make sure `~/.cargo/bin` is in your PATH (see Rust installation instructions above)
+## Animation
 
-### Method 3: Build and Install Script
+The catching sequence:
+1. Pokemon appears with ASCII sprite (via pokemon-colorscripts)
+2. "You throw a Poke Ball!" with animated ASCII pokeball
+3. Ball shakes left-right-left-center (2-4 times based on catch difficulty)
+4. Result: Stars (caught) or ball opens (escaped)
+5. If escaped: Pokemon either stays (try again) or flees (game over)
 
-Clone the repository and use the installation script:
-
-```bash
-git clone https://github.com/matthewmyrick/catch-pokemon.git
-cd catch-pokemon
-chmod +x install.sh
-./install.sh
-```
-
-This will:
-- Build the optimized release binary
-- Install it to `~/.local/bin/catch-pokemon`
-- Automatically add `~/.local/bin` to your PATH (in `.zshrc` or `.bashrc`)
-- Install shell functions with convenient shortcuts:
-  - `catch` - Attempt to catch the current wild Pokemon
-  - `pc` - View your Pokemon collection (shortcut for `catch-pokemon pc`)
-  - `pokemon_encounter` - Generate a new wild Pokemon encounter
-  - `pokemon_new` - Force a new encounter
-  - `pokemon_status` - Show current Pokemon status
-  - `pokemon_check <name>` - Check if you own a specific Pokemon
-  - `pokemon_clear` - Clear current encounter (for testing)
-  - `pokemon_help` - Show all available commands
-- Allow you to use `catch-pokemon` from anywhere in your terminal
-
-**Note:** After running the install script, either restart your terminal or run:
-```bash
-source ~/.zshrc  # or source ~/.bashrc
-```
-
-### Method 4: Manual Build from Source
-
-```bash
-git clone https://github.com/matthewmyrick/catch-pokemon.git
-cd catch-pokemon
-cargo build --release
-```
-
-The binary will be available at `target/release/catch-pokemon`. You can then:
-- Run it directly: `./target/release/catch-pokemon`
-- Copy it to a directory in your PATH: `cp target/release/catch-pokemon ~/.local/bin/`
-
-## Usage
-
-### Catch a Pokemon
-
-```bash
-# Catch with a regular Pokeball (default)
-catch-pokemon catch pikachu
-
-# Catch with a specific ball type
-catch-pokemon catch mewtwo --ball ultra
-
-# Skip animation for faster catching
-catch-pokemon catch eevee --ball great --skip-animation
-
-# Hide the Pokemon when it appears (only show the catching animation)
-catch-pokemon catch pikachu --hide-pokemon
-```
-
-Ball types available:
-- `pokeball` or `poke` - Regular Pokéball (1x catch rate) - Red
-- `great` or `greatball` - Great Ball (1.5x catch rate) - Blue
-- `ultra` or `ultraball` - Ultra Ball (2x catch rate) - Yellow
-- `master` or `masterball` - Master Ball (guaranteed catch) - Magenta
-
-### View Your PC
-
-Display all Pokemon you've caught:
-
-```bash
-catch-pokemon pc
-```
-
-This shows:
-- Pokemon grouped by name with total counts
-- Breakdown of catches by ball type for each Pokemon
-- Summary statistics of total catches by ball type
-- Recent catch history with timestamps and ball used
-- Highlighted catch rate display
-
-### Release Pokemon
-
-Release Pokemon from your PC back to the wild:
-
-```bash
-# Release a single Pokemon
-catch-pokemon release pikachu
-
-# Release multiple Pokemon of the same type
-catch-pokemon release pikachu --number 3
-catch-pokemon release rattata -n 5
-```
-
-### Check Pokemon Status
-
-Check if you've caught a specific Pokemon before:
-
-```bash
-# Detailed status
-catch-pokemon status charizard
-
-# Simple true/false output (useful for scripts)
-catch-pokemon status charizard --boolean
-```
-
-The detailed mode shows:
-- Whether you've caught this Pokemon before
-- How many you have in your PC
-- Details of your most recent catch
-
-The boolean mode simply returns `true` or `false` for easy scripting.
-
-### Clear PC Storage
-
-Start fresh by clearing all caught Pokemon:
-
-```bash
-catch-pokemon clear
-```
-
-## Pokemon Catch Rates
-
-The game implements realistic catch rates based on Pokemon rarity:
-
-### Very Hard to Catch (3% base rate)
-- **Legendary Pokemon**: Articuno, Zapdos, Moltres, Mewtwo, Lugia, Ho-oh, Rayquaza, Dialga, Palkia, etc.
-- **Mythical Pokemon**: Mew, Celebi, Jirachi, Deoxys, Arceus, etc.
-
-### Hard to Catch (45% base rate)
-- **Pseudo-Legendary**: Dragonite, Tyranitar, Salamence, Garchomp, etc.
-- **Starter Pokemon**: Bulbasaur, Charmander, Squirtle, and all other starters
-- **Eevee** and its evolutions
-
-### Moderate Difficulty (120-190% base rate)
-- **Pikachu**: 190% base rate (easier than most)
-- **Most common Pokemon**: 120% base rate
-
-### Easy to Catch (255% base rate - max)
-- **Common Pokemon**: Pidgey, Rattata, Caterpie, Weedle, etc.
-
-## How Catch Rates Work
-
-The final catch chance is calculated as:
-```
-catch_chance = (pokemon_base_rate × ball_modifier) / 255 × 100%
-```
-
-Example: Catching Mewtwo with an Ultra Ball
-- Mewtwo base rate: 3
-- Ultra Ball modifier: 2.0
-- Catch chance: (3 × 2.0) / 255 × 100% = 2.35%
-
-## Storage Location
-
-Caught Pokemon are stored persistently in:
-- **macOS/Linux**: `~/.local/share/catch-pokemon/pc_storage.json`
-- **Windows**: `%LOCALAPPDATA%\catch-pokemon\pc_storage.json`
-
-## Examples
-
-```bash
-# Try to catch a legendary with an Ultra Ball
-catch-pokemon catch articuno --ball ultra
-
-# Guaranteed catch with Master Ball
-catch-pokemon catch rayquaza --ball master
-
-# Catch a starter Pokemon without showing it
-catch-pokemon catch charmander --ball great --hide-pokemon
-
-# Quick catch without animations
-catch-pokemon catch rattata --skip-animation
-
-# Check your collection
-catch-pokemon pc
-
-# Check if you've caught a Pokemon before
-catch-pokemon status mewtwo
-
-# Release a Pokemon back to the wild
-catch-pokemon release pidgey
-
-# Release multiple Pokemon at once
-catch-pokemon release rattata --number 10
-
-# Clear your PC and start over
-catch-pokemon clear
-```
-
-## Command Help
-
-```bash
-# See all available commands
-catch-pokemon --help
-
-# Get help for a specific command
-catch-pokemon catch --help
-catch-pokemon release --help
-catch-pokemon status --help
-```
-
-## Animation Details
-
-The catching sequence includes:
-1. Pokemon appears (shown via pokemon-colorscripts, optional with `--hide-pokemon`)
-2. "You throw a Poké Ball!" message
-3. ASCII art pokeball appears and shakes left-right-left-center (2-4 times based on catch difficulty)
-4. Final result: Either pokeball with stars (success) or opened pokeball (escape)
-5. Success/failure message and PC storage confirmation
+Use `--skip-animation` for instant results.
 
 ## Building
 
 ```bash
-# Debug build
-cargo build
-
-# Release build (optimized)
-cargo build --release
-
-# Run directly with cargo
-cargo run -- catch pikachu
+cargo build              # Debug build
+cargo build --release    # Optimized release build
+cargo run -- catch pikachu  # Run directly
 ```
 
-## Dependencies
-
-- `clap` - Command line argument parsing
-- `colored` - Terminal color output  
-- `rand` - Random number generation
-- `crossterm` - Terminal manipulation for animations
-- `serde` & `serde_json` - PC storage serialization
-- `chrono` - Timestamp tracking
-- `dirs` - Cross-platform directory paths
+The build process generates a unique cryptographic key via `build.rs` that is embedded in the binary. See [PC Storage & Integrity](#pc-storage--integrity) for details.
 
 ## License
 
@@ -340,11 +136,11 @@ MIT
 ## Contributing
 
 Pull requests are welcome! Ideas for improvements:
-- Add more Pokeball types (Quick Ball, Timer Ball, etc.)
-- Implement shiny Pokemon with special colors
+- Add more Pokeball types (Great Ball, Ultra Ball, etc.)
 - Add battle system before catching
 - Create trading functionality between users
 - Add Pokemon stats and levels
+- Add a Pokedex completion tracker
 
 ## Acknowledgments
 
