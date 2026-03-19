@@ -1,6 +1,8 @@
+use aes_gcm::{Aes256Gcm, KeyInit, Nonce};
+use aes_gcm::aead::Aead;
 use clap::{Parser, Subcommand};
 use colored::*;
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, Mac as HmacMac};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
@@ -258,57 +260,35 @@ impl PcStorage {
     
     fn load() -> Self {
         let path = get_storage_path();
-        if path.exists() {
-            if let Ok(contents) = fs::read_to_string(&path) {
-                if let Ok(storage) = serde_json::from_str::<PcStorage>(&contents) {
-                    // Detect unsigned legacy storage and offer migration
-                    if !storage.pokemon.is_empty() && storage.chain_hash.is_none() {
-                        return storage.handle_migration();
-                    }
-                    return storage;
-                }
+        if !path.exists() {
+            return PcStorage::new();
+        }
+
+        // Try to read as encrypted file first
+        if let Ok(encrypted_bytes) = fs::read(&path) {
+            if let Some(storage) = decrypt_storage(&encrypted_bytes) {
+                return storage;
             }
         }
-        PcStorage::new()
-    }
 
-    fn handle_migration(mut self) -> Self {
-        println!("{}", "Unsigned PC storage detected!".yellow().bold());
-        println!("Your Pokemon data predates the integrity system.");
-        println!();
-        println!("Options:");
-        println!("  1) Migrate - Re-sign existing Pokemon with the integrity chain");
-        println!("  2) Fresh start - Clear storage and start over");
-        println!("  3) Continue unsigned - Load without integrity (verify will fail)");
-        print!("Choose [1/2/3]: ");
-        stdout().flush().unwrap();
-
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input).unwrap();
-
-        match input.trim() {
-            "1" => {
-                self.resign_chain();
-                if let Err(e) = self.save() {
-                    eprintln!("Warning: Could not save migrated PC: {}", e);
+        // Try to read as legacy unencrypted JSON (migration)
+        if let Ok(contents) = fs::read_to_string(&path) {
+            if let Ok(mut storage) = serde_json::from_str::<PcStorage>(&contents) {
+                println!("{}", "Unencrypted PC storage detected. Encrypting...".yellow());
+                if storage.chain_hash.is_none() && !storage.pokemon.is_empty() {
+                    storage.resign_chain();
+                }
+                if let Err(e) = storage.save() {
+                    eprintln!("Warning: Could not encrypt storage: {}", e);
                 } else {
-                    println!("{}", "Migration complete! Your Pokemon are now signed.".green().bold());
+                    println!("{}", "PC storage is now encrypted.".green().bold());
                 }
-                self
-            }
-            "2" => {
-                let fresh = PcStorage::new();
-                if let Err(e) = fresh.save() {
-                    eprintln!("Warning: Could not save: {}", e);
-                }
-                println!("{}", "Fresh start! Your PC is now empty.".green());
-                fresh
-            }
-            _ => {
-                println!("{}", "Continuing with unsigned storage.".yellow());
-                self
+                return storage;
             }
         }
+
+        println!("{}", "Could not decrypt PC storage. Starting fresh.".red());
+        PcStorage::new()
     }
     
     fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
@@ -316,8 +296,9 @@ impl PcStorage {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
         }
-        let json = serde_json::to_string_pretty(&self)?;
-        fs::write(&path, json)?;
+
+        let encrypted = encrypt_storage(self)?;
+        fs::write(&path, encrypted)?;
         Ok(())
     }
     
@@ -416,20 +397,20 @@ fn derive_signing_key() -> Vec<u8> {
         .unwrap_or_else(|_| "unknown-user".to_string());
 
     // Step 1: Domain-separated intermediate key
-    let mut mac = HmacSha256::new_from_slice(&BUILD_SECRET)
+    let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&BUILD_SECRET)
         .expect("HMAC accepts any key length");
     mac.update(KDF_DOMAIN);
     let intermediate = mac.finalize().into_bytes();
 
     // Step 2: Salt with machine identity
-    let mut mac = HmacSha256::new_from_slice(&intermediate)
+    let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&intermediate)
         .expect("HMAC accepts any key length");
     mac.update(format!("{}:{}", hostname, username).as_bytes());
     let mut key = mac.finalize().into_bytes().to_vec();
 
     // Step 3: Key stretching — 10,000 HMAC rounds
     for round in 0u32..10_000 {
-        let mut mac = HmacSha256::new_from_slice(&key)
+        let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&key)
             .expect("HMAC accepts any key length");
         mac.update(&round.to_le_bytes());
         mac.update(SIGN_DOMAIN);
@@ -462,7 +443,7 @@ fn compute_entry_hash(entry: &CaughtPokemon, prev_hash: &str) -> String {
 
 /// HMAC-sign an entry with the derived key
 fn sign_entry(key: &[u8], entry: &CaughtPokemon, prev_hash: &str) -> String {
-    let mut mac = HmacSha256::new_from_slice(key)
+    let mut mac = <HmacSha256 as HmacMac>::new_from_slice(key)
         .expect("HMAC accepts any key length");
     mac.update(entry_canonical_data(entry).as_bytes());
     mac.update(prev_hash.as_bytes());
@@ -504,6 +485,69 @@ fn verify_chain(storage: &PcStorage) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+// --- ENCRYPTION ---
+// AES-256-GCM encryption for the entire PC storage file
+// The file on disk is an encrypted binary blob — not readable JSON
+
+const ENCRYPTION_DOMAIN: &[u8] = b"catch-pokemon:encryption:v1";
+
+/// Derive a 32-byte AES key from the signing key
+fn derive_encryption_key() -> [u8; 32] {
+    let signing_key = derive_signing_key();
+    let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&signing_key)
+        .expect("HMAC accepts any key length");
+    mac.update(ENCRYPTION_DOMAIN);
+    let result = mac.finalize().into_bytes();
+    let mut key = [0u8; 32];
+    key.copy_from_slice(&result);
+    key
+}
+
+/// Encrypt PC storage: output = [12-byte nonce][AES-256-GCM ciphertext]
+fn encrypt_storage(storage: &PcStorage) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let key = derive_encryption_key();
+    let cipher = Aes256Gcm::new_from_slice(&key)?;
+
+    let json = serde_json::to_string(storage)?;
+
+    let mut rng = rand::thread_rng();
+    let mut nonce_bytes = [0u8; 12];
+    for b in nonce_bytes.iter_mut() {
+        *b = rng.gen();
+    }
+    let nonce = Nonce::from_slice(&nonce_bytes);
+
+    let ciphertext = cipher.encrypt(nonce, json.as_bytes())
+        .map_err(|e| format!("Encryption failed: {}", e))?;
+
+    let mut output = Vec::with_capacity(12 + ciphertext.len());
+    output.extend_from_slice(&nonce_bytes);
+    output.extend_from_slice(&ciphertext);
+    Ok(output)
+}
+
+/// Decrypt PC storage from encrypted bytes
+fn decrypt_storage(data: &[u8]) -> Option<PcStorage> {
+    if data.len() < 13 {
+        return None;
+    }
+
+    // If it starts with '{', it's unencrypted legacy JSON
+    if data[0] == b'{' {
+        return None;
+    }
+
+    let key = derive_encryption_key();
+    let cipher = Aes256Gcm::new_from_slice(&key).ok()?;
+
+    let nonce = Nonce::from_slice(&data[..12]);
+    let ciphertext = &data[12..];
+
+    let plaintext = cipher.decrypt(nonce, ciphertext).ok()?;
+    let json_str = String::from_utf8(plaintext).ok()?;
+    serde_json::from_str(&json_str).ok()
 }
 
 // Embed the art files directly in the binary
@@ -1313,27 +1357,8 @@ fn encounter_pokemon(show_pokemon: bool) {
 }
 
 fn verify_pc() {
-    let path = get_storage_path();
-    if !path.exists() {
-        println!("{}", "No PC storage found. Nothing to verify.".yellow());
-        return;
-    }
-
-    let contents = match fs::read_to_string(&path) {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("{}", format!("Could not read storage: {}", e).red());
-            return;
-        }
-    };
-
-    let storage: PcStorage = match serde_json::from_str(&contents) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("{}", format!("Could not parse storage: {}", e).red());
-            return;
-        }
-    };
+    // Use PcStorage::load which handles decryption
+    let storage = PcStorage::load();
 
     if storage.pokemon.is_empty() {
         println!("{}", "PC is empty. Nothing to verify.".yellow());
@@ -1341,7 +1366,7 @@ fn verify_pc() {
     }
 
     if storage.chain_hash.is_none() {
-        println!("{}", "Storage is unsigned (legacy format). Run any command to trigger migration.".yellow());
+        println!("{}", "Storage is unsigned (legacy format).".yellow());
         return;
     }
 
