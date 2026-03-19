@@ -1,160 +1,155 @@
 #!/bin/bash
 
-# Install script for catch-pokemon CLI tool
+# Remote installer for catch-pokemon CLI
+# Usage: curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install.sh | bash
 set -e
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 BOLD='\033[1m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Header
-echo -e "${CYAN}${BOLD}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}${BOLD}║         Pokemon Catcher CLI Installer       ║${NC}"
-echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════════╝${NC}"
-echo ""
-echo -e "${GREEN}Installing catch-pokemon CLI tool...${NC}"
-echo ""
-
-# Check if Rust/Cargo is installed
-echo -e "${YELLOW}Checking prerequisites...${NC}"
-if ! command -v cargo &> /dev/null; then
-    echo -e "${RED}❌ Error: Rust/Cargo is not installed.${NC}"
-    echo -e "${YELLOW}Please install Rust from https://rustup.rs/ and try again.${NC}"
-    exit 1
-fi
-echo -e "${GREEN}✅ Rust/Cargo found${NC}"
-
-# Check if we're in the right directory
-if [ ! -f "Cargo.toml" ]; then
-    echo -e "${RED}❌ Error: Cargo.toml not found.${NC}"
-    echo -e "${YELLOW}Please run this script from the catch-pokemon directory.${NC}"
-    exit 1
-fi
-echo -e "${GREEN}✅ Project directory verified${NC}"
-
-# Show current version
-if [ -f "Cargo.toml" ]; then
-    VERSION=$(grep "^version =" Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
-    echo -e "${BLUE}📦 Version: ${VERSION}${NC}"
-fi
-
-echo ""
-echo -e "${YELLOW}🔨 Building optimized release binary...${NC}"
-cargo build --release
-
-# Get the user's local bin directory
+REPO="matthewmyrick/catch-pokemon"
 BIN_DIR="$HOME/.local/bin"
 
-# Create the bin directory if it doesn't exist
-echo -e "${YELLOW}📁 Creating installation directory...${NC}"
-mkdir -p "$BIN_DIR"
+echo -e "${CYAN}${BOLD}Pokemon Catcher CLI Installer${NC}"
+echo ""
 
-# Copy the binary
-echo -e "${YELLOW}📋 Installing binary to $BIN_DIR...${NC}"
-cp target/release/catch-pokemon "$BIN_DIR/"
+# --- Detect OS and architecture ---
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
 
-# Make sure it's executable
-chmod +x "$BIN_DIR/catch-pokemon"
+case "$OS" in
+    linux)  PLATFORM="linux" ;;
+    darwin) PLATFORM="macos" ;;
+    *)
+        echo -e "${RED}Unsupported OS: $OS${NC}"
+        echo "Please build from source: cargo install --git https://github.com/$REPO"
+        exit 1
+        ;;
+esac
 
-# Check if ~/.local/bin is in PATH
+case "$ARCH" in
+    x86_64|amd64)   ARCH_SUFFIX="x86_64" ;;
+    arm64|aarch64)   ARCH_SUFFIX="arm64" ;;
+    *)
+        echo -e "${RED}Unsupported architecture: $ARCH${NC}"
+        echo "Please build from source: cargo install --git https://github.com/$REPO"
+        exit 1
+        ;;
+esac
+
+SUFFIX="${PLATFORM}-${ARCH_SUFFIX}"
+echo -e "${GREEN}Detected: ${SUFFIX}${NC}"
+
+# --- Get latest release version ---
+echo -e "${YELLOW}Fetching latest release...${NC}"
+LATEST_TAG=$(curl -sSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name"' | sed 's/.*"tag_name": "\(.*\)".*/\1/')
+
+if [ -z "$LATEST_TAG" ]; then
+    echo -e "${YELLOW}No release found. Falling back to building from source...${NC}"
+
+    # Fallback: install via cargo
+    if ! command -v cargo &> /dev/null; then
+        echo -e "${YELLOW}Installing Rust...${NC}"
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        source "$HOME/.cargo/env"
+    fi
+
+    cargo install --git "https://github.com/$REPO"
+else
+    # --- Download pre-built binary ---
+    ARCHIVE="catch-pokemon-${LATEST_TAG}-${SUFFIX}.tar.gz"
+    URL="https://github.com/$REPO/releases/download/${LATEST_TAG}/${ARCHIVE}"
+
+    echo -e "${GREEN}Downloading ${LATEST_TAG} for ${SUFFIX}...${NC}"
+
+    TMPDIR=$(mktemp -d)
+    trap "rm -rf $TMPDIR" EXIT
+
+    if curl -sSL --fail -o "$TMPDIR/$ARCHIVE" "$URL"; then
+        # Extract and install binary
+        mkdir -p "$BIN_DIR"
+        tar -xzf "$TMPDIR/$ARCHIVE" -C "$TMPDIR"
+        cp "$TMPDIR/catch-pokemon" "$BIN_DIR/"
+        chmod +x "$BIN_DIR/catch-pokemon"
+        echo -e "${GREEN}Binary installed to $BIN_DIR/catch-pokemon${NC}"
+    else
+        echo -e "${YELLOW}Pre-built binary not available for ${SUFFIX}. Building from source...${NC}"
+
+        if ! command -v cargo &> /dev/null; then
+            echo -e "${YELLOW}Installing Rust...${NC}"
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source "$HOME/.cargo/env"
+        fi
+
+        cargo install --git "https://github.com/$REPO"
+    fi
+fi
+
+# --- Ensure ~/.local/bin is in PATH ---
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-    echo -e "${YELLOW}🔧 Configuring PATH...${NC}"
-    
-    # Detect shell and add to appropriate config file
-    # Check user's login shell, not the script's execution shell
     USER_SHELL=$(basename "$SHELL")
-
     if [[ "$USER_SHELL" == "zsh" ]]; then
         SHELL_CONFIG="$HOME/.zshrc"
-        SHELL_NAME="Zsh"
     elif [[ "$USER_SHELL" == "bash" ]]; then
         SHELL_CONFIG="$HOME/.bashrc"
-        SHELL_NAME="Bash"
     else
         SHELL_CONFIG="$HOME/.profile"
-        SHELL_NAME="Shell"
     fi
-    
-    echo "" >> "$SHELL_CONFIG"
-    echo "# Added by catch-pokemon installer" >> "$SHELL_CONFIG"
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_CONFIG"
-    
-    echo -e "${GREEN}✅ Added to PATH in $SHELL_CONFIG ($SHELL_NAME)${NC}"
-    echo -e "${YELLOW}⚠️  Please restart your terminal or run: ${CYAN}source $SHELL_CONFIG${NC}"
-else
-    echo -e "${GREEN}✅ PATH already configured${NC}"
+
+    if ! grep -qF '/.local/bin' "$SHELL_CONFIG" 2>/dev/null; then
+        echo "" >> "$SHELL_CONFIG"
+        echo '# Added by catch-pokemon installer' >> "$SHELL_CONFIG"
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_CONFIG"
+        echo -e "${GREEN}Added ~/.local/bin to PATH in $SHELL_CONFIG${NC}"
+    fi
+
+    export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# Install shell functions
-SHELL_FUNCTIONS_DIR="$HOME/.local/share/catch-pokemon"
-SHELL_FUNCTIONS_SRC="$(cd "$(dirname "$0")" && pwd)/shell/functions.sh"
+# --- Install pokemon-colorscripts if not present ---
+if ! command -v pokemon-colorscripts &> /dev/null; then
+    echo ""
+    echo -e "${YELLOW}Installing pokemon-colorscripts (required for Pokemon sprites)...${NC}"
 
-echo -e "${YELLOW}🐚 Installing shell functions...${NC}"
-mkdir -p "$SHELL_FUNCTIONS_DIR"
-cp "$SHELL_FUNCTIONS_SRC" "$SHELL_FUNCTIONS_DIR/functions.sh"
-chmod +x "$SHELL_FUNCTIONS_DIR/functions.sh"
-echo -e "${GREEN}✅ Shell functions installed to $SHELL_FUNCTIONS_DIR${NC}"
+    # Check for Python 3
+    if ! command -v python3 &> /dev/null; then
+        echo -e "${RED}Python 3 is required for pokemon-colorscripts but not found.${NC}"
+        echo -e "${YELLOW}Please install Python 3 and re-run this installer.${NC}"
+    else
+        TMPDIR_PCS=$(mktemp -d)
+        trap "rm -rf $TMPDIR_PCS" EXIT
 
-# Add source line to shell config if not already present
-SOURCE_LINE="source \"$SHELL_FUNCTIONS_DIR/functions.sh\""
-USER_SHELL=$(basename "$SHELL")
+        git clone https://gitlab.com/phoneybadger/pokemon-colorscripts.git "$TMPDIR_PCS/pokemon-colorscripts" 2>/dev/null
 
-if [[ "$USER_SHELL" == "zsh" ]]; then
-    SHELL_CONFIG="$HOME/.zshrc"
-elif [[ "$USER_SHELL" == "bash" ]]; then
-    SHELL_CONFIG="$HOME/.bashrc"
+        if [ -f "$TMPDIR_PCS/pokemon-colorscripts/install.sh" ]; then
+            echo -e "${YELLOW}Installing pokemon-colorscripts (may require sudo)...${NC}"
+            cd "$TMPDIR_PCS/pokemon-colorscripts"
+            sudo ./install.sh
+            cd - > /dev/null
+            echo -e "${GREEN}pokemon-colorscripts installed${NC}"
+        else
+            echo -e "${RED}Failed to clone pokemon-colorscripts.${NC}"
+            echo -e "${YELLOW}Install manually: https://gitlab.com/phoneybadger/pokemon-colorscripts${NC}"
+        fi
+    fi
 else
-    SHELL_CONFIG="$HOME/.profile"
+    echo -e "${GREEN}pokemon-colorscripts already installed${NC}"
 fi
 
-if ! grep -qF "catch-pokemon/functions.sh" "$SHELL_CONFIG" 2>/dev/null; then
-    echo "" >> "$SHELL_CONFIG"
-    echo "# catch-pokemon shell functions (catch, pokemon_encounter, etc.)" >> "$SHELL_CONFIG"
-    echo "$SOURCE_LINE" >> "$SHELL_CONFIG"
-    echo -e "${GREEN}✅ Shell functions added to $SHELL_CONFIG${NC}"
-    echo -e "${YELLOW}⚠️  Restart your terminal or run: ${CYAN}source $SHELL_CONFIG${NC}"
-else
-    echo -e "${GREEN}✅ Shell functions already configured in $SHELL_CONFIG${NC}"
-fi
+# --- Set up shell functions ---
+echo ""
+echo -e "${YELLOW}Setting up shell functions...${NC}"
+catch-pokemon setup
 
 echo ""
-echo -e "${GREEN}${BOLD}🎉 Installation complete!${NC}"
-echo -e "${GREEN}You can now use '${CYAN}catch-pokemon${GREEN}' from anywhere in your terminal.${NC}"
+echo -e "${GREEN}${BOLD}Installation complete!${NC}"
 echo ""
-
-echo -e "${BLUE}${BOLD}📚 Quick Start Guide:${NC}"
-echo ""
-echo -e "${CYAN}Basic Commands:${NC}"
-echo -e "  ${YELLOW}catch-pokemon catch pikachu${NC}           # Catch a Pokemon with a regular Pokeball"
-echo -e "  ${YELLOW}catch-pokemon catch mewtwo --ball master${NC} # Use a Master Ball for guaranteed catch"
-echo -e "  ${YELLOW}catch-pokemon pc${NC}                      # View your Pokemon collection"
-echo -e "  ${YELLOW}catch-pokemon status charizard${NC}        # Check if you've caught a Pokemon"
-echo -e "  ${YELLOW}catch-pokemon release pidgey -n 5${NC}     # Release 5 Pidgey back to the wild"
-echo ""
-
-echo -e "${CYAN}Advanced Options:${NC}"
-echo -e "  ${YELLOW}catch-pokemon catch eevee --skip-animation${NC}  # Skip animations for faster catching"
-echo -e "  ${YELLOW}catch-pokemon catch bulbasaur --hide-pokemon${NC} # Hide Pokemon sprite, show only catching"
-echo -e "  ${YELLOW}catch-pokemon status mewtwo --boolean${NC}        # Get true/false output for scripting"
-echo ""
-
-echo -e "${CYAN}Pokeball Types:${NC}"
-echo -e "  🔴 ${YELLOW}pokeball${NC} - 1x catch rate (default)"
-echo -e "  🔵 ${YELLOW}great${NC}    - 1.5x catch rate"
-echo -e "  🟡 ${YELLOW}ultra${NC}    - 2x catch rate"
-echo -e "  🟣 ${YELLOW}master${NC}   - Guaranteed catch"
-echo ""
-
-echo -e "${BLUE}For detailed help on any command:${NC}"
-echo -e "  ${YELLOW}catch-pokemon --help${NC}              # Show all commands"
-echo -e "  ${YELLOW}catch-pokemon catch --help${NC}        # Help for catch command"
-echo -e "  ${YELLOW}catch-pokemon release --help${NC}      # Help for release command"
-echo -e "  ${YELLOW}catch-pokemon status --help${NC}       # Help for status command"
-echo ""
-
-echo -e "${GREEN}Happy Pokemon catching! 🎮✨${NC}"
+echo -e "${CYAN}Restart your terminal, then play:${NC}"
+echo -e "  ${YELLOW}pokemon_encounter${NC}  - A wild Pokemon appears!"
+echo -e "  ${YELLOW}catch${NC}              - Throw a Poke Ball"
+echo -e "  ${YELLOW}pc${NC}                 - View your collection"
+echo -e "  ${YELLOW}pokemon_help${NC}       - See all commands"

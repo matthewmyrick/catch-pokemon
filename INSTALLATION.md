@@ -5,7 +5,7 @@
 One command installs everything — the binary, pokemon-colorscripts, and shell functions:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install-remote.sh | bash
+curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install.sh | bash
 ```
 
 This automatically:
