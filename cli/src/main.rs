@@ -180,6 +180,21 @@ Example:\n\
   catch-pokemon update")]
     Update,
 
+    /// Restore PC from a plaintext backup JSON file
+    #[command(long_about = "Restore your Pokemon collection from a plaintext backup JSON file.\n\n\
+This re-encrypts and re-signs the data with the current binary's key.\n\
+Use this if your PC got corrupted or you're migrating to a new machine.\n\n\
+The backup file is pc_backup.json in your storage directory, or you can\n\
+provide a path to any backup file.\n\n\
+Example:\n\
+  catch-pokemon restore\n\
+  catch-pokemon restore --file /path/to/pc_backup.json")]
+    Restore {
+        /// Path to the plaintext backup JSON file
+        #[arg(long)]
+        file: Option<String>,
+    },
+
     /// Manage your battle team (up to 20 Pokemon)
     #[command(long_about = "Manage your battle team for online battles.\n\n\
 Your battle team holds up to 20 Pokemon selected from your PC.\n\
@@ -346,6 +361,12 @@ impl PcStorage {
 
         let encrypted = encrypt_storage(self)?;
         fs::write(&path, encrypted)?;
+
+        // Write plaintext backup for recovery
+        let backup_path = path.with_file_name("pc_backup.json");
+        let json = serde_json::to_string_pretty(self)?;
+        fs::write(&backup_path, json)?;
+
         Ok(())
     }
     
@@ -1807,6 +1828,57 @@ fn clear_pc() {
     }
 }
 
+fn restore_pc(file: Option<String>) {
+    let backup_path = match file {
+        Some(f) => PathBuf::from(f),
+        None => get_storage_path().with_file_name("pc_backup.json"),
+    };
+
+    if !backup_path.exists() {
+        eprintln!("{}", format!("Backup file not found: {}", backup_path.display()).red());
+        eprintln!("If someone sent you a backup, use: catch-pokemon restore --file /path/to/backup.json");
+        return;
+    }
+
+    let contents = match fs::read_to_string(&backup_path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("{}", format!("Could not read backup: {}", e).red());
+            return;
+        }
+    };
+
+    let mut storage: PcStorage = match serde_json::from_str(&contents) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("{}", format!("Invalid backup JSON: {}", e).red());
+            return;
+        }
+    };
+
+    println!("{}", format!("Found {} Pokemon in backup.", storage.pokemon.len()).cyan());
+    println!("{}", "This will re-sign and encrypt the data with the current key.".yellow());
+    print!("Restore? (y/n) > ");
+    stdout().flush().unwrap();
+
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap();
+
+    if input.trim().to_lowercase() != "y" {
+        println!("Restore cancelled.");
+        return;
+    }
+
+    // Re-sign the chain with the current key
+    storage.resign_chain();
+
+    if let Err(e) = storage.save() {
+        eprintln!("{}", format!("Error saving restored PC: {}", e).red());
+    } else {
+        println!("{}", format!("Restored {} Pokemon! PC is encrypted and verified.", storage.pokemon.len()).green().bold());
+    }
+}
+
 fn manage_team(add: Option<String>, remove: Option<String>, clear: bool) {
     let pokemon_db: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
 
@@ -2081,6 +2153,9 @@ fn main() {
         },
         Commands::Setup => {
             setup_shell();
+        },
+        Commands::Restore { file } => {
+            restore_pc(file);
         },
         Commands::Team { add, remove, clear } => {
             manage_team(add, remove, clear);
