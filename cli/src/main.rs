@@ -1191,6 +1191,8 @@ fn show_pc(search: bool) {
     }
 
     println!();
+    println!("  {}", "──────────────────────────────────────".dimmed());
+    println!();
     println!("  {}", format!("Total: {} Pokemon | {} unique",
         storage.pokemon.len(),
         sorted_names.len()
@@ -1201,6 +1203,8 @@ fn show_pc(search: bool) {
         println!("  {}", format!("Shinies: {}", total_shiny).yellow());
     }
 
+    println!();
+    println!("  {}", "──────────────────────────────────────".dimmed());
     println!();
     println!("  {}", "Recent catches:".dimmed());
     for pokemon in storage.pokemon.iter().rev().take(5) {
