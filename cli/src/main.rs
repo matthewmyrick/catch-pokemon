@@ -195,6 +195,15 @@ Example:\n\
         file: Option<String>,
     },
 
+    /// Browse the Pokedex — see all Pokemon, track what you've seen and caught
+    #[command(long_about = "Browse the full Pokedex with an interactive TUI.\n\n\
+Shows all Pokemon with their types, power rank, and catch status.\n\
+Pokemon you've encountered are marked as seen, caught ones are marked differently.\n\
+Use fuzzy search to filter by name.\n\n\
+Example:\n\
+  catch-pokemon pokedex")]
+    Pokedex,
+
     /// Manage your battle team (up to 20 Pokemon)
     #[command(long_about = "Manage your battle team for online battles.\n\n\
 Your battle team holds up to 20 Pokemon selected from your PC.\n\
@@ -438,6 +447,130 @@ fn get_storage_path() -> PathBuf {
     path.push("catch-pokemon");
     path.push("pc_storage.json");
     path
+}
+
+fn get_pokedex_path() -> PathBuf {
+    let mut path = dirs::data_local_dir().unwrap_or_else(|| PathBuf::from("."));
+    path.push("catch-pokemon");
+    path.push("pokedex.json");
+    path
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct PokedexEntry {
+    name: String,
+    seen: bool,
+    caught: bool,
+    seen_at: Option<DateTime<Local>>,
+    caught_at: Option<DateTime<Local>>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Pokedex {
+    entries: HashMap<String, PokedexEntry>,
+}
+
+impl Pokedex {
+    fn new() -> Self {
+        Pokedex { entries: HashMap::new() }
+    }
+
+    fn load() -> Self {
+        let path = get_pokedex_path();
+        if !path.exists() {
+            return Pokedex::new();
+        }
+        if let Ok(data) = fs::read(&path) {
+            if let Some(dex) = decrypt_pokedex(&data) {
+                return dex;
+            }
+        }
+        // Don't wipe — back up
+        if path.exists() {
+            let backup = path.with_extension("json.bak");
+            if !backup.exists() {
+                let _ = fs::copy(&path, &backup);
+            }
+            eprintln!("{}", "Could not decrypt Pokedex. Backed up.".red());
+            eprintln!("{}", "Starting fresh Pokedex.".yellow());
+        }
+        Pokedex::new()
+    }
+
+    fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let path = get_pokedex_path();
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let encrypted = encrypt_pokedex(self)?;
+        fs::write(&path, encrypted)?;
+
+        // Plaintext backup for recovery
+        let backup_path = path.with_file_name("pokedex_backup.json");
+        let json = serde_json::to_string_pretty(self)?;
+        fs::write(&backup_path, json)?;
+        Ok(())
+    }
+
+    fn mark_seen(&mut self, name: &str) {
+        let normalized = name.to_lowercase();
+        let entry = self.entries.entry(normalized.clone()).or_insert_with(|| PokedexEntry {
+            name: normalized,
+            seen: false,
+            caught: false,
+            seen_at: None,
+            caught_at: None,
+        });
+        if !entry.seen {
+            entry.seen = true;
+            entry.seen_at = Some(Local::now());
+        }
+    }
+
+    fn mark_caught(&mut self, name: &str) {
+        let normalized = name.to_lowercase();
+        let entry = self.entries.entry(normalized.clone()).or_insert_with(|| PokedexEntry {
+            name: normalized,
+            seen: false,
+            caught: false,
+            seen_at: None,
+            caught_at: None,
+        });
+        if !entry.seen {
+            entry.seen = true;
+            entry.seen_at = Some(Local::now());
+        }
+        if !entry.caught {
+            entry.caught = true;
+            entry.caught_at = Some(Local::now());
+        }
+    }
+}
+
+fn encrypt_pokedex(dex: &Pokedex) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let key = derive_encryption_key();
+    let cipher = Aes256Gcm::new_from_slice(&key)?;
+    let json = serde_json::to_string(dex)?;
+    let mut rng = rand::thread_rng();
+    let mut nonce_bytes = [0u8; 12];
+    for b in nonce_bytes.iter_mut() { *b = rng.gen(); }
+    let nonce = Nonce::from_slice(&nonce_bytes);
+    let ciphertext = cipher.encrypt(nonce, json.as_bytes())
+        .map_err(|e| format!("Encryption failed: {}", e))?;
+    let mut output = Vec::with_capacity(12 + ciphertext.len());
+    output.extend_from_slice(&nonce_bytes);
+    output.extend_from_slice(&ciphertext);
+    Ok(output)
+}
+
+fn decrypt_pokedex(data: &[u8]) -> Option<Pokedex> {
+    if data.len() < 13 || data[0] == b'{' { return None; }
+    let key = derive_encryption_key();
+    let cipher = Aes256Gcm::new_from_slice(&key).ok()?;
+    let nonce = Nonce::from_slice(&data[..12]);
+    let plaintext = cipher.decrypt(nonce, &data[12..]).ok()?;
+    let json_str = String::from_utf8(plaintext).ok()?;
+    serde_json::from_str(&json_str).ok()
 }
 
 fn get_team_path() -> PathBuf {
@@ -962,6 +1095,11 @@ fn catch_pokemon(pokemon: String, skip_animation: bool, hide_pokemon: bool, shin
             } else {
                 println!("{} has been sent to your PC!", pokemon.cyan());
             }
+
+            // Track in Pokedex as caught
+            let mut pokedex = Pokedex::load();
+            pokedex.mark_caught(&pokemon);
+            let _ = pokedex.save();
         }
 
     } else {
@@ -1336,7 +1474,7 @@ fn show_pc(search: bool) {
     }
 }
 
-fn pc_tui(entries: &mut [PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn std::error::Error>> {
+fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dyn std::error::Error>> {
     use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
 
     // Enter alternate screen (like vim does — clean slate, restores on exit)
@@ -1350,6 +1488,7 @@ fn pc_tui(entries: &mut [PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn s
     let mut cached_sprite_name = String::new();
     let mut cached_sprite: Vec<String> = Vec::new();
     let mut status_msg: Option<String> = None;
+    let mut confirming_release = false;
 
     loop {
         let (tw, th) = terminal::size().unwrap_or((80, 24));
@@ -1419,6 +1558,7 @@ fn pc_tui(entries: &mut [PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn s
         print!(" {}\x1B[K\r\n", "─".repeat(tw.saturating_sub(2)).dimmed());
 
         // Body rows
+        let name_width = left_width.saturating_sub(8); // space for " >*~ name xN"
         for row in 0..list_height {
             // Left panel
             let left = if row < entries.len().saturating_sub(scroll_offset).min(list_height) {
@@ -1430,20 +1570,22 @@ fn pc_tui(entries: &mut [PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn s
                     let shiny_mark = if e.shiny_count > 0 { "~" } else { " " };
                     let count = if e.count > 1 { format!(" x{}", e.count) } else { String::new() };
 
+                    // Truncate and pad name
+                    let name_with_count = format!("{}{}", e.name, count);
+                    let truncated: String = name_with_count.chars().take(name_width).collect();
+                    let padded = format!("{:<width$}", truncated, width = name_width);
+
                     if idx == selected {
-                        format!(" \x1B[7m{}{}{} {}{}\x1B[0m", arrow, team_mark, shiny_mark, e.name, count)
+                        format!(" \x1B[7m{}{}{} {}\x1B[0m", arrow, team_mark, shiny_mark, padded)
                     } else {
-                        format!(" {}{}{} \x1B[32m{}\x1B[0m\x1B[33m{}\x1B[0m", arrow, team_mark, shiny_mark, e.name, count)
+                        format!(" {}{}{} \x1B[32m{}\x1B[0m", arrow, team_mark, shiny_mark, padded)
                     }
                 } else {
-                    String::new()
+                    format!("{:<width$}", "", width = left_width)
                 }
             } else {
-                String::new()
+                format!("{:<width$}", "", width = left_width)
             };
-
-            // Pad left panel to fixed width (using visible chars only)
-            let left_padded = format!("{:<width$}", "", width = left_width);
 
             // Right panel
             let right_text = if row < right.len() {
@@ -1463,11 +1605,15 @@ fn pc_tui(entries: &mut [PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn s
             status_msg = None;
         } else {
             let team_count = entries.iter().filter(|e| e.on_team).count();
-            print!(" {} | {}\x1B[K",
-                format!("↑↓ Navigate | T: Toggle Team ({}/20) | Q: Quit", team_count).dimmed(),
-                "".to_string());
+            print!(" {}\x1B[K",
+                format!("↑↓ Navigate | T: Team ({}/20) | R: Release | Q: Quit", team_count).dimmed());
         }
         stdout().flush()?;
+
+        // Drain queued events to prevent scroll/input lag
+        while event::poll(std::time::Duration::from_millis(0)).unwrap_or(false) {
+            let _ = event::read();
+        }
 
         // Input
         if let Ok(Event::Key(KeyEvent { code, modifiers, .. })) = event::read() {
@@ -1500,8 +1646,62 @@ fn pc_tui(entries: &mut [PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn s
                         entries[selected].on_team = true;
                     }
                 }
+                KeyCode::Char('r') | KeyCode::Char('R') => {
+                    if entries.is_empty() { continue; }
+                    let name = entries[selected].name.clone();
+                    let count = entries[selected].count;
+
+                    // Show confirmation in footer
+                    status_msg = Some(format!(
+                        "Release {}{}? Press Y to confirm, any other key to cancel",
+                        name,
+                        if count > 1 { " (releases 1)" } else { "" }
+                    ));
+
+                    // Render the confirmation message immediately
+                    // (the loop will redraw, then we wait for the next keypress)
+                    confirming_release = true;
+                }
+                KeyCode::Char('y') | KeyCode::Char('Y') if confirming_release => {
+                    let name = entries[selected].name.clone();
+                    confirming_release = false;
+
+                    // Release from PC storage
+                    let mut storage = PcStorage::load();
+                    let released = storage.release_pokemon(&name, 1);
+                    if released > 0 {
+                        if let Err(e) = storage.save() {
+                            status_msg = Some(format!("Error saving: {}", e));
+                        } else {
+                            // Update entries in-place
+                            entries[selected].count -= 1;
+                            if entries[selected].count == 0 {
+                                entries.remove(selected);
+                                if selected > 0 && selected >= entries.len() {
+                                    selected = entries.len() - 1;
+                                }
+                            }
+                            // Also remove from battle team if count is 0
+                            if entries.is_empty() || (selected < entries.len() && entries[selected].count == 0) {
+                                let normalized = name.to_lowercase().replace("-", "_");
+                                let mut team = BattleTeam::load();
+                                team.pokemon.retain(|p| p.name.to_lowercase().replace("-", "_") != normalized);
+                                let _ = team.save();
+                            }
+                            status_msg = Some(format!("{} released back to the wild!", name));
+                            // Clear sprite cache so it reloads for new selection
+                            cached_sprite_name = String::new();
+                        }
+                    }
+                }
+                _ if confirming_release => {
+                    confirming_release = false;
+                    status_msg = Some("Release cancelled.".to_string());
+                }
                 KeyCode::Home => { selected = 0; }
-                KeyCode::End => { selected = entries.len() - 1; }
+                KeyCode::End => {
+                    if !entries.is_empty() { selected = entries.len() - 1; }
+                }
                 _ => {}
             }
         }
@@ -1640,6 +1840,11 @@ fn encounter_pokemon(show_pokemon: bool) {
 
     // Always print the name (for scripting use)
     println!("{}", display_name);
+
+    // Track in Pokedex as seen
+    let mut pokedex = Pokedex::load();
+    pokedex.mark_seen(&display_name);
+    let _ = pokedex.save();
 
     // Print shiny status on second line (for scripting use)
     println!("Shiny: {}", is_shiny);
@@ -1877,6 +2082,287 @@ fn restore_pc(file: Option<String>) {
     } else {
         println!("{}", format!("Restored {} Pokemon! PC is encrypted and verified.", storage.pokemon.len()).green().bold());
     }
+}
+
+fn show_pokedex() {
+    use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
+
+    let pokemon_db: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
+    let valid_names: std::collections::HashSet<&str> = VALID_POKEMON
+        .lines()
+        .filter(|l| !l.is_empty())
+        .collect();
+
+    let pokedex = Pokedex::load();
+
+    // Build list of all valid Pokemon
+    struct DexRow {
+        name: String,
+        types: Vec<String>,
+        power_rank: u8,
+        category: String,
+        seen: bool,
+        caught: bool,
+        seen_at: Option<String>,
+        caught_at: Option<String>,
+    }
+
+    let mut rows: Vec<DexRow> = Vec::new();
+    for name in &valid_names {
+        if let Some(data) = pokemon_db.get(*name) {
+            let display_name = name.replace("_", "-");
+            let entry = pokedex.entries.get(&display_name);
+            rows.push(DexRow {
+                name: display_name,
+                types: data.types.clone(),
+                power_rank: data.power_rank,
+                category: data.category.clone(),
+                seen: entry.map(|e| e.seen).unwrap_or(false),
+                caught: entry.map(|e| e.caught).unwrap_or(false),
+                seen_at: entry.and_then(|e| e.seen_at.map(|t| t.format("%Y-%m-%d").to_string())),
+                caught_at: entry.and_then(|e| e.caught_at.map(|t| t.format("%Y-%m-%d").to_string())),
+            });
+        }
+    }
+    rows.sort_by(|a, b| a.name.cmp(&b.name));
+
+    let total = rows.len();
+    let seen_count = rows.iter().filter(|r| r.seen).count();
+    let caught_count = rows.iter().filter(|r| r.caught).count();
+
+    // TUI
+    stdout().execute(EnterAlternateScreen).unwrap();
+    terminal::enable_raw_mode().unwrap();
+    stdout().execute(cursor::Hide).unwrap();
+
+    let mut selected: usize = 0;
+    let mut scroll_offset: usize = 0;
+    let mut search_term = String::new();
+    let mut searching = false;
+    let mut cached_sprite_name = String::new();
+    let mut cached_sprite: Vec<String> = Vec::new();
+
+    loop {
+        // Filter by search
+        let filtered: Vec<&DexRow> = if search_term.is_empty() {
+            rows.iter().collect()
+        } else {
+            let lower = search_term.to_lowercase();
+            rows.iter().filter(|r| {
+                r.name.contains(&lower)
+            }).collect()
+        };
+
+        if selected >= filtered.len() && !filtered.is_empty() {
+            selected = filtered.len() - 1;
+        }
+
+        let (tw, th) = terminal::size().unwrap_or((80, 24));
+        let tw = tw as usize;
+        let th = th as usize;
+        let left_width = 30.min(tw / 3);
+        let list_height = th.saturating_sub(6); // header + search + footer
+
+        // Scroll
+        if selected >= scroll_offset + list_height {
+            scroll_offset = selected + 1 - list_height;
+        }
+        if selected < scroll_offset {
+            scroll_offset = selected;
+        }
+
+        // Get selected row
+        let sel = if !filtered.is_empty() { Some(filtered[selected]) } else { None };
+
+        // Cache sprite
+        if let Some(s) = sel {
+            if cached_sprite_name != s.name {
+                cached_sprite_name = s.name.clone();
+                cached_sprite = Command::new("pokemon-colorscripts")
+                    .args(&["-n", &s.name, "--no-title"])
+                    .output()
+                    .ok()
+                    .filter(|r| r.status.success())
+                    .map(|r| String::from_utf8_lossy(&r.stdout).lines().map(|l| l.to_string()).collect())
+                    .unwrap_or_default();
+            }
+        }
+
+        // Build right panel
+        let mut right: Vec<String> = Vec::new();
+        if let Some(s) = sel {
+            let types_display: Vec<String> = s.types.iter().map(|t| color_type(t)).collect();
+            let cat_display = color_category(&s.category);
+
+            right.push(format!("{}", s.name.green().bold()));
+            right.push(String::new());
+            right.push(format!("Type:     {}", types_display.join(" / ")));
+            right.push(format!("Power:    {}", format!("{}", s.power_rank).bright_yellow().bold()));
+            right.push(format!("Category: {}", cat_display));
+            right.push(String::new());
+
+            if s.caught {
+                right.push(format!("{}", "Caught".green().bold()));
+                if let Some(ref d) = s.caught_at {
+                    right.push(format!("{}", format!("Caught: {}", d).dimmed()));
+                }
+            } else if s.seen {
+                right.push(format!("{}", "Seen (not caught)".yellow()));
+                if let Some(ref d) = s.seen_at {
+                    right.push(format!("{}", format!("Seen: {}", d).dimmed()));
+                }
+            } else {
+                right.push(format!("{}", "Not discovered".dimmed()));
+            }
+
+            right.push(String::new());
+            for line in &cached_sprite {
+                right.push(line.clone());
+            }
+        }
+
+        // Render
+        stdout().execute(cursor::MoveTo(0, 0)).unwrap();
+
+        // Header
+        print!(" {} | {}/{} seen | {}/{} caught\x1B[K\r\n",
+            "Pokedex".cyan().bold(),
+            format!("{}", seen_count).yellow(),
+            total,
+            format!("{}", caught_count).green(),
+            total);
+
+        // Search bar
+        if searching {
+            print!(" {}: {}{}\x1B[K\r\n",
+                "Search".cyan().bold(),
+                search_term.yellow(),
+                "▌".yellow());
+        } else if !search_term.is_empty() {
+            print!(" Search: {}\x1B[K\r\n", search_term.yellow());
+        } else {
+            print!(" {}\x1B[K\r\n", "Press / to search".dimmed());
+        }
+        print!(" {}\x1B[K\r\n", "─".repeat(tw.saturating_sub(2)).dimmed());
+
+        // Body
+        let name_width = left_width.saturating_sub(6); // space for " X X name"
+        for row in 0..list_height {
+            let left = if row < filtered.len().saturating_sub(scroll_offset).min(list_height) {
+                let idx = scroll_offset + row;
+                if idx < filtered.len() {
+                    let r = filtered[idx];
+                    let status = if r.caught {
+                        "\x1B[32m●\x1B[0m"
+                    } else if r.seen {
+                        "\x1B[33m◐\x1B[0m"
+                    } else {
+                        "\x1B[90m○\x1B[0m"
+                    };
+
+                    // Truncate name to fit
+                    let truncated: String = r.name.chars().take(name_width).collect();
+                    let padded = format!("{:<width$}", truncated, width = name_width);
+
+                    if idx == selected {
+                        format!(" \x1B[7m {} {}\x1B[0m", status, padded)
+                    } else {
+                        format!("  {} \x1B[32m{}\x1B[0m", status, padded)
+                    }
+                } else {
+                    format!("{:<width$}", "", width = left_width)
+                }
+            } else {
+                format!("{:<width$}", "", width = left_width)
+            };
+
+            let right_text = if row < right.len() {
+                &right[row]
+            } else {
+                ""
+            };
+
+            print!("{}\x1B[{}G\x1B[90m│\x1B[0m {}\x1B[K\r\n", left, left_width + 1, right_text);
+        }
+
+        // Footer
+        print!(" {}\x1B[K\r\n", "─".repeat(tw.saturating_sub(2)).dimmed());
+        if searching {
+            print!(" {} | {}\x1B[K",
+                format!("{}/{}", if filtered.is_empty() { 0 } else { selected + 1 }, filtered.len()).dimmed(),
+                "Type to filter | ↑↓ Navigate | Esc: Stop searching".dimmed());
+        } else {
+            print!(" {} | {}\x1B[K",
+                format!("{}/{}", if filtered.is_empty() { 0 } else { selected + 1 }, filtered.len()).dimmed(),
+                "↑↓ Navigate | /: Search | Q: Quit".dimmed());
+        }
+        stdout().flush().unwrap();
+
+        // Drain queued events to prevent scroll/input lag
+        while event::poll(std::time::Duration::from_millis(0)).unwrap_or(false) {
+            let _ = event::read();
+        }
+
+        // Input
+        if let Ok(Event::Key(KeyEvent { code, modifiers, .. })) = event::read() {
+            if searching {
+                // Search mode: typing filters, Esc exits search
+                match code {
+                    KeyCode::Esc => {
+                        searching = false;
+                    }
+                    KeyCode::Enter => {
+                        searching = false;
+                    }
+                    KeyCode::Backspace => {
+                        search_term.pop();
+                        selected = 0;
+                        scroll_offset = 0;
+                    }
+                    KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => break,
+                    KeyCode::Up => {
+                        if selected > 0 { selected -= 1; }
+                    }
+                    KeyCode::Down => {
+                        if !filtered.is_empty() && selected < filtered.len() - 1 { selected += 1; }
+                    }
+                    KeyCode::Char(c) => {
+                        search_term.push(c);
+                        selected = 0;
+                        scroll_offset = 0;
+                    }
+                    _ => {}
+                }
+            } else {
+                // Normal mode: navigate, / to search, q to quit
+                match code {
+                    KeyCode::Char('q') | KeyCode::Esc => break,
+                    KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => break,
+                    KeyCode::Char('/') => {
+                        searching = true;
+                        search_term.clear();
+                        selected = 0;
+                        scroll_offset = 0;
+                    }
+                    KeyCode::Up | KeyCode::Char('k') => {
+                        if selected > 0 { selected -= 1; }
+                    }
+                    KeyCode::Down | KeyCode::Char('j') => {
+                        if !filtered.is_empty() && selected < filtered.len() - 1 { selected += 1; }
+                    }
+                    KeyCode::Home => { selected = 0; }
+                    KeyCode::End => {
+                        if !filtered.is_empty() { selected = filtered.len() - 1; }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    stdout().execute(cursor::Show).unwrap();
+    terminal::disable_raw_mode().unwrap();
+    stdout().execute(LeaveAlternateScreen).unwrap();
 }
 
 fn manage_team(add: Option<String>, remove: Option<String>, clear: bool) {
@@ -2153,6 +2639,9 @@ fn main() {
         },
         Commands::Setup => {
             setup_shell();
+        },
+        Commands::Pokedex => {
+            show_pokedex();
         },
         Commands::Restore { file } => {
             restore_pc(file);

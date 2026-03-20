@@ -182,6 +182,18 @@ pc() {
     fi
 }
 
+# --- POKEDEX SHORTCUT ---
+
+# Browse the Pokedex (shortcut for catch-pokemon pokedex)
+pokedex() {
+    if command -v catch-pokemon &>/dev/null; then
+        catch-pokemon pokedex
+    else
+        echo -e "\033[1;31m❌ catch-pokemon CLI not found\033[0m"
+        return 1
+    fi
+}
+
 # --- UTILITY FUNCTIONS ---
 
 # Show current Pokemon status
@@ -247,6 +259,7 @@ pokemon_help() {
     echo -e "\033[1;36m🎮 Pokemon Catching System Commands:\033[0m"
     echo -e "  \033[1;33mcatch\033[0m               - Attempt to catch the current wild Pokemon"
     echo -e "  \033[1;33mpc\033[0m                  - View your Pokemon collection"
+    echo -e "  \033[1;33mpokedex\033[0m             - Browse the full Pokedex"
     echo -e "  \033[1;33mpokemon_status\033[0m      - Show current Pokemon status"
     echo -e "  \033[1;33mpokemon_check <name>\033[0m - Check if you own a specific Pokemon"
     echo -e "  \033[1;33mpokemon_new\033[0m         - Force a new Pokemon encounter"
