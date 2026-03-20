@@ -8,9 +8,6 @@ services:
     environment:
       - PORT=8080
       - DATABASE_URL=postgres://pokemon:pokemon@db:5432/catchpokemon?sslmode=disable
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - GOOGLE_REDIRECT_URL=http://localhost:8080/auth/google/callback
       - BUILD_SECRET_KEY=${BUILD_SECRET_KEY}
     depends_on:
       db:

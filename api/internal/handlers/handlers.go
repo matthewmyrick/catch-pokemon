@@ -19,18 +19,13 @@ func Health(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
-func GoogleLogin(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, `{"error":"not implemented"}`, http.StatusNotImplemented)
-}
-
-func GoogleCallback(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, `{"error":"not implemented"}`, http.StatusNotImplemented)
-}
-
 func GetMe(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"user_id": userID})
+	json.NewEncoder(w).Encode(map[string]string{
+		"user_id":  userID,
+		"provider": "github",
+	})
 }
 
 // BattleJoin is a long-poll endpoint — it blocks until a match is found (up to 60s)

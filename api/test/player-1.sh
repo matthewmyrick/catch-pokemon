@@ -4,7 +4,12 @@
 # Usage: ./player-1.sh [name]
 
 API="http://localhost:8080"
-TOKEN="player-1-test"
+# Get GitHub token from gh CLI
+TOKEN=$(gh auth token 2>/dev/null)
+if [ -z "$TOKEN" ]; then
+  echo -e "${RED}Not logged in to GitHub. Run: gh auth login${NC}"
+  exit 1
+fi
 PLAYER_NAME="Matt"
 
 RED='\033[0;31m'

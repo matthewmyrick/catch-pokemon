@@ -25,11 +25,7 @@ func main() {
 	// Health check
 	mux.HandleFunc("GET /health", handlers.Health)
 
-	// Auth routes
-	mux.HandleFunc("GET /auth/google", handlers.GoogleLogin)
-	mux.HandleFunc("GET /auth/google/callback", handlers.GoogleCallback)
-
-	// Protected routes
+	// Protected routes (authenticated via GitHub token)
 	mux.Handle("GET /api/me", middleware.Auth(http.HandlerFunc(handlers.GetMe)))
 	mux.Handle("POST /api/battle/join", middleware.Auth(handlers.BattleJoin(queue)))
 	mux.Handle("POST /api/battle/select", middleware.Auth(http.HandlerFunc(handlers.BattleSelect)))
