@@ -118,6 +118,14 @@ catch() {
         return 1
     fi
 
+    # If no session token, the encounter was from an old binary — force a new one
+    if [[ -z "$POKEMON_SESSION_TOKEN" ]]; then
+        echo -e "\033[1;33m⚠ Session expired after update. Generating new encounter...\033[0m"
+        echo ""
+        pokemon_encounter
+        return 0
+    fi
+
     if [[ "$POKEMON_ESCAPED" == "true" ]]; then
         echo -e "\033[1;31m💨 The Pokemon already escaped!\033[0m"
         return 1

@@ -2882,7 +2882,9 @@ fn update_binary() {
         .arg("setup")
         .status();
 
-    println!("{}", "Restart your terminal to use the new version.".green());
+    println!();
+    println!("{}", "To start playing with the new version, run:".green());
+    println!("  {}", "source ~/.zshrc && pokemon_new".cyan().bold());
 }
 
 fn main() {
