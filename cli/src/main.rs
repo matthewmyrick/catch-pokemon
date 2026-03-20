@@ -235,6 +235,8 @@ struct PokemonData {
     flee_rate: u8,
     #[serde(default)]
     types: Vec<String>,
+    #[serde(default)]
+    power_rank: u8,
 }
 
 fn default_flee_rate() -> u8 {
@@ -1089,21 +1091,6 @@ fn show_pc(search: bool) {
         }
     }
     
-    println!("{}", "╔══════════════════════════════════════════════╗".cyan());
-    println!("{}", "║            Pokemon PC Storage                ║".cyan().bold());
-    println!("{}", "╠══════════════════════════════════════════════╣".cyan());
-    
-    // Create nested HashMap: Pokemon name -> Ball type -> Count
-    let mut pokemon_ball_counts: HashMap<String, HashMap<String, usize>> = HashMap::new();
-    for p in &storage.pokemon {
-        pokemon_ball_counts
-            .entry(p.name.clone())
-            .or_insert_with(HashMap::new)
-            .entry(p.ball_used.clone())
-            .and_modify(|e| *e += 1)
-            .or_insert(1);
-    }
-    
     // If search flag is provided, launch interactive search
     if search {
         if let Err(e) = interactive_pokemon_search(&storage) {
@@ -1111,72 +1098,117 @@ fn show_pc(search: bool) {
         }
         return;
     }
-    
-    let filtered_pokemon = pokemon_ball_counts;
-    
-    let mut sorted_pokemon: Vec<_> = filtered_pokemon.iter().collect();
-    sorted_pokemon.sort_by(|a, b| a.0.cmp(b.0));
-    
-    for (name, ball_counts) in sorted_pokemon {
-        let total_count: usize = ball_counts.values().sum();
-        
-        if total_count > 1 {
-            let line = format!("║ • {} (x{}):", name.green().bold(), total_count.to_string().yellow());
-            // Calculate padding needed to reach the right border (46 chars total inside)
-            let visible_len = format!("║ • {} (x{}):", name, total_count).len();
-            let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
-            println!("{}{}║", line, " ".repeat(padding));
-            
-            for (ball, count) in ball_counts {
-                let line = format!("║   └─ {} with {}", 
-                        format!("x{}", count).cyan(), 
-                        ball.magenta());
-                let visible_len = format!("║   └─ x{} with {}", count, ball).len();
-                let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
-                println!("{}{}║", line, " ".repeat(padding));
-            }
-        } else {
-            let (ball, _) = ball_counts.iter().next().unwrap();
-            let line = format!("║ • {} (caught with {})", name.green(), ball.magenta());
-            let visible_len = format!("║ • {} (caught with {})", name, ball).len();
-            let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
-            println!("{}{}║", line, " ".repeat(padding));
+
+    // Load Pokemon database for type/power info
+    let pokemon_db: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
+
+    println!();
+    println!("{}", "  Pokemon PC Storage".cyan().bold());
+    println!("{}", "  ══════════════════".cyan());
+    println!();
+
+    // Group Pokemon by name with counts
+    let mut pokemon_counts: HashMap<String, usize> = HashMap::new();
+    let mut pokemon_shiny_counts: HashMap<String, usize> = HashMap::new();
+    for p in &storage.pokemon {
+        *pokemon_counts.entry(p.name.clone()).or_insert(0) += 1;
+        if p.shiny {
+            *pokemon_shiny_counts.entry(p.name.clone()).or_insert(0) += 1;
         }
     }
-    
-    println!("{}", "╠══════════════════════════════════════════════╣".cyan());
-    
-    let total_text = format!("Total Pokemon caught: {}", storage.pokemon.len());
-    
-    let total_line = format!("║ {}", total_text.yellow().bold());
-    let visible_len = format!("║ {}", total_text).len();
-    let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
-    println!("{}{}║", total_line, " ".repeat(padding));
-    
-    // Ball type summary
-    let mut ball_summary: HashMap<String, usize> = HashMap::new();
-    for p in &storage.pokemon {
-        *ball_summary.entry(p.ball_used.clone()).or_insert(0) += 1;
+
+    let mut sorted_names: Vec<_> = pokemon_counts.keys().collect();
+    sorted_names.sort();
+
+    for name in &sorted_names {
+        let count = pokemon_counts[*name];
+        let shiny_count = pokemon_shiny_counts.get(*name).copied().unwrap_or(0);
+
+        // Look up type and power from database
+        let normalized = name.replace("-", "_");
+        let (types_str, power, category) = if let Some(data) = pokemon_db.get(&normalized) {
+            let type_strings: Vec<String> = data.types.iter().map(|t| {
+                match t.as_str() {
+                    "fire"     => t.red().bold().to_string(),
+                    "water"    => t.blue().bold().to_string(),
+                    "grass"    => t.green().bold().to_string(),
+                    "electric" => t.yellow().bold().to_string(),
+                    "ice"      => t.cyan().bold().to_string(),
+                    "fighting" => t.red().to_string(),
+                    "poison"   => t.purple().to_string(),
+                    "ground"   => t.yellow().to_string(),
+                    "flying"   => t.cyan().to_string(),
+                    "psychic"  => t.magenta().bold().to_string(),
+                    "bug"      => t.green().to_string(),
+                    "rock"     => t.yellow().dimmed().to_string(),
+                    "ghost"    => t.purple().bold().to_string(),
+                    "dragon"   => t.blue().bold().to_string(),
+                    "dark"     => t.white().dimmed().to_string(),
+                    "steel"    => t.white().to_string(),
+                    "fairy"    => t.magenta().to_string(),
+                    "normal"   => t.white().to_string(),
+                    _          => t.to_string(),
+                }
+            }).collect();
+            (type_strings.join(" / "), data.power_rank, data.category.clone())
+        } else {
+            ("???".to_string(), 0, "unknown".to_string())
+        };
+
+        // Format category color
+        let cat_display = match category.as_str() {
+            "legendary"        => "Legendary".red().bold().to_string(),
+            "mythical"         => "Mythical".magenta().bold().to_string(),
+            "pseudo_legendary" => "Pseudo-Legendary".yellow().bold().to_string(),
+            "starter"          => "Starter".green().bold().to_string(),
+            "starter_evolution" => "Starter Evo".green().to_string(),
+            "rare"             => "Rare".cyan().bold().to_string(),
+            "baby"             => "Baby".bright_magenta().to_string(),
+            "uncommon"         => "Uncommon".white().to_string(),
+            "common"           => "Common".bright_black().to_string(),
+            _                  => category.clone(),
+        };
+
+        // Build display line
+        let count_str = if count > 1 {
+            format!(" x{}", count).yellow().to_string()
+        } else {
+            String::new()
+        };
+
+        let shiny_str = if shiny_count > 0 {
+            format!(" ({} shiny)", shiny_count).yellow().bold().to_string()
+        } else {
+            String::new()
+        };
+
+        println!("  {}{}{}", name.green().bold(), count_str, shiny_str);
+        println!("    {} | Power: {} | {}",
+            types_str,
+            format!("{}", power).bright_yellow().bold(),
+            cat_display,
+        );
     }
-    
-    println!("║                                              ║");
-    println!("║ Catches by ball type:                        ║");
-    for (ball, count) in ball_summary {
-        let line = format!("║   • {}: {}", ball.magenta(), count.to_string().cyan());
-        let visible_len = format!("║   • {}: {}", ball, count).len();
-        let padding = if visible_len < 47 { 47 - visible_len } else { 0 };
-        println!("{}{}║", line, " ".repeat(padding));
-    }
-    
-    println!("{}", "╚══════════════════════════════════════════════╝".cyan());
-    
+
     println!();
-    println!("Recent catches:");
+    println!("  {}", format!("Total: {} Pokemon | {} unique",
+        storage.pokemon.len(),
+        sorted_names.len()
+    ).yellow().bold());
+
+    let total_shiny: usize = pokemon_shiny_counts.values().sum();
+    if total_shiny > 0 {
+        println!("  {}", format!("Shinies: {}", total_shiny).yellow());
+    }
+
+    println!();
+    println!("  {}", "Recent catches:".dimmed());
     for pokemon in storage.pokemon.iter().rev().take(5) {
-        println!("  • {} caught with {} at {}", 
-                pokemon.name.green(), 
-                pokemon.ball_used.cyan(),
-                pokemon.caught_at.format("%Y-%m-%d %H:%M"));
+        let shiny_tag = if pokemon.shiny { " [Shiny]".yellow().to_string() } else { String::new() };
+        println!("    {} at {}{}",
+                pokemon.name.green(),
+                pokemon.caught_at.format("%Y-%m-%d %H:%M").to_string().dimmed(),
+                shiny_tag);
     }
 }
 
