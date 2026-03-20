@@ -73,8 +73,10 @@ fi
 
 mkdir -p "$BIN_DIR"
 tar -xzf "$TMPDIR/$ARCHIVE" -C "$TMPDIR"
-cp "$TMPDIR/catch-pokemon" "$BIN_DIR/"
-chmod +x "$BIN_DIR/catch-pokemon"
+chmod +x "$TMPDIR/catch-pokemon"
+# Remove old binary first to avoid killing a running process (macOS)
+rm -f "$BIN_DIR/catch-pokemon"
+mv "$TMPDIR/catch-pokemon" "$BIN_DIR/catch-pokemon"
 echo -e "${GREEN}Binary installed to $BIN_DIR/catch-pokemon${NC}"
 
 # --- Ensure ~/.local/bin is in PATH ---

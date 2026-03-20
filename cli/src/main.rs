@@ -1533,20 +1533,104 @@ fn clear_pc() {
 fn update_binary() {
     println!("{}", "Checking for updates...".cyan());
 
-    let status = Command::new("sh")
-        .arg("-c")
-        .arg("curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install.sh | bash")
+    // Get current version
+    let current_version = env!("CARGO_PKG_VERSION");
+    println!("Current version: {}", current_version.cyan());
+
+    // Detect platform
+    let os = if cfg!(target_os = "macos") { "macos" } else if cfg!(target_os = "linux") { "linux" } else { "unknown" };
+    let arch = if cfg!(target_arch = "aarch64") { "arm64" } else { "x86_64" };
+    let suffix = format!("{}-{}", os, arch);
+
+    // Fetch latest release tag
+    let output = Command::new("curl")
+        .args(&["-sSL", "https://api.github.com/repos/matthewmyrick/catch-pokemon/releases/latest"])
+        .output();
+
+    let latest_tag = match output {
+        Ok(o) => {
+            let body = String::from_utf8_lossy(&o.stdout);
+            body.lines()
+                .find(|l| l.contains("tag_name"))
+                .and_then(|l| l.split('"').nth(3))
+                .map(|s| s.to_string())
+        }
+        Err(_) => None,
+    };
+
+    let tag = match latest_tag {
+        Some(t) => t,
+        None => {
+            eprintln!("{}", "Could not fetch latest release.".red());
+            return;
+        }
+    };
+
+    let tag_version = tag.trim_start_matches('v');
+    if tag_version == current_version {
+        println!("{}", format!("Already on the latest version ({})", current_version).green());
+        return;
+    }
+
+    println!("New version available: {}", tag.green().bold());
+
+    // Download to temp file
+    let archive = format!("catch-pokemon-{}-{}.tar.gz", tag, suffix);
+    let url = format!("https://github.com/matthewmyrick/catch-pokemon/releases/download/{}/{}", tag, archive);
+
+    println!("{}", format!("Downloading {}...", tag).yellow());
+
+    let tmp_dir = std::env::temp_dir().join("catch-pokemon-update");
+    let _ = fs::create_dir_all(&tmp_dir);
+    let tmp_archive = tmp_dir.join(&archive);
+
+    let dl_status = Command::new("curl")
+        .args(&["-sSL", "--fail", "-o", tmp_archive.to_str().unwrap(), &url])
         .status();
 
-    match status {
-        Ok(s) if s.success() => {
-            println!();
-            println!("{}", "Update complete! Restart your terminal to use the new version.".green().bold());
-        }
-        _ => {
-            eprintln!("{}", "Update failed. Check your internet connection.".red());
+    if !matches!(dl_status, Ok(s) if s.success()) {
+        eprintln!("{}", format!("Download failed for {}", suffix).red());
+        let _ = fs::remove_dir_all(&tmp_dir);
+        return;
+    }
+
+    // Extract
+    let tar_status = Command::new("tar")
+        .args(&["-xzf", tmp_archive.to_str().unwrap(), "-C", tmp_dir.to_str().unwrap()])
+        .status();
+
+    if !matches!(tar_status, Ok(s) if s.success()) {
+        eprintln!("{}", "Failed to extract update.".red());
+        let _ = fs::remove_dir_all(&tmp_dir);
+        return;
+    }
+
+    // Replace binary: remove old, move new
+    let bin_dir = dirs::home_dir().unwrap().join(".local/bin");
+    let bin_path = bin_dir.join("catch-pokemon");
+    let new_binary = tmp_dir.join("catch-pokemon");
+
+    let _ = fs::remove_file(&bin_path);
+    if let Err(e) = fs::rename(&new_binary, &bin_path) {
+        // rename may fail across filesystems, fall back to copy
+        if let Err(e2) = fs::copy(&new_binary, &bin_path) {
+            eprintln!("{}", format!("Failed to install update: {}", e2).red());
+            let _ = fs::remove_dir_all(&tmp_dir);
+            return;
         }
     }
+
+    // Make executable
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = fs::set_permissions(&bin_path, fs::Permissions::from_mode(0o755));
+    }
+
+    let _ = fs::remove_dir_all(&tmp_dir);
+
+    println!("{}", format!("Updated to {} successfully!", tag).green().bold());
+    println!("Run {} to update shell functions.", "catch-pokemon setup".cyan());
 }
 
 fn main() {
