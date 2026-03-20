@@ -8,6 +8,12 @@ One command installs everything — the binary, pokemon-colorscripts, and shell 
 curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install.sh | bash
 ```
 
+To install a specific version:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install.sh | bash -s -- v2.0.2
+```
+
 This automatically:
 - Downloads the pre-built binary for your platform (macOS/Linux, x86_64/ARM64)
 - Installs [pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts) for Pokemon ASCII sprites
@@ -20,6 +26,20 @@ After installation, restart your terminal and you're ready to play:
 pokemon_encounter    # A wild Pokemon appears!
 catch                # Throw a Poke Ball
 pc                   # View your collection
+```
+
+## Updating
+
+To update to the latest version:
+
+```bash
+catch-pokemon update
+```
+
+Or re-run the install script to grab a specific version:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install.sh | bash -s -- v2.1.0
 ```
 
 ## Supported Platforms

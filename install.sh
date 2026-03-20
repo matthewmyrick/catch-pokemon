@@ -42,13 +42,18 @@ esac
 SUFFIX="${PLATFORM}-${ARCH_SUFFIX}"
 echo -e "${GREEN}Detected: ${SUFFIX}${NC}"
 
-# --- Get latest release version ---
-echo -e "${YELLOW}Fetching latest release...${NC}"
-LATEST_TAG=$(curl -sSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name"' | sed 's/.*"tag_name": "\(.*\)".*/\1/')
+# --- Get version (from argument or latest) ---
+if [ -n "$1" ]; then
+    LATEST_TAG="$1"
+    echo -e "${GREEN}Installing version: ${LATEST_TAG}${NC}"
+else
+    echo -e "${YELLOW}Fetching latest release...${NC}"
+    LATEST_TAG=$(curl -sSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name"' | sed 's/.*"tag_name": "\(.*\)".*/\1/')
 
-if [ -z "$LATEST_TAG" ]; then
-    echo -e "${RED}No release found. Please check https://github.com/$REPO/releases${NC}"
-    exit 1
+    if [ -z "$LATEST_TAG" ]; then
+        echo -e "${RED}No release found. Please check https://github.com/$REPO/releases${NC}"
+        exit 1
+    fi
 fi
 
 # --- Download pre-built binary ---

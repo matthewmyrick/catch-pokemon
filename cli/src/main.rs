@@ -295,8 +295,20 @@ impl PcStorage {
             }
         }
 
-        println!("{}", "Could not decrypt PC storage. Starting fresh.".red());
-        PcStorage::new()
+        // IMPORTANT: Do NOT return empty or overwrite — the file exists but we can't decrypt it.
+        // This means the binary has a different key than what encrypted the file.
+        // Back up the existing file so it's never lost.
+        let backup_path = path.with_extension("json.bak");
+        if !backup_path.exists() {
+            let _ = fs::copy(&path, &backup_path);
+            eprintln!("{}", format!("PC storage backed up to {}", backup_path.display()).yellow());
+        }
+
+        eprintln!("{}", "Could not decrypt PC storage.".red().bold());
+        eprintln!("{}", "This usually means the binary was built with a different key.".red());
+        eprintln!("{}", "Your Pokemon data has been backed up and is NOT lost.".yellow());
+        eprintln!("To fix: rebuild with the correct BUILD_SECRET_KEY or restore the backup.");
+        std::process::exit(1);
     }
     
     fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
