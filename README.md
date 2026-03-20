@@ -148,3 +148,4 @@ Pull requests are welcome! Ideas for improvements:
 
 - [pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts) for the amazing Pokemon ASCII art
 - The Pokemon franchise for the inspiration
+
