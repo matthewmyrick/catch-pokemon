@@ -139,8 +139,11 @@ catch() {
     # Use a temporary file to capture output while still showing it live
     local temp_output=$(mktemp)
 
-    # Build catch command with attempt count and shiny flag
-    local catch_cmd="catch-pokemon catch $CURRENT_WILD_POKEMON --hide-pokemon --attempt $POKEMON_ATTEMPT --token $POKEMON_SESSION_TOKEN"
+    # Build catch command with attempt count, token, and shiny flag
+    local catch_cmd="catch-pokemon catch $CURRENT_WILD_POKEMON --hide-pokemon --attempt $POKEMON_ATTEMPT"
+    if [[ -n "$POKEMON_SESSION_TOKEN" ]]; then
+        catch_cmd="$catch_cmd --token $POKEMON_SESSION_TOKEN"
+    fi
     if [[ "$POKEMON_IS_SHINY" == "true" ]]; then
         catch_cmd="$catch_cmd --shiny"
     fi
