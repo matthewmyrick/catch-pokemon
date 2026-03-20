@@ -23,6 +23,9 @@ pokemon_encounter() {
         current_pokemon=$(echo "$encounter_output" | head -1)
         # Extract shiny status (second line)
         is_shiny=$(echo "$encounter_output" | sed -n '2p' | sed 's/Shiny: //')
+        # Extract session token (third line)
+        local session_token
+        session_token=$(echo "$encounter_output" | grep "^Token:" | sed 's/Token: //')
         # Extract category, stripping ANSI color codes
         category=$(echo "$encounter_output" | grep "^Category:" | sed 's/Category: //' | sed 's/\x1b\[[0-9;]*m//g' | tr '[:upper:]' '[:lower:]')
         # Extract type line (keep ANSI colors for display)
@@ -39,6 +42,7 @@ pokemon_encounter() {
     # Store current pokemon and reset states
     export CURRENT_WILD_POKEMON="$current_pokemon"
     export POKEMON_IS_SHINY="$is_shiny"
+    export POKEMON_SESSION_TOKEN="$session_token"
     export POKEMON_ATTEMPT=1
     export POKEMON_ESCAPED=false
     export POKEMON_RAN_AWAY=false
@@ -136,7 +140,7 @@ catch() {
     local temp_output=$(mktemp)
 
     # Build catch command with attempt count and shiny flag
-    local catch_cmd="catch-pokemon catch $CURRENT_WILD_POKEMON --hide-pokemon --attempt $POKEMON_ATTEMPT"
+    local catch_cmd="catch-pokemon catch $CURRENT_WILD_POKEMON --hide-pokemon --attempt $POKEMON_ATTEMPT --token $POKEMON_SESSION_TOKEN"
     if [[ "$POKEMON_IS_SHINY" == "true" ]]; then
         catch_cmd="$catch_cmd --shiny"
     fi

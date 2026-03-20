@@ -60,20 +60,25 @@ Examples:\n\
   catch-pokemon catch bulbasaur --hide-pokemon\n\
   catch-pokemon catch charizard --skip-animation")]
     Catch {
-        /// Name of the Pokemon to catch (case insensitive)
+        /// Name of the Pokemon to catch
+        #[arg(hide = true)]
         pokemon: String,
 
         /// Skip the animated Pokeball throwing sequence
-        #[arg(short = 's', long, help = "Skip animations for faster catching")]
+        #[arg(short = 's', long, help = "Skip animations for faster catching", hide = true)]
         skip_animation: bool,
 
         /// Hide the Pokemon ASCII art when it appears
-        #[arg(long, default_value = "false", help = "Don't show Pokemon sprite, only catching animation")]
+        #[arg(long, default_value = "false", hide = true)]
         hide_pokemon: bool,
 
         /// Mark this Pokemon as shiny (set by encounter system)
         #[arg(long, default_value = "false", hide = true)]
         shiny: bool,
+
+        /// Session token from encounter (required to prevent manual catching)
+        #[arg(long, hide = true)]
+        token: Option<String>,
 
         /// Attempt number for rolling flee rate (set by shell function)
         #[arg(long, default_value = "1", hide = true)]
@@ -1014,7 +1019,50 @@ fn wiggle_animation(wiggle_num: u8, ball: PokeballType, caught: bool) {
 }
 
 
-fn catch_pokemon(pokemon: String, skip_animation: bool, hide_pokemon: bool, shiny: bool, attempt: u32) {
+fn catch_pokemon(pokemon: String, skip_animation: bool, hide_pokemon: bool, shiny: bool, token: Option<String>, attempt: u32) {
+    // Validate session token — prevents manual catching
+    match &token {
+        None => {
+            println!("{}", "You can't catch Pokemon directly! Use 'pokemon_encounter' first, then 'catch'.".red().bold());
+            return;
+        }
+        Some(t) => {
+            // Token format: "timestamp:hmac_hex"
+            let parts: Vec<&str> = t.splitn(2, ':').collect();
+            if parts.len() != 2 {
+                println!("{}", "Invalid session token.".red());
+                return;
+            }
+            let timestamp: i64 = match parts[0].parse() {
+                Ok(ts) => ts,
+                Err(_) => {
+                    println!("{}", "Invalid session token.".red());
+                    return;
+                }
+            };
+
+            // Check token is not too old (30 minutes max)
+            let now = Local::now().timestamp();
+            if (now - timestamp).abs() > 1800 {
+                println!("{}", "Session expired. Start a new encounter with 'pokemon_encounter'.".red());
+                return;
+            }
+
+            // Verify HMAC
+            let token_data = format!("encounter:{}:{}", pokemon.to_lowercase(), timestamp);
+            let key = derive_signing_key();
+            let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&key)
+                .expect("HMAC accepts any key length");
+            mac.update(token_data.as_bytes());
+            let expected = hex::encode(mac.finalize().into_bytes());
+
+            if parts[1] != expected {
+                println!("{}", "Invalid session token. Nice try.".red().bold());
+                return;
+            }
+        }
+    }
+
     let ball = PokeballType::Pokeball;
     let catch_chance = calculate_catch_chance(&pokemon, ball);
     
@@ -1461,7 +1509,11 @@ fn show_pc(search: bool) {
     }
 
     let mut entries: Vec<PcEntry> = entries_map.into_values().collect();
-    entries.sort_by(|a, b| a.name.cmp(&b.name));
+    // Sort: shinies first, then alphabetical
+    entries.sort_by(|a, b| {
+        b.shiny_count.cmp(&a.shiny_count)
+            .then(a.name.cmp(&b.name))
+    });
 
     if entries.is_empty() {
         println!("{}", "Your PC is empty. Go catch some Pokemon!".yellow());
@@ -1501,11 +1553,17 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
         let sel = &entries[selected];
 
         // Load sprite only when selection changes
-        if cached_sprite_name != sel.name {
-            cached_sprite_name = sel.name.clone();
+        // Show shiny sprite if the user has a shiny version
+        let sprite_key = format!("{}:{}", sel.name, sel.shiny_count > 0);
+        if cached_sprite_name != sprite_key {
+            cached_sprite_name = sprite_key;
             let display_name = sel.name.replace("_", "-");
+            let mut args = vec!["-n", &display_name, "--no-title"];
+            if sel.shiny_count > 0 {
+                args.push("-s");
+            }
             cached_sprite = Command::new("pokemon-colorscripts")
-                .args(&["-n", &display_name, "--no-title"])
+                .args(&args)
                 .output()
                 .ok()
                 .filter(|r| r.status.success())
@@ -1526,44 +1584,56 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
 
         // Look up rates
         let normalized = sel.name.replace("-", "_");
-        let pokemon_db: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
-        if let Some(data) = pokemon_db.get(&normalized) {
-            // Encounter rate
+        let pokemon_db_local: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
+        if let Some(data) = pokemon_db_local.get(&normalized) {
             let valid_names_set: std::collections::HashSet<&str> = VALID_POKEMON
                 .lines().filter(|l| !l.is_empty()).collect();
-            let total_weight: u32 = pokemon_db.iter()
+            let total_weight: u32 = pokemon_db_local.iter()
                 .filter(|(n, _)| valid_names_set.contains(n.as_str()))
                 .map(|(_, d)| d.catch_rate as u32).sum();
+
+            // Category encounter rate (all Pokemon in this category combined)
+            let category_weight: u32 = pokemon_db_local.iter()
+                .filter(|(n, d)| valid_names_set.contains(n.as_str()) && d.category == data.category)
+                .map(|(_, d)| d.catch_rate as u32).sum();
+            let category_encounter_pct = category_weight as f32 / total_weight as f32 * 100.0;
+
+            // Individual encounter rate
             let encounter_pct = data.catch_rate as f32 / total_weight as f32 * 100.0;
 
-            // Catch rate
+            // Catch rate with Poke Ball
             let catch_pct = data.catch_rate as f32 / 255.0 * 100.0;
 
-            // True catch rate (encounter x catch / 100)
-            let true_catch_pct = encounter_pct * catch_pct / 100.0;
+            // True catch rate uses category encounter rate
+            let true_catch_pct = category_encounter_pct * catch_pct / 100.0;
 
             let catch_color = if catch_pct >= 75.0 { format!("{:.1}%", catch_pct).green() }
                 else if catch_pct >= 30.0 { format!("{:.1}%", catch_pct).yellow() }
                 else { format!("{:.1}%", catch_pct).red() };
 
-            let enc_color = if encounter_pct >= 1.0 { format!("{:.2}%", encounter_pct).green() }
-                else if encounter_pct >= 0.1 { format!("{:.3}%", encounter_pct).yellow() }
-                else { format!("{:.4}%", encounter_pct).red() };
+            let fmt_small = |pct: f32| -> String {
+                if pct >= 10.0 { format!("{:.1}%", pct) }
+                else if pct >= 1.0 { format!("{:.2}%", pct) }
+                else if pct >= 0.1 { format!("{:.3}%", pct) }
+                else if pct >= 0.01 { format!("{:.4}%", pct) }
+                else if pct >= 0.001 { format!("{:.5}%", pct) }
+                else { format!("{:.6}%", pct) }
+            };
 
-            let true_color = if true_catch_pct >= 1.0 { format!("{:.2}%", true_catch_pct).green() }
-                else if true_catch_pct >= 0.1 { format!("{:.3}%", true_catch_pct).yellow() }
-                else { format!("{:.4}%", true_catch_pct).red() };
+            let enc_color = if category_encounter_pct >= 10.0 { fmt_small(category_encounter_pct).green() }
+                else if category_encounter_pct >= 1.0 { fmt_small(category_encounter_pct).yellow() }
+                else { fmt_small(category_encounter_pct).red() };
 
-            right.push(format!("Encounter:{}", enc_color.bold()));
+            let true_color = if true_catch_pct >= 10.0 { fmt_small(true_catch_pct).green() }
+                else if true_catch_pct >= 1.0 { fmt_small(true_catch_pct).yellow() }
+                else { fmt_small(true_catch_pct).red() };
+
+            right.push(format!("Encounter:{} ({})", enc_color.bold(), fmt_small(encounter_pct).dimmed()));
             right.push(format!("Catch:    {}", catch_color.bold()));
             right.push(format!("True odds:{}", true_color.bold()));
             right.push(format!("Flee:     {}", format!("{}%", data.flee_rate).red()));
         }
 
-        right.push(format!("Caught:   {}", format!("{}", sel.count).yellow()));
-        if sel.shiny_count > 0 {
-            right.push(format!("Shinies:  {}", format!("{}", sel.shiny_count).yellow().bold()));
-        }
         if sel.on_team {
             right.push(format!("{}", "[On Battle Team]".cyan().bold()));
         }
@@ -1571,8 +1641,88 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
         right.push(format!("{}", format!("First: {}", sel.first_caught).dimmed()));
         right.push(format!("{}", format!("Last:  {}", sel.last_caught).dimmed()));
         right.push(String::new());
-        for line in &cached_sprite {
-            right.push(line.clone());
+
+        // Poke Ball grid: shinies as gold stars, regulars as red balls, 4 per row
+        let regular = sel.count.saturating_sub(sel.shiny_count);
+        let balls_per_row = 6;
+        let mut ball_icons: Vec<String> = Vec::new();
+        // Shinies first
+        for _ in 0..sel.shiny_count {
+            ball_icons.push("\x1B[1;33m★\x1B[0m".to_string()); // gold star
+        }
+        // Then regulars
+        for _ in 0..regular {
+            ball_icons.push("\x1B[31m◓\x1B[0m".to_string()); // red ball
+        }
+
+        // Render in rows
+        right.push(format!("Caught: {}", format!("{}", sel.count).yellow()));
+        for row in ball_icons.chunks(balls_per_row) {
+            right.push(format!("  {}", row.join(" ")));
+        }
+        right.push(String::new());
+
+        // Tile sprites in a grid if terminal is wide enough
+        if !cached_sprite.is_empty() && sel.count > 0 {
+            // Calculate sprite width (longest line, ignoring ANSI codes)
+            let strip_ansi = |s: &str| -> usize {
+                let mut len = 0;
+                let mut in_escape = false;
+                for c in s.chars() {
+                    if c == '\x1B' { in_escape = true; }
+                    else if in_escape {
+                        if c.is_alphabetic() { in_escape = false; }
+                    } else {
+                        len += 1;
+                    }
+                }
+                len
+            };
+            let sprite_width = cached_sprite.iter().map(|l| strip_ansi(l)).max().unwrap_or(20);
+            let sprite_height = cached_sprite.len();
+            let right_panel_width = tw.saturating_sub(left_width + 3);
+
+            // How many sprites fit across?
+            let gap = 2; // space between sprites
+            let sprites_per_row = ((right_panel_width + gap) / (sprite_width + gap)).max(1);
+
+            // Cap at count, max 16 to keep it reasonable
+            let total_sprites = sel.count.min(16);
+            let num_rows = (total_sprites + sprites_per_row - 1) / sprites_per_row;
+
+            // Only show grid if we have room (terminal tall/wide enough)
+            if right_panel_width >= sprite_width && sprites_per_row >= 1 {
+                for grid_row in 0..num_rows {
+                    let sprites_this_row = (total_sprites - grid_row * sprites_per_row).min(sprites_per_row);
+
+                    // For each line of the sprite height
+                    for line_idx in 0..sprite_height {
+                        let mut combined = String::new();
+                        for s in 0..sprites_this_row {
+                            if s > 0 {
+                                combined.push_str(&" ".repeat(gap));
+                            }
+                            if line_idx < cached_sprite.len() {
+                                combined.push_str(&cached_sprite[line_idx]);
+                                // Pad to sprite_width (using visible width)
+                                let visible = strip_ansi(&cached_sprite[line_idx]);
+                                if visible < sprite_width {
+                                    combined.push_str(&" ".repeat(sprite_width - visible));
+                                }
+                            }
+                        }
+                        right.push(combined);
+                    }
+                    if grid_row < num_rows - 1 {
+                        right.push(String::new()); // gap between grid rows
+                    }
+                }
+            } else {
+                // Terminal too narrow, just show single sprite
+                for line in &cached_sprite {
+                    right.push(line.clone());
+                }
+            }
         }
 
         // Adjust scroll
@@ -1872,8 +2022,8 @@ fn encounter_pokemon(show_pokemon: bool) {
     let display_name = chosen_name.replace('_', "-");
 
     // 3% chance of shiny encounter
-    // 1% chance of shiny encounter
-    let is_shiny = rng.gen_range(0.0..100.0) < 1.0;
+    // 1/4096 chance of shiny encounter (0.024%)
+    let is_shiny = rng.gen_range(0u32..4096) == 0;
 
     // Always print the name (for scripting use)
     println!("{}", display_name);
@@ -1883,8 +2033,19 @@ fn encounter_pokemon(show_pokemon: bool) {
     pokedex.mark_seen(&display_name);
     let _ = pokedex.save();
 
-    // Print shiny status on second line (for scripting use)
+    // Generate session token: HMAC(signing_key, pokemon_name + timestamp)
+    // This proves the encounter was real — can't forge without the key
+    let timestamp = Local::now().timestamp();
+    let token_data = format!("encounter:{}:{}", display_name, timestamp);
+    let key = derive_signing_key();
+    let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&key)
+        .expect("HMAC accepts any key length");
+    mac.update(token_data.as_bytes());
+    let token = format!("{}:{}", timestamp, hex::encode(mac.finalize().into_bytes()));
+
+    // Print shiny status and token (for shell function)
     println!("Shiny: {}", is_shiny);
+    println!("Token: {}", token);
 
     if show_pokemon {
         let mut args = vec!["-n", &display_name, "--no-title"];
@@ -2140,9 +2301,17 @@ fn show_pokedex() {
         category: String,
         seen: bool,
         caught: bool,
+        has_shiny: bool,
         seen_at: Option<String>,
         caught_at: Option<String>,
     }
+
+    // Load PC to check for shinies
+    let pc_storage = PcStorage::load();
+    let shiny_pokemon: std::collections::HashSet<String> = pc_storage.pokemon.iter()
+        .filter(|p| p.shiny)
+        .map(|p| p.name.to_lowercase())
+        .collect();
 
     let mut rows: Vec<DexRow> = Vec::new();
     for name in &valid_names {
@@ -2150,12 +2319,13 @@ fn show_pokedex() {
             let display_name = name.replace("_", "-");
             let entry = pokedex.entries.get(&display_name);
             rows.push(DexRow {
-                name: display_name,
+                name: display_name.clone(),
                 types: data.types.clone(),
                 power_rank: data.power_rank,
                 category: data.category.clone(),
                 seen: entry.map(|e| e.seen).unwrap_or(false),
                 caught: entry.map(|e| e.caught).unwrap_or(false),
+                has_shiny: shiny_pokemon.contains(&display_name),
                 seen_at: entry.and_then(|e| e.seen_at.map(|t| t.format("%Y-%m-%d").to_string())),
                 caught_at: entry.and_then(|e| e.caught_at.map(|t| t.format("%Y-%m-%d").to_string())),
             });
@@ -2211,12 +2381,17 @@ fn show_pokedex() {
         // Get selected row
         let sel = if !filtered.is_empty() { Some(filtered[selected]) } else { None };
 
-        // Cache sprite
+        // Cache sprite (show shiny sprite if user has a shiny)
         if let Some(s) = sel {
-            if cached_sprite_name != s.name {
-                cached_sprite_name = s.name.clone();
+            let sprite_key = format!("{}:{}", s.name, s.has_shiny);
+            if cached_sprite_name != sprite_key {
+                cached_sprite_name = sprite_key;
+                let mut args = vec!["-n", &s.name, "--no-title"];
+                if s.has_shiny {
+                    args.push("-s");
+                }
                 cached_sprite = Command::new("pokemon-colorscripts")
-                    .args(&["-n", &s.name, "--no-title"])
+                    .args(&args)
                     .output()
                     .ok()
                     .filter(|r| r.status.success())
@@ -2243,23 +2418,39 @@ fn show_pokedex() {
                 let total_weight: u32 = pokemon_db.iter()
                     .filter(|(n, _)| valid_names.contains(n.as_str()))
                     .map(|(_, d)| d.catch_rate as u32).sum();
+
+                // Category encounter rate
+                let category_weight: u32 = pokemon_db.iter()
+                    .filter(|(n, d)| valid_names.contains(n.as_str()) && d.category == data.category)
+                    .map(|(_, d)| d.catch_rate as u32).sum();
+                let category_encounter_pct = category_weight as f32 / total_weight as f32 * 100.0;
+
                 let encounter_pct = data.catch_rate as f32 / total_weight as f32 * 100.0;
                 let catch_pct = data.catch_rate as f32 / 255.0 * 100.0;
-                let true_catch_pct = encounter_pct * catch_pct / 100.0;
+                let true_catch_pct = category_encounter_pct * catch_pct / 100.0;
 
                 let catch_color = if catch_pct >= 75.0 { format!("{:.1}%", catch_pct).green() }
                     else if catch_pct >= 30.0 { format!("{:.1}%", catch_pct).yellow() }
                     else { format!("{:.1}%", catch_pct).red() };
 
-                let enc_color = if encounter_pct >= 1.0 { format!("{:.2}%", encounter_pct).green() }
-                    else if encounter_pct >= 0.1 { format!("{:.3}%", encounter_pct).yellow() }
-                    else { format!("{:.4}%", encounter_pct).red() };
+                let fmt_small = |pct: f32| -> String {
+                    if pct >= 10.0 { format!("{:.1}%", pct) }
+                    else if pct >= 1.0 { format!("{:.2}%", pct) }
+                    else if pct >= 0.1 { format!("{:.3}%", pct) }
+                    else if pct >= 0.01 { format!("{:.4}%", pct) }
+                    else if pct >= 0.001 { format!("{:.5}%", pct) }
+                    else { format!("{:.6}%", pct) }
+                };
 
-                let true_color = if true_catch_pct >= 1.0 { format!("{:.2}%", true_catch_pct).green() }
-                    else if true_catch_pct >= 0.1 { format!("{:.3}%", true_catch_pct).yellow() }
-                    else { format!("{:.4}%", true_catch_pct).red() };
+                let enc_color = if category_encounter_pct >= 10.0 { fmt_small(category_encounter_pct).green() }
+                    else if category_encounter_pct >= 1.0 { fmt_small(category_encounter_pct).yellow() }
+                    else { fmt_small(category_encounter_pct).red() };
 
-                right.push(format!("Encounter:{}", enc_color.bold()));
+                let true_color = if true_catch_pct >= 10.0 { fmt_small(true_catch_pct).green() }
+                    else if true_catch_pct >= 1.0 { fmt_small(true_catch_pct).yellow() }
+                    else { fmt_small(true_catch_pct).red() };
+
+                right.push(format!("Encounter:{} ({})", enc_color.bold(), fmt_small(encounter_pct).dimmed()));
                 right.push(format!("Catch:    {}", catch_color.bold()));
                 right.push(format!("True odds:{}", true_color.bold()));
                 right.push(format!("Flee:     {}", format!("{}%", data.flee_rate).red()));
@@ -2268,7 +2459,11 @@ fn show_pokedex() {
             right.push(String::new());
 
             if s.caught {
-                right.push(format!("{}", "Caught".green().bold()));
+                if s.has_shiny {
+                    right.push(format!("{} {}", "Caught".green().bold(), "[Shiny]".yellow().bold()));
+                } else {
+                    right.push(format!("{}", "Caught".green().bold()));
+                }
                 if let Some(ref d) = s.caught_at {
                     right.push(format!("{}", format!("Caught: {}", d).dimmed()));
                 }
@@ -2318,12 +2513,14 @@ fn show_pokedex() {
                 let idx = scroll_offset + row;
                 if idx < filtered.len() {
                     let r = filtered[idx];
-                    let status = if r.caught {
-                        "\x1B[32m●\x1B[0m"
+                    let status = if r.caught && r.has_shiny {
+                        "\x1B[33m★\x1B[0m"  // gold star = caught + shiny
+                    } else if r.caught {
+                        "\x1B[32m●\x1B[0m"  // green dot = caught
                     } else if r.seen {
-                        "\x1B[33m◐\x1B[0m"
+                        "\x1B[33m◐\x1B[0m"  // yellow half = seen
                     } else {
-                        "\x1B[90m○\x1B[0m"
+                        "\x1B[90m○\x1B[0m"  // gray empty = unknown
                     };
 
                     // Truncate name to fit
@@ -2678,15 +2875,22 @@ fn update_binary() {
     let _ = fs::remove_dir_all(&tmp_dir);
 
     println!("{}", format!("Updated to {} successfully!", tag).green().bold());
-    println!("Run {} to update shell functions.", "catch-pokemon setup".cyan());
+
+    // Run setup automatically with the new binary
+    println!("{}", "Updating shell functions...".cyan());
+    let _ = Command::new(bin_path.to_str().unwrap_or("catch-pokemon"))
+        .arg("setup")
+        .status();
+
+    println!("{}", "Restart your terminal to use the new version.".green());
 }
 
 fn main() {
     let args = Args::parse();
     
     match args.command {
-        Commands::Catch { pokemon, skip_animation, hide_pokemon, shiny, attempt } => {
-            catch_pokemon(pokemon, skip_animation, hide_pokemon, shiny, attempt);
+        Commands::Catch { pokemon, skip_animation, hide_pokemon, shiny, token, attempt } => {
+            catch_pokemon(pokemon, skip_animation, hide_pokemon, shiny, token, attempt);
         },
         Commands::Pc { search } => {
             show_pc(search);
