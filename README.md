@@ -3,6 +3,8 @@
 A terminal-based Pokemon catching game with weighted encounters, animated ASCII art, shiny Pokemon, and a cryptographically signed PC storage system. Every terminal session is a new encounter.
 
 > **[Installation Guide](INSTALLATION.md)** - Get up and running in one command.
+>
+> **[Battle Odds & Mechanics](BATTLE-ODDS.md)** - How the battle formula works.
 
 ## How to Play
 

@@ -172,6 +172,14 @@ Example:\n\
   catch-pokemon setup")]
     Setup,
 
+    /// Update to the latest version
+    #[command(long_about = "Download and install the latest version of catch-pokemon.\n\n\
+This fetches the latest release from GitHub and replaces the current binary.\n\
+Your Pokemon collection and shell functions are preserved.\n\n\
+Example:\n\
+  catch-pokemon update")]
+    Update,
+
     /// Generate a weighted random Pokemon encounter
     #[command(long_about = "Generate a random Pokemon encounter weighted by rarity.\n\n\
 Common Pokemon (high catch rate) appear more often than rare ones.\n\
@@ -1474,6 +1482,25 @@ fn clear_pc() {
     }
 }
 
+fn update_binary() {
+    println!("{}", "Checking for updates...".cyan());
+
+    let status = Command::new("sh")
+        .arg("-c")
+        .arg("curl -sSL https://raw.githubusercontent.com/matthewmyrick/catch-pokemon/main/install.sh | bash")
+        .status();
+
+    match status {
+        Ok(s) if s.success() => {
+            println!();
+            println!("{}", "Update complete! Restart your terminal to use the new version.".green().bold());
+        }
+        _ => {
+            eprintln!("{}", "Update failed. Check your internet connection.".red());
+        }
+    }
+}
+
 fn main() {
     let args = Args::parse();
     
@@ -1501,6 +1528,9 @@ fn main() {
         },
         Commands::Encounter { show_pokemon } => {
             encounter_pokemon(show_pokemon);
+        },
+        Commands::Update => {
+            update_binary();
         }
     }
 }

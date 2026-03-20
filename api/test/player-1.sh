@@ -79,6 +79,17 @@ for p in data['opponent_pc']:
     print(f'  {p[\"name\"]:15} Power: {p[\"power_rank\"]:3}  Type: {types}{shiny}')
 "
 echo ""
+# Start background heartbeat (polls status every 5s to keep connection alive)
+heartbeat() {
+  while true; do
+    curl -s "$API/api/battle/status" -H "Authorization: Bearer $TOKEN" > /dev/null 2>&1
+    sleep 5
+  done
+}
+heartbeat &
+HEARTBEAT_PID=$!
+trap "kill $HEARTBEAT_PID 2>/dev/null" EXIT
+
 echo -e "${CYAN}${BOLD}Your PC:${NC}"
 echo "$PC" | python3 -c "
 import sys, json
@@ -266,9 +277,9 @@ print(f'  Series: {data[\"p1_wins\"]}-{data[\"p2_wins\"]}')
     P1W=$(echo "$BATTLE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('p1_wins',0))" 2>/dev/null)
     P2W=$(echo "$BATTLE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('p2_wins',0))" 2>/dev/null)
     if [ "$WINNER" = "$TOKEN" ]; then
-      echo -e "${GREEN}${BOLD}$PLAYER_NAME won the battle! ($P1W-$P2W)${NC}"
+      echo -e "${GREEN}${BOLD}You won the battle! ($P1W-$P2W)${NC}"
     else
-      echo -e "${RED}${BOLD}$PLAYER_NAME lost the battle. ($P1W-$P2W)${NC}"
+      echo -e "${RED}${BOLD}You lost the battle. ($P1W-$P2W)${NC}"
     fi
     echo -e "${BOLD}================================${NC}"
     exit 0
