@@ -1310,12 +1310,12 @@ fn show_pc(search: bool) {
     }
 
     // Launch TUI
-    if let Err(e) = pc_tui(&entries, &storage) {
+    if let Err(e) = pc_tui(&mut entries, &storage) {
         eprintln!("TUI error: {}", e);
     }
 }
 
-fn pc_tui(entries: &[PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn std::error::Error>> {
+fn pc_tui(entries: &mut [PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn std::error::Error>> {
     use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
 
     // Enter alternate screen (like vim does — clean slate, restores on exit)
@@ -1328,6 +1328,7 @@ fn pc_tui(entries: &[PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn std::
     // Cache sprite for current selection to avoid re-running command on every frame
     let mut cached_sprite_name = String::new();
     let mut cached_sprite: Vec<String> = Vec::new();
+    let mut status_msg: Option<String> = None;
 
     loop {
         let (tw, th) = terminal::size().unwrap_or((80, 24));
@@ -1436,7 +1437,15 @@ fn pc_tui(entries: &[PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn std::
 
         // Footer
         print!(" {}\x1B[K\r\n", "─".repeat(tw.saturating_sub(2)).dimmed());
-        print!(" {}\x1B[K", "↑↓ Navigate | T: Toggle Team | Q: Quit".dimmed());
+        if let Some(ref msg) = status_msg {
+            print!(" {}\x1B[K", msg.red().bold());
+            status_msg = None;
+        } else {
+            let team_count = entries.iter().filter(|e| e.on_team).count();
+            print!(" {} | {}\x1B[K",
+                format!("↑↓ Navigate | T: Toggle Team ({}/20) | Q: Quit", team_count).dimmed(),
+                "".to_string());
+        }
         stdout().flush()?;
 
         // Input
@@ -1451,16 +1460,23 @@ fn pc_tui(entries: &[PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn std::
                     if selected < entries.len() - 1 { selected += 1; }
                 }
                 KeyCode::Char('t') | KeyCode::Char('T') => {
-                    let name = &entries[selected].name;
+                    let name = entries[selected].name.clone();
                     let normalized = name.to_lowercase().replace("-", "_");
                     let mut team = BattleTeam::load();
                     if team.pokemon.iter().any(|p| p.name.to_lowercase().replace("-", "_") == normalized) {
+                        // Remove from team
                         team.pokemon.retain(|p| p.name.to_lowercase().replace("-", "_") != normalized);
                         let _ = team.save();
-                    } else if team.pokemon.len() < 20 {
+                        entries[selected].on_team = false;
+                    } else if team.pokemon.len() >= 20 {
+                        // Team is full — show warning in footer on next render
+                        status_msg = Some("Battle team is full! (20/20) Remove one first.".to_string());
+                    } else {
+                        // Add to team
                         let is_shiny = entries[selected].shiny_count > 0;
                         team.pokemon.push(BattleTeamEntry { name: name.to_lowercase(), shiny: is_shiny });
                         let _ = team.save();
+                        entries[selected].on_team = true;
                     }
                 }
                 KeyCode::Home => { selected = 0; }
