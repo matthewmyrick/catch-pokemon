@@ -1523,6 +1523,43 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
         right.push(format!("Type:     {}", types_display.join(" / ")));
         right.push(format!("Power:    {}", format!("{}", sel.power_rank).bright_yellow().bold()));
         right.push(format!("Category: {}", cat_display));
+
+        // Look up rates
+        let normalized = sel.name.replace("-", "_");
+        let pokemon_db: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
+        if let Some(data) = pokemon_db.get(&normalized) {
+            // Encounter rate
+            let valid_names_set: std::collections::HashSet<&str> = VALID_POKEMON
+                .lines().filter(|l| !l.is_empty()).collect();
+            let total_weight: u32 = pokemon_db.iter()
+                .filter(|(n, _)| valid_names_set.contains(n.as_str()))
+                .map(|(_, d)| d.catch_rate as u32).sum();
+            let encounter_pct = data.catch_rate as f32 / total_weight as f32 * 100.0;
+
+            // Catch rate
+            let catch_pct = data.catch_rate as f32 / 255.0 * 100.0;
+
+            // True catch rate (encounter x catch / 100)
+            let true_catch_pct = encounter_pct * catch_pct / 100.0;
+
+            let catch_color = if catch_pct >= 75.0 { format!("{:.1}%", catch_pct).green() }
+                else if catch_pct >= 30.0 { format!("{:.1}%", catch_pct).yellow() }
+                else { format!("{:.1}%", catch_pct).red() };
+
+            let enc_color = if encounter_pct >= 1.0 { format!("{:.2}%", encounter_pct).green() }
+                else if encounter_pct >= 0.1 { format!("{:.3}%", encounter_pct).yellow() }
+                else { format!("{:.4}%", encounter_pct).red() };
+
+            let true_color = if true_catch_pct >= 1.0 { format!("{:.2}%", true_catch_pct).green() }
+                else if true_catch_pct >= 0.1 { format!("{:.3}%", true_catch_pct).yellow() }
+                else { format!("{:.4}%", true_catch_pct).red() };
+
+            right.push(format!("Encounter:{}", enc_color.bold()));
+            right.push(format!("Catch:    {}", catch_color.bold()));
+            right.push(format!("True odds:{}", true_color.bold()));
+            right.push(format!("Flee:     {}", format!("{}%", data.flee_rate).red()));
+        }
+
         right.push(format!("Caught:   {}", format!("{}", sel.count).yellow()));
         if sel.shiny_count > 0 {
             right.push(format!("Shinies:  {}", format!("{}", sel.shiny_count).yellow().bold()));
@@ -2199,6 +2236,35 @@ fn show_pokedex() {
             right.push(format!("Type:     {}", types_display.join(" / ")));
             right.push(format!("Power:    {}", format!("{}", s.power_rank).bright_yellow().bold()));
             right.push(format!("Category: {}", cat_display));
+
+            // Look up rates
+            let normalized_dex = s.name.replace("-", "_");
+            if let Some(data) = pokemon_db.get(&normalized_dex) {
+                let total_weight: u32 = pokemon_db.iter()
+                    .filter(|(n, _)| valid_names.contains(n.as_str()))
+                    .map(|(_, d)| d.catch_rate as u32).sum();
+                let encounter_pct = data.catch_rate as f32 / total_weight as f32 * 100.0;
+                let catch_pct = data.catch_rate as f32 / 255.0 * 100.0;
+                let true_catch_pct = encounter_pct * catch_pct / 100.0;
+
+                let catch_color = if catch_pct >= 75.0 { format!("{:.1}%", catch_pct).green() }
+                    else if catch_pct >= 30.0 { format!("{:.1}%", catch_pct).yellow() }
+                    else { format!("{:.1}%", catch_pct).red() };
+
+                let enc_color = if encounter_pct >= 1.0 { format!("{:.2}%", encounter_pct).green() }
+                    else if encounter_pct >= 0.1 { format!("{:.3}%", encounter_pct).yellow() }
+                    else { format!("{:.4}%", encounter_pct).red() };
+
+                let true_color = if true_catch_pct >= 1.0 { format!("{:.2}%", true_catch_pct).green() }
+                    else if true_catch_pct >= 0.1 { format!("{:.3}%", true_catch_pct).yellow() }
+                    else { format!("{:.4}%", true_catch_pct).red() };
+
+                right.push(format!("Encounter:{}", enc_color.bold()));
+                right.push(format!("Catch:    {}", catch_color.bold()));
+                right.push(format!("True odds:{}", true_color.bold()));
+                right.push(format!("Flee:     {}", format!("{}%", data.flee_rate).red()));
+            }
+
             right.push(String::new());
 
             if s.caught {
