@@ -47,9 +47,10 @@ fn main() {
 
     fs::write(&dest_path, code).unwrap();
 
-    // Rerun if the env var or build.rs changes
+    // Always rerun to ensure the secret is never stale
     println!("cargo:rerun-if-env-changed=BUILD_SECRET_KEY");
     println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=.build_secret");
 }
 
 /// Hash any string into 32 bytes using a simple but effective mixing function.

@@ -180,6 +180,31 @@ Example:\n\
   catch-pokemon update")]
     Update,
 
+    /// Manage your battle team (up to 20 Pokemon)
+    #[command(long_about = "Manage your battle team for online battles.\n\n\
+Your battle team holds up to 20 Pokemon selected from your PC.\n\
+This is the roster you bring to battles — opponents see your battle team,\n\
+and you pick 6 from it each round.\n\n\
+The battle team is stored in an encrypted file alongside your PC.\n\n\
+Examples:\n\
+  catch-pokemon team                    # View your battle team\n\
+  catch-pokemon team --add pikachu      # Add a Pokemon from your PC\n\
+  catch-pokemon team --remove pikachu   # Remove a Pokemon from your team\n\
+  catch-pokemon team --clear            # Clear the entire team")]
+    Team {
+        /// Add a Pokemon from your PC to the battle team
+        #[arg(long)]
+        add: Option<String>,
+
+        /// Remove a Pokemon from the battle team
+        #[arg(long)]
+        remove: Option<String>,
+
+        /// Clear the entire battle team
+        #[arg(long)]
+        clear: bool,
+    },
+
     /// Generate a weighted random Pokemon encounter
     #[command(long_about = "Generate a random Pokemon encounter weighted by rarity.\n\n\
 Common Pokemon (high catch rate) appear more often than rare ones.\n\
@@ -392,6 +417,95 @@ fn get_storage_path() -> PathBuf {
     path.push("catch-pokemon");
     path.push("pc_storage.json");
     path
+}
+
+fn get_team_path() -> PathBuf {
+    let mut path = dirs::data_local_dir().unwrap_or_else(|| PathBuf::from("."));
+    path.push("catch-pokemon");
+    path.push("battle_team.json");
+    path
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct BattleTeamEntry {
+    name: String,
+    #[serde(default)]
+    shiny: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct BattleTeam {
+    pokemon: Vec<BattleTeamEntry>,
+}
+
+impl BattleTeam {
+    fn new() -> Self {
+        BattleTeam { pokemon: Vec::new() }
+    }
+
+    fn load() -> Self {
+        let path = get_team_path();
+        if !path.exists() {
+            return BattleTeam::new();
+        }
+
+        if let Ok(encrypted_bytes) = fs::read(&path) {
+            if let Some(team) = decrypt_battle_team(&encrypted_bytes) {
+                return team;
+            }
+        }
+
+        // Don't wipe — same protection as PC
+        if path.exists() {
+            let backup = path.with_extension("json.bak");
+            if !backup.exists() {
+                let _ = fs::copy(&path, &backup);
+            }
+            eprintln!("{}", "Could not decrypt battle team.".red().bold());
+            eprintln!("{}", "Your team data has been backed up.".yellow());
+            std::process::exit(1);
+        }
+
+        BattleTeam::new()
+    }
+
+    fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let path = get_team_path();
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let encrypted = encrypt_battle_team(self)?;
+        fs::write(&path, encrypted)?;
+        Ok(())
+    }
+}
+
+fn encrypt_battle_team(team: &BattleTeam) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let key = derive_encryption_key();
+    let cipher = Aes256Gcm::new_from_slice(&key)?;
+    let json = serde_json::to_string(team)?;
+    let mut rng = rand::thread_rng();
+    let mut nonce_bytes = [0u8; 12];
+    for b in nonce_bytes.iter_mut() { *b = rng.gen(); }
+    let nonce = Nonce::from_slice(&nonce_bytes);
+    let ciphertext = cipher.encrypt(nonce, json.as_bytes())
+        .map_err(|e| format!("Encryption failed: {}", e))?;
+    let mut output = Vec::with_capacity(12 + ciphertext.len());
+    output.extend_from_slice(&nonce_bytes);
+    output.extend_from_slice(&ciphertext);
+    Ok(output)
+}
+
+fn decrypt_battle_team(data: &[u8]) -> Option<BattleTeam> {
+    if data.len() < 13 || data[0] == b'{' {
+        return None;
+    }
+    let key = derive_encryption_key();
+    let cipher = Aes256Gcm::new_from_slice(&key).ok()?;
+    let nonce = Nonce::from_slice(&data[..12]);
+    let plaintext = cipher.decrypt(nonce, &data[12..]).ok()?;
+    let json_str = String::from_utf8(plaintext).ok()?;
+    serde_json::from_str(&json_str).ok()
 }
 
 // --- INTEGRITY SYSTEM ---
@@ -1073,6 +1187,58 @@ fn show_pokemon_details(pokemon_name: &str, ball_counts: &HashMap<String, usize>
     }
 }
 
+fn color_type(t: &str) -> String {
+    match t {
+        "fire"     => t.red().bold().to_string(),
+        "water"    => t.blue().bold().to_string(),
+        "grass"    => t.green().bold().to_string(),
+        "electric" => t.yellow().bold().to_string(),
+        "ice"      => t.cyan().bold().to_string(),
+        "fighting" => t.red().to_string(),
+        "poison"   => t.purple().to_string(),
+        "ground"   => t.yellow().to_string(),
+        "flying"   => t.cyan().to_string(),
+        "psychic"  => t.magenta().bold().to_string(),
+        "bug"      => t.green().to_string(),
+        "rock"     => t.yellow().dimmed().to_string(),
+        "ghost"    => t.purple().bold().to_string(),
+        "dragon"   => t.blue().bold().to_string(),
+        "dark"     => t.white().dimmed().to_string(),
+        "steel"    => t.white().to_string(),
+        "fairy"    => t.magenta().to_string(),
+        "normal"   => t.white().to_string(),
+        _          => t.to_string(),
+    }
+}
+
+fn color_category(cat: &str) -> String {
+    match cat {
+        "legendary"        => "Legendary".red().bold().to_string(),
+        "mythical"         => "Mythical".magenta().bold().to_string(),
+        "pseudo_legendary" => "Pseudo-Legendary".yellow().bold().to_string(),
+        "starter"          => "Starter".green().bold().to_string(),
+        "starter_evolution" => "Starter Evo".green().to_string(),
+        "rare"             => "Rare".cyan().bold().to_string(),
+        "baby"             => "Baby".bright_magenta().to_string(),
+        "uncommon"         => "Uncommon".white().to_string(),
+        "common"           => "Common".bright_black().to_string(),
+        _                  => cat.to_string(),
+    }
+}
+
+// Info about a unique Pokemon in the PC
+struct PcEntry {
+    name: String,
+    count: usize,
+    shiny_count: usize,
+    types: Vec<String>,
+    power_rank: u8,
+    category: String,
+    first_caught: String,
+    last_caught: String,
+    on_team: bool,
+}
+
 fn show_pc(search: bool) {
     let storage = PcStorage::load();
 
@@ -1090,8 +1256,7 @@ fn show_pc(search: bool) {
             return;
         }
     }
-    
-    // If search flag is provided, launch interactive search
+
     if search {
         if let Err(e) = interactive_pokemon_search(&storage) {
             eprintln!("Error in interactive search: {}", e);
@@ -1099,121 +1264,217 @@ fn show_pc(search: bool) {
         return;
     }
 
-    // Load Pokemon database for type/power info
     let pokemon_db: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
 
-    println!();
-    println!("{}", "  Pokemon PC Storage".cyan().bold());
-    println!("{}", "  ══════════════════".cyan());
-    println!();
+    // Load battle team to show which Pokemon are on it
+    let battle_team = BattleTeam::load();
+    let team_names: Vec<String> = battle_team.pokemon.iter()
+        .map(|p| p.name.to_lowercase().replace("-", "_"))
+        .collect();
 
-    // Group Pokemon by name with counts
-    let mut pokemon_counts: HashMap<String, usize> = HashMap::new();
-    let mut pokemon_shiny_counts: HashMap<String, usize> = HashMap::new();
+    // Build entries grouped by name
+    let mut entries_map: HashMap<String, PcEntry> = HashMap::new();
     for p in &storage.pokemon {
-        *pokemon_counts.entry(p.name.clone()).or_insert(0) += 1;
-        if p.shiny {
-            *pokemon_shiny_counts.entry(p.name.clone()).or_insert(0) += 1;
+        let normalized = p.name.to_lowercase().replace("-", "_");
+        let entry = entries_map.entry(p.name.clone()).or_insert_with(|| {
+            let (types, power, category) = if let Some(data) = pokemon_db.get(&normalized) {
+                (data.types.clone(), data.power_rank, data.category.clone())
+            } else {
+                (vec![], 0, "unknown".to_string())
+            };
+            PcEntry {
+                name: p.name.clone(),
+                count: 0,
+                shiny_count: 0,
+                types,
+                power_rank: power,
+                category,
+                first_caught: p.caught_at.format("%Y-%m-%d %H:%M").to_string(),
+                last_caught: p.caught_at.format("%Y-%m-%d %H:%M").to_string(),
+                on_team: team_names.contains(&normalized),
+            }
+        });
+        entry.count += 1;
+        if p.shiny { entry.shiny_count += 1; }
+        let ts = p.caught_at.format("%Y-%m-%d %H:%M").to_string();
+        if ts < entry.first_caught { entry.first_caught = ts.clone(); }
+        if ts > entry.last_caught { entry.last_caught = ts; }
+    }
+
+    let mut entries: Vec<PcEntry> = entries_map.into_values().collect();
+    entries.sort_by(|a, b| a.name.cmp(&b.name));
+
+    if entries.is_empty() {
+        println!("{}", "Your PC is empty. Go catch some Pokemon!".yellow());
+        return;
+    }
+
+    // Launch TUI
+    if let Err(e) = pc_tui(&entries, &storage) {
+        eprintln!("TUI error: {}", e);
+    }
+}
+
+fn pc_tui(entries: &[PcEntry], _storage: &PcStorage) -> Result<(), Box<dyn std::error::Error>> {
+    use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
+
+    // Enter alternate screen (like vim does — clean slate, restores on exit)
+    stdout().execute(EnterAlternateScreen)?;
+    terminal::enable_raw_mode()?;
+    stdout().execute(cursor::Hide)?;
+
+    let mut selected: usize = 0;
+    let mut scroll_offset: usize = 0;
+    // Cache sprite for current selection to avoid re-running command on every frame
+    let mut cached_sprite_name = String::new();
+    let mut cached_sprite: Vec<String> = Vec::new();
+
+    loop {
+        let (tw, th) = terminal::size().unwrap_or((80, 24));
+        let tw = tw as usize;
+        let th = th as usize;
+        let left_width = 28.min(tw / 3);
+        let list_height = th.saturating_sub(4);
+
+        // Get selected entry
+        let sel = &entries[selected];
+
+        // Load sprite only when selection changes
+        if cached_sprite_name != sel.name {
+            cached_sprite_name = sel.name.clone();
+            let display_name = sel.name.replace("_", "-");
+            cached_sprite = Command::new("pokemon-colorscripts")
+                .args(&["-n", &display_name, "--no-title"])
+                .output()
+                .ok()
+                .filter(|r| r.status.success())
+                .map(|r| String::from_utf8_lossy(&r.stdout).lines().map(|l| l.to_string()).collect())
+                .unwrap_or_else(|| vec!["(no sprite)".to_string()]);
+        }
+
+        // Build right panel content
+        let types_display: Vec<String> = sel.types.iter().map(|t| color_type(t)).collect();
+        let cat_display = color_category(&sel.category);
+
+        let mut right: Vec<String> = Vec::new();
+        right.push(format!("{}", sel.name.green().bold()));
+        right.push(String::new());
+        right.push(format!("Type:     {}", types_display.join(" / ")));
+        right.push(format!("Power:    {}", format!("{}", sel.power_rank).bright_yellow().bold()));
+        right.push(format!("Category: {}", cat_display));
+        right.push(format!("Caught:   {}", format!("{}", sel.count).yellow()));
+        if sel.shiny_count > 0 {
+            right.push(format!("Shinies:  {}", format!("{}", sel.shiny_count).yellow().bold()));
+        }
+        if sel.on_team {
+            right.push(format!("{}", "[On Battle Team]".cyan().bold()));
+        }
+        right.push(String::new());
+        right.push(format!("{}", format!("First: {}", sel.first_caught).dimmed()));
+        right.push(format!("{}", format!("Last:  {}", sel.last_caught).dimmed()));
+        right.push(String::new());
+        for line in &cached_sprite {
+            right.push(line.clone());
+        }
+
+        // Adjust scroll
+        if selected >= scroll_offset + list_height {
+            scroll_offset = selected + 1 - list_height;
+        }
+        if selected < scroll_offset {
+            scroll_offset = selected;
+        }
+
+        // Render — move to top-left, write each line, clear to end of line
+        stdout().execute(cursor::MoveTo(0, 0))?;
+
+        // Header
+        let header = format!(" {} ({} unique | {} caught)",
+            "Pokemon PC".cyan().bold(),
+            entries.len().to_string().yellow(),
+            entries.iter().map(|e| e.count).sum::<usize>().to_string().yellow());
+        print!("{}\x1B[K\r\n", header);
+        print!(" {}\x1B[K\r\n", "─".repeat(tw.saturating_sub(2)).dimmed());
+
+        // Body rows
+        for row in 0..list_height {
+            // Left panel
+            let left = if row < entries.len().saturating_sub(scroll_offset).min(list_height) {
+                let idx = scroll_offset + row;
+                if idx < entries.len() {
+                    let e = &entries[idx];
+                    let arrow = if idx == selected { ">" } else { " " };
+                    let team_mark = if e.on_team { "*" } else { " " };
+                    let shiny_mark = if e.shiny_count > 0 { "~" } else { " " };
+                    let count = if e.count > 1 { format!(" x{}", e.count) } else { String::new() };
+
+                    if idx == selected {
+                        format!(" \x1B[7m{}{}{} {}{}\x1B[0m", arrow, team_mark, shiny_mark, e.name, count)
+                    } else {
+                        format!(" {}{}{} \x1B[32m{}\x1B[0m\x1B[33m{}\x1B[0m", arrow, team_mark, shiny_mark, e.name, count)
+                    }
+                } else {
+                    String::new()
+                }
+            } else {
+                String::new()
+            };
+
+            // Pad left panel to fixed width (using visible chars only)
+            let left_padded = format!("{:<width$}", "", width = left_width);
+
+            // Right panel
+            let right_text = if row < right.len() {
+                &right[row]
+            } else {
+                ""
+            };
+
+            // Write: left panel + separator + right panel + clear rest of line
+            print!("{}\x1B[{}G\x1B[90m│\x1B[0m {}\x1B[K\r\n", left, left_width + 1, right_text);
+        }
+
+        // Footer
+        print!(" {}\x1B[K\r\n", "─".repeat(tw.saturating_sub(2)).dimmed());
+        print!(" {}\x1B[K", "↑↓ Navigate | T: Toggle Team | Q: Quit".dimmed());
+        stdout().flush()?;
+
+        // Input
+        if let Ok(Event::Key(KeyEvent { code, modifiers, .. })) = event::read() {
+            match code {
+                KeyCode::Char('q') | KeyCode::Esc => break,
+                KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => break,
+                KeyCode::Up | KeyCode::Char('k') => {
+                    if selected > 0 { selected -= 1; }
+                }
+                KeyCode::Down | KeyCode::Char('j') => {
+                    if selected < entries.len() - 1 { selected += 1; }
+                }
+                KeyCode::Char('t') | KeyCode::Char('T') => {
+                    let name = &entries[selected].name;
+                    let normalized = name.to_lowercase().replace("-", "_");
+                    let mut team = BattleTeam::load();
+                    if team.pokemon.iter().any(|p| p.name.to_lowercase().replace("-", "_") == normalized) {
+                        team.pokemon.retain(|p| p.name.to_lowercase().replace("-", "_") != normalized);
+                        let _ = team.save();
+                    } else if team.pokemon.len() < 20 {
+                        let is_shiny = entries[selected].shiny_count > 0;
+                        team.pokemon.push(BattleTeamEntry { name: name.to_lowercase(), shiny: is_shiny });
+                        let _ = team.save();
+                    }
+                }
+                KeyCode::Home => { selected = 0; }
+                KeyCode::End => { selected = entries.len() - 1; }
+                _ => {}
+            }
         }
     }
 
-    let mut sorted_names: Vec<_> = pokemon_counts.keys().collect();
-    sorted_names.sort();
-
-    for name in &sorted_names {
-        let count = pokemon_counts[*name];
-        let shiny_count = pokemon_shiny_counts.get(*name).copied().unwrap_or(0);
-
-        // Look up type and power from database
-        let normalized = name.replace("-", "_");
-        let (types_str, power, category) = if let Some(data) = pokemon_db.get(&normalized) {
-            let type_strings: Vec<String> = data.types.iter().map(|t| {
-                match t.as_str() {
-                    "fire"     => t.red().bold().to_string(),
-                    "water"    => t.blue().bold().to_string(),
-                    "grass"    => t.green().bold().to_string(),
-                    "electric" => t.yellow().bold().to_string(),
-                    "ice"      => t.cyan().bold().to_string(),
-                    "fighting" => t.red().to_string(),
-                    "poison"   => t.purple().to_string(),
-                    "ground"   => t.yellow().to_string(),
-                    "flying"   => t.cyan().to_string(),
-                    "psychic"  => t.magenta().bold().to_string(),
-                    "bug"      => t.green().to_string(),
-                    "rock"     => t.yellow().dimmed().to_string(),
-                    "ghost"    => t.purple().bold().to_string(),
-                    "dragon"   => t.blue().bold().to_string(),
-                    "dark"     => t.white().dimmed().to_string(),
-                    "steel"    => t.white().to_string(),
-                    "fairy"    => t.magenta().to_string(),
-                    "normal"   => t.white().to_string(),
-                    _          => t.to_string(),
-                }
-            }).collect();
-            (type_strings.join(" / "), data.power_rank, data.category.clone())
-        } else {
-            ("???".to_string(), 0, "unknown".to_string())
-        };
-
-        // Format category color
-        let cat_display = match category.as_str() {
-            "legendary"        => "Legendary".red().bold().to_string(),
-            "mythical"         => "Mythical".magenta().bold().to_string(),
-            "pseudo_legendary" => "Pseudo-Legendary".yellow().bold().to_string(),
-            "starter"          => "Starter".green().bold().to_string(),
-            "starter_evolution" => "Starter Evo".green().to_string(),
-            "rare"             => "Rare".cyan().bold().to_string(),
-            "baby"             => "Baby".bright_magenta().to_string(),
-            "uncommon"         => "Uncommon".white().to_string(),
-            "common"           => "Common".bright_black().to_string(),
-            _                  => category.clone(),
-        };
-
-        // Build display line
-        let count_str = if count > 1 {
-            format!(" x{}", count).yellow().to_string()
-        } else {
-            String::new()
-        };
-
-        let shiny_str = if shiny_count > 0 {
-            format!(" ({} shiny)", shiny_count).yellow().bold().to_string()
-        } else {
-            String::new()
-        };
-
-        println!("  {}{}{}", name.green().bold(), count_str, shiny_str);
-        println!("    {} | Power: {} | {}",
-            types_str,
-            format!("{}", power).bright_yellow().bold(),
-            cat_display,
-        );
-    }
-
-    println!();
-    println!("  {}", "──────────────────────────────────────".dimmed());
-    println!();
-    println!("  {}", format!("Total: {} Pokemon | {} unique",
-        storage.pokemon.len(),
-        sorted_names.len()
-    ).yellow().bold());
-
-    let total_shiny: usize = pokemon_shiny_counts.values().sum();
-    if total_shiny > 0 {
-        println!("  {}", format!("Shinies: {}", total_shiny).yellow());
-    }
-
-    println!();
-    println!("  {}", "──────────────────────────────────────".dimmed());
-    println!();
-    println!("  {}", "Recent catches:".dimmed());
-    for pokemon in storage.pokemon.iter().rev().take(5) {
-        let shiny_tag = if pokemon.shiny { " [Shiny]".yellow().to_string() } else { String::new() };
-        println!("    {} at {}{}",
-                pokemon.name.green(),
-                pokemon.caught_at.format("%Y-%m-%d %H:%M").to_string().dimmed(),
-                shiny_tag);
-    }
+    // Restore terminal
+    stdout().execute(cursor::Show)?;
+    terminal::disable_raw_mode()?;
+    stdout().execute(LeaveAlternateScreen)?;
+    Ok(())
 }
 
 fn release_pokemon(pokemon_name: String, number: usize) {
@@ -1530,6 +1791,153 @@ fn clear_pc() {
     }
 }
 
+fn manage_team(add: Option<String>, remove: Option<String>, clear: bool) {
+    let pokemon_db: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
+
+    if clear {
+        let team = BattleTeam::new();
+        if let Err(e) = team.save() {
+            eprintln!("{}", format!("Error clearing team: {}", e).red());
+        } else {
+            println!("{}", "Battle team cleared.".green());
+        }
+        return;
+    }
+
+    if let Some(name) = add {
+        let pc = PcStorage::load();
+        let normalized = name.to_lowercase().replace("-", "_");
+
+        // Check if Pokemon exists in PC
+        if !pc.pokemon.iter().any(|p| p.name.to_lowercase().replace("-", "_") == normalized) {
+            println!("{}", format!("You don't have {} in your PC.", name).red());
+            return;
+        }
+
+        let mut team = BattleTeam::load();
+
+        if team.pokemon.len() >= 20 {
+            println!("{}", "Battle team is full (20 Pokemon max). Remove one first.".red());
+            return;
+        }
+
+        // Check if already on team
+        if team.pokemon.iter().any(|p| p.name.to_lowercase().replace("-", "_") == normalized) {
+            println!("{}", format!("{} is already on your battle team.", name).yellow());
+            return;
+        }
+
+        // Find if any are shiny
+        let is_shiny = pc.pokemon.iter()
+            .any(|p| p.name.to_lowercase().replace("-", "_") == normalized && p.shiny);
+
+        team.pokemon.push(BattleTeamEntry {
+            name: name.to_lowercase(),
+            shiny: is_shiny,
+        });
+
+        if let Err(e) = team.save() {
+            eprintln!("{}", format!("Error saving team: {}", e).red());
+        } else {
+            println!("{}", format!("{} added to battle team. ({}/20)", name, team.pokemon.len()).green());
+        }
+        return;
+    }
+
+    if let Some(name) = remove {
+        let mut team = BattleTeam::load();
+        let normalized = name.to_lowercase().replace("-", "_");
+        let before = team.pokemon.len();
+        team.pokemon.retain(|p| p.name.to_lowercase().replace("-", "_") != normalized);
+
+        if team.pokemon.len() == before {
+            println!("{}", format!("{} is not on your battle team.", name).yellow());
+        } else {
+            if let Err(e) = team.save() {
+                eprintln!("{}", format!("Error saving team: {}", e).red());
+            } else {
+                println!("{}", format!("{} removed from battle team. ({}/20)", name, team.pokemon.len()).green());
+            }
+        }
+        return;
+    }
+
+    // Display current team
+    let team = BattleTeam::load();
+
+    if team.pokemon.is_empty() {
+        println!("{}", "Your battle team is empty.".yellow());
+        println!("Add Pokemon with: catch-pokemon team --add <name>");
+        return;
+    }
+
+    println!();
+    println!("{}", "  Battle Team".cyan().bold());
+    println!("{}", "  ═══════════".cyan());
+    println!();
+
+    let mut total_power = 0u32;
+
+    for (i, entry) in team.pokemon.iter().enumerate() {
+        let normalized = entry.name.replace("-", "_");
+        let (types_str, power, cat_display) = if let Some(data) = pokemon_db.get(&normalized) {
+            let type_strings: Vec<String> = data.types.iter().map(|t| {
+                match t.as_str() {
+                    "fire"     => t.red().bold().to_string(),
+                    "water"    => t.blue().bold().to_string(),
+                    "grass"    => t.green().bold().to_string(),
+                    "electric" => t.yellow().bold().to_string(),
+                    "ice"      => t.cyan().bold().to_string(),
+                    "fighting" => t.red().to_string(),
+                    "poison"   => t.purple().to_string(),
+                    "ground"   => t.yellow().to_string(),
+                    "flying"   => t.cyan().to_string(),
+                    "psychic"  => t.magenta().bold().to_string(),
+                    "bug"      => t.green().to_string(),
+                    "rock"     => t.yellow().dimmed().to_string(),
+                    "ghost"    => t.purple().bold().to_string(),
+                    "dragon"   => t.blue().bold().to_string(),
+                    "dark"     => t.white().dimmed().to_string(),
+                    "steel"    => t.white().to_string(),
+                    "fairy"    => t.magenta().to_string(),
+                    "normal"   => t.white().to_string(),
+                    _          => t.to_string(),
+                }
+            }).collect();
+            let cat = match data.category.as_str() {
+                "legendary"        => "Legendary".red().bold().to_string(),
+                "mythical"         => "Mythical".magenta().bold().to_string(),
+                "pseudo_legendary" => "Pseudo-Legendary".yellow().bold().to_string(),
+                "starter"          => "Starter".green().bold().to_string(),
+                "starter_evolution" => "Starter Evo".green().to_string(),
+                "rare"             => "Rare".cyan().bold().to_string(),
+                "baby"             => "Baby".bright_magenta().to_string(),
+                "uncommon"         => "Uncommon".white().to_string(),
+                "common"           => "Common".bright_black().to_string(),
+                _                  => data.category.clone(),
+            };
+            (type_strings.join(" / "), data.power_rank as u32, cat)
+        } else {
+            ("???".to_string(), 0, "unknown".to_string())
+        };
+
+        total_power += power;
+
+        let shiny_str = if entry.shiny { " [Shiny]".yellow().bold().to_string() } else { String::new() };
+
+        println!("  [{}] {}{}", format!("{:2}", i + 1).dimmed(), entry.name.green().bold(), shiny_str);
+        println!("      {} | Power: {} | {}", types_str, format!("{}", power).bright_yellow().bold(), cat_display);
+    }
+
+    println!();
+    println!("  {}", "──────────────────────────────────────".dimmed());
+    println!();
+    println!("  {} | Total Power: {}",
+        format!("{}/20 slots", team.pokemon.len()).cyan(),
+        format!("{}", total_power).bright_yellow().bold(),
+    );
+}
+
 fn update_binary() {
     println!("{}", "Checking for updates...".cyan());
 
@@ -1657,6 +2065,9 @@ fn main() {
         },
         Commands::Setup => {
             setup_shell();
+        },
+        Commands::Team { add, remove, clear } => {
+            manage_team(add, remove, clear);
         },
         Commands::Encounter { show_pokemon } => {
             encounter_pokemon(show_pokemon);
