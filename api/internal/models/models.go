@@ -12,6 +12,27 @@ type User struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
+// Trade represents a Pokemon listing on the bulletin board
+type Trade struct {
+	ID          string    `json:"id"`
+	PosterID    string    `json:"poster_id"`
+	Offering    Pokemon   `json:"offering"`     // Pokemon being offered
+	LookingFor  string    `json:"looking_for"`  // What they want (free text, e.g. "any legendary" or "charizard")
+	Status      string    `json:"status"`       // open, accepted, expired, cancelled
+	CreatedAt   time.Time `json:"created_at"`
+	ExpiresAt   time.Time `json:"expires_at"`
+}
+
+// TradeOffer represents someone offering a Pokemon for a trade listing
+type TradeOffer struct {
+	ID        string    `json:"id"`
+	TradeID   string    `json:"trade_id"`
+	OfferByID string    `json:"offer_by_id"`
+	Pokemon   Pokemon   `json:"pokemon"`
+	Status    string    `json:"status"` // pending, accepted, rejected
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type Pokemon struct {
 	Name      string   `json:"name"`
 	Types     []string `json:"types"`

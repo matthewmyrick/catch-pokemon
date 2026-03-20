@@ -33,6 +33,16 @@ func main() {
 	mux.Handle("GET /api/rankings", middleware.Auth(http.HandlerFunc(handlers.GetRankings)))
 	mux.Handle("GET /api/ws", middleware.Auth(handlers.WebSocketHandler(queue)))
 
+	// Trade routes (bulletin board)
+	mux.Handle("GET /api/trades", middleware.Auth(http.HandlerFunc(handlers.ListTrades)))
+	mux.Handle("GET /api/trade", middleware.Auth(http.HandlerFunc(handlers.GetTradeDetail)))
+	mux.Handle("GET /api/trade/mine", middleware.Auth(http.HandlerFunc(handlers.MyTrade)))
+	mux.Handle("POST /api/trade/create", middleware.Auth(http.HandlerFunc(handlers.CreateTrade)))
+	mux.Handle("POST /api/trade/offer", middleware.Auth(http.HandlerFunc(handlers.MakeTradeOffer)))
+	mux.Handle("POST /api/trade/accept", middleware.Auth(http.HandlerFunc(handlers.AcceptTradeOffer)))
+	mux.Handle("POST /api/trade/reject", middleware.Auth(http.HandlerFunc(handlers.RejectTradeOffer)))
+	mux.Handle("POST /api/trade/cancel", middleware.Auth(http.HandlerFunc(handlers.CancelTrade)))
+
 	log.Printf("catch-pokemon API server starting on :%s", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatal(err)
