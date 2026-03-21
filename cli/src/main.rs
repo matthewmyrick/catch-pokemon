@@ -2215,12 +2215,31 @@ fn clear_pc() {
     
     if input.trim().to_lowercase() == "yes" {
         let path = get_storage_path();
-        if path.exists() {
-            if let Err(e) = fs::remove_file(&path) {
-                eprintln!("Error clearing PC: {}", e);
-            } else {
-                println!("{}", "PC storage cleared!".green());
+        let dir = path.parent().unwrap().to_path_buf();
+
+        // Remove all game data files
+        let files = [
+            "pc_storage.json",
+            "pc_storage.json.bak",
+            "pc_backup.json",
+            "battle_team.json",
+            "battle_team.json.bak",
+            "pokedex.json",
+            "pokedex.json.bak",
+            "pokedex_backup.json",
+        ];
+
+        let mut cleared = false;
+        for file in &files {
+            let p = dir.join(file);
+            if p.exists() {
+                let _ = fs::remove_file(&p);
+                cleared = true;
             }
+        }
+
+        if cleared {
+            println!("{}", "All game data cleared!".green());
         } else {
             println!("PC was already empty.");
         }
