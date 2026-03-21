@@ -519,11 +519,6 @@ impl Pokedex {
         }
         let encrypted = encrypt_pokedex(self)?;
         fs::write(&path, encrypted)?;
-
-        // Plaintext backup for recovery
-        let backup_path = path.with_file_name("pokedex_backup.json");
-        let json = serde_json::to_string_pretty(self)?;
-        fs::write(&backup_path, json)?;
         Ok(())
     }
 
@@ -2322,10 +2317,7 @@ fn restore_pc(file: Option<String>) {
         eprintln!("{}", format!("Error saving restored PC: {}", e).red());
     } else {
         println!("{}", format!("Restored {} Pokemon! PC is encrypted and verified.", storage.pokemon.len()).green().bold());
-
-        // Delete the plaintext backup after successful restore to prevent cheating
-        let _ = fs::remove_file(&backup_path);
-        println!("{}", "Plaintext backup deleted for security.".dimmed());
+        println!("{}", "Signed backup saved for recovery.".dimmed());
     }
 }
 
