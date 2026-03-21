@@ -12,6 +12,16 @@ type User struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
+// CaughtPokemon matches the Rust CLI's CaughtPokemon struct
+type CaughtPokemon struct {
+	Name     string `json:"name"`
+	CaughtAt string `json:"caught_at"`
+	BallUsed string `json:"ball_used"`
+	Shiny    bool   `json:"shiny"`
+	PrevHash string `json:"prev_hash,omitempty"`
+	Signature string `json:"signature,omitempty"`
+}
+
 // Trade represents a Pokemon listing on the bulletin board
 type Trade struct {
 	ID          string    `json:"id"`

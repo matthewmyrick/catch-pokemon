@@ -10,6 +10,7 @@ import (
 	"github.com/matthewmyrick/catch-pokemon/api/internal/matchmaking"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/middleware"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/models"
+	"github.com/matthewmyrick/catch-pokemon/api/internal/verify"
 )
 
 var Battles = battle.NewStore()
@@ -33,12 +34,26 @@ func BattleJoin(queue *matchmaking.Queue) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userID := middleware.GetUserID(r)
 
-		var pc []models.Pokemon
-		if err := json.NewDecoder(r.Body).Decode(&pc); err != nil {
-			http.Error(w, `{"error":"invalid PC data"}`, http.StatusBadRequest)
+		var req struct {
+			PC      []models.Pokemon    `json:"pc"`
+			PCProof verify.SignedPayload `json:"pc_proof"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, `{"error":"invalid request data"}`, http.StatusBadRequest)
 			return
 		}
 
+		// Verify signed PC proof if provided
+		if req.PCProof.Signature != "" {
+			if err := verify.VerifyPayload(&req.PCProof); err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode(map[string]string{"error": "PC verification failed: " + err.Error()})
+				return
+			}
+		}
+
+		pc := req.PC
 		if len(pc) < 6 {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
@@ -122,8 +137,9 @@ func BattleJoin(queue *matchmaking.Queue) http.Handler {
 
 // SelectRequest is the body for team selection
 type SelectRequest struct {
-	BattleID string           `json:"battle_id"`
-	Team     []models.Pokemon `json:"team"`
+	BattleID string               `json:"battle_id"`
+	Team     []models.Pokemon     `json:"team"`
+	PCProof  verify.SignedPayload `json:"pc_proof"`
 }
 
 // BattleSelect handles team selection for a round
@@ -134,6 +150,25 @@ func BattleSelect(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid request"}`, http.StatusBadRequest)
 		return
+	}
+
+	// Verify PC proof if provided
+	if req.PCProof.Signature != "" {
+		if err := verify.VerifyPayload(&req.PCProof); err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(map[string]string{"error": "PC verification failed: " + err.Error()})
+			return
+		}
+		// Verify all 6 team Pokemon exist in the verified PC
+		for _, p := range req.Team {
+			if !verify.HasPokemon(req.PCProof.PC, p.Name) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode(map[string]string{"error": "You don't have " + p.Name + " in your PC"})
+				return
+			}
+		}
 	}
 
 	if len(req.Team) != 6 {

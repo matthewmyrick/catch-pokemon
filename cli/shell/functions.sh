@@ -197,6 +197,28 @@ pc() {
     fi
 }
 
+# --- BATTLE SHORTCUT ---
+
+battle() {
+    if command -v catch-pokemon &>/dev/null; then
+        catch-pokemon battle
+    else
+        echo -e "\033[1;31m❌ catch-pokemon CLI not found\033[0m"
+        return 1
+    fi
+}
+
+# --- TRADE SHORTCUT ---
+
+trade() {
+    if command -v catch-pokemon &>/dev/null; then
+        catch-pokemon trade
+    else
+        echo -e "\033[1;31m❌ catch-pokemon CLI not found\033[0m"
+        return 1
+    fi
+}
+
 # --- POKEDEX SHORTCUT ---
 
 # Browse the Pokedex (shortcut for catch-pokemon pokedex)

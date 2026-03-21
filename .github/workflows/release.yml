@@ -155,6 +155,7 @@ jobs:
     - name: Build release binary
       env:
         BUILD_SECRET_KEY: ${{ secrets.BUILD_SECRET_KEY }}
+        CATCH_POKEMON_API_URL: ${{ vars.CATCH_POKEMON_API_URL }}
       working-directory: cli
       run: cargo build --release --target ${{ matrix.target }}
 

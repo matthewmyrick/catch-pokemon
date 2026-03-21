@@ -40,15 +40,20 @@ fn main() {
         .collect::<Vec<_>>()
         .join(", ");
 
+    // API URL — hardcoded into binary at build time
+    let api_url = env::var("CATCH_POKEMON_API_URL")
+        .unwrap_or_else(|_| "http://localhost:8080".to_string());
+
     let code = format!(
-        "const BUILD_SECRET: [u8; 32] = [{}];\n",
-        bytes_str
+        "const BUILD_SECRET: [u8; 32] = [{}];\nconst API_URL: &str = \"{}\";\n",
+        bytes_str, api_url
     );
 
     fs::write(&dest_path, code).unwrap();
 
     // Always rerun to ensure the secret is never stale
     println!("cargo:rerun-if-env-changed=BUILD_SECRET_KEY");
+    println!("cargo:rerun-if-env-changed=CATCH_POKEMON_API_URL");
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=.build_secret");
 }
