@@ -335,7 +335,7 @@ impl PcStorage {
             }
         }
 
-        // Try to read as legacy unencrypted JSON (migration)
+        // Try to read as legacy unencrypted JSON
         if let Ok(contents) = fs::read_to_string(&path) {
             if let Ok(mut storage) = serde_json::from_str::<PcStorage>(&contents) {
                 println!("{}", "Unencrypted PC storage detected. Encrypting...".yellow());
@@ -352,8 +352,6 @@ impl PcStorage {
         }
 
         // IMPORTANT: Do NOT return empty or overwrite — the file exists but we can't decrypt it.
-        // This means the binary has a different key than what encrypted the file.
-        // Back up the existing file so it's never lost.
         let backup_path = path.with_extension("json.bak");
         if !backup_path.exists() {
             let _ = fs::copy(&path, &backup_path);
@@ -361,7 +359,8 @@ impl PcStorage {
         }
 
         eprintln!("{}", "Could not decrypt PC storage.".red().bold());
-        eprintln!("{}", "This usually means the binary was built with a different key.".red());
+        eprintln!("{}", "If you have a backup, run: catch-pokemon restore".red());
+        eprintln!("{}", "Or start fresh with: catch-pokemon clear".red());
         eprintln!("{}", "Your Pokemon data has been backed up and is NOT lost.".yellow());
         eprintln!("To fix: rebuild with the correct BUILD_SECRET_KEY or restore the backup.");
         std::process::exit(1);
@@ -376,10 +375,21 @@ impl PcStorage {
         let encrypted = encrypt_storage(self)?;
         fs::write(&path, encrypted)?;
 
-        // Write plaintext backup for recovery
+        // Write signed plaintext backup for recovery
+        // The backup includes an HMAC signature so edits are detected on restore
         let backup_path = path.with_file_name("pc_backup.json");
-        let json = serde_json::to_string_pretty(self)?;
-        fs::write(&backup_path, json)?;
+        let data_json = serde_json::to_string(&self)?;
+        let key = derive_signing_key();
+        let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&key)
+            .expect("HMAC accepts any key length");
+        mac.update(data_json.as_bytes());
+        let sig = hex::encode(mac.finalize().into_bytes());
+
+        let backup = serde_json::json!({
+            "data": self,
+            "signature": sig
+        });
+        fs::write(&backup_path, serde_json::to_string_pretty(&backup)?)?;
 
         Ok(())
     }
@@ -683,27 +693,15 @@ const CHAIN_DOMAIN: &[u8] = b"catch-pokemon:chain:v1";
 ///
 /// This makes brute-force reversal expensive even if BUILD_SECRET is extracted
 /// from the binary, and ties the key to the specific machine + user.
+/// Derive signing key from BUILD_SECRET only. No salt.
+/// Same key on every machine with the same binary.
+/// API uses the same BUILD_SECRET to verify.
 fn derive_signing_key() -> Vec<u8> {
-    let hostname = hostname::get()
-        .map(|h| h.to_string_lossy().to_string())
-        .unwrap_or_else(|_| "unknown-host".to_string());
-    let username = std::env::var("USER")
-        .or_else(|_| std::env::var("USERNAME"))
-        .unwrap_or_else(|_| "unknown-user".to_string());
-
-    // Step 1: Domain-separated intermediate key
     let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&BUILD_SECRET)
         .expect("HMAC accepts any key length");
     mac.update(KDF_DOMAIN);
-    let intermediate = mac.finalize().into_bytes();
-
-    // Step 2: Salt with machine identity
-    let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&intermediate)
-        .expect("HMAC accepts any key length");
-    mac.update(format!("{}:{}", hostname, username).as_bytes());
     let mut key = mac.finalize().into_bytes().to_vec();
 
-    // Step 3: Key stretching — 10,000 HMAC rounds
     for round in 0u32..10_000 {
         let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&key)
             .expect("HMAC accepts any key length");
@@ -2251,12 +2249,47 @@ fn restore_pc(file: Option<String>) {
         }
     };
 
-    let mut storage: PcStorage = match serde_json::from_str(&contents) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("{}", format!("Invalid backup JSON: {}", e).red());
-            return;
+    // Try signed backup format first
+    let mut storage: PcStorage = if let Ok(signed) = serde_json::from_str::<serde_json::Value>(&contents) {
+        if let (Some(data), Some(sig)) = (signed.get("data"), signed.get("signature")) {
+            // Verify signature
+            let data_json = serde_json::to_string(data).unwrap_or_default();
+            let key = derive_signing_key();
+            let mut mac = <HmacSha256 as HmacMac>::new_from_slice(&key)
+                .expect("HMAC accepts any key length");
+            mac.update(data_json.as_bytes());
+            let expected_sig = hex::encode(mac.finalize().into_bytes());
+
+            let actual_sig = sig.as_str().unwrap_or("");
+            if actual_sig != expected_sig {
+                eprintln!("{}", "Backup signature verification FAILED.".red().bold());
+                eprintln!("{}", "The backup file has been tampered with.".red());
+                return;
+            }
+
+            match serde_json::from_value(data.clone()) {
+                Ok(s) => s,
+                Err(e) => {
+                    eprintln!("{}", format!("Invalid backup data: {}", e).red());
+                    return;
+                }
+            }
+        } else {
+            // Unsigned legacy backup — allow for migration but warn
+            match serde_json::from_str(&contents) {
+                Ok(s) => {
+                    println!("{}", "Warning: Unsigned backup (legacy format). Accepting for migration.".yellow());
+                    s
+                }
+                Err(e) => {
+                    eprintln!("{}", format!("Invalid backup JSON: {}", e).red());
+                    return;
+                }
+            }
         }
+    } else {
+        eprintln!("{}", "Could not parse backup file.".red());
+        return;
     };
 
     println!("{}", format!("Found {} Pokemon in backup.", storage.pokemon.len()).cyan());
@@ -2279,6 +2312,10 @@ fn restore_pc(file: Option<String>) {
         eprintln!("{}", format!("Error saving restored PC: {}", e).red());
     } else {
         println!("{}", format!("Restored {} Pokemon! PC is encrypted and verified.", storage.pokemon.len()).green().bold());
+
+        // Delete the plaintext backup after successful restore to prevent cheating
+        let _ = fs::remove_file(&backup_path);
+        println!("{}", "Plaintext backup deleted for security.".dimmed());
     }
 }
 
