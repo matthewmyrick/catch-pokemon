@@ -1526,21 +1526,122 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
 
     let mut selected: usize = 0;
     let mut scroll_offset: usize = 0;
-    // Cache sprite for current selection to avoid re-running command on every frame
     let mut cached_sprite_name = String::new();
     let mut cached_sprite: Vec<String> = Vec::new();
     let mut status_msg: Option<String> = None;
     let mut confirming_release = false;
+
+    // Sort/filter state
+    let sort_modes = ["true_odds", "power", "name", "count", "category"];
+    let mut sort_idx: usize = 0; // default: true_odds (rarest first)
+
+    let type_filters = ["all", "fire", "water", "grass", "electric", "ice", "fighting",
+        "poison", "ground", "flying", "psychic", "bug", "rock", "ghost",
+        "dragon", "dark", "steel", "fairy", "normal"];
+    let mut type_filter_idx: usize = 0;
+
+    let cat_filters = ["all", "common", "uncommon", "rare", "baby", "starter",
+        "starter_evolution", "pseudo_legendary", "legendary", "mythical"];
+    let mut cat_filter_idx: usize = 0;
+
+    let mut searching = false;
+    let mut search_term = String::new();
+
+    // Precompute true odds for sorting
+    let pokemon_db_sort: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
+    let valid_names_sort: std::collections::HashSet<&str> = VALID_POKEMON
+        .lines().filter(|l| !l.is_empty()).collect();
+    let total_weight: u32 = pokemon_db_sort.iter()
+        .filter(|(n, _)| valid_names_sort.contains(n.as_str()))
+        .map(|(_, d)| d.catch_rate as u32).sum();
 
     loop {
         let (tw, th) = terminal::size().unwrap_or((80, 24));
         let tw = tw as usize;
         let th = th as usize;
         let left_width = 28.min(tw / 3);
-        let list_height = th.saturating_sub(4);
+        let list_height = th.saturating_sub(5); // extra line for filter bar
+
+        // Apply filters and search
+        let filtered: Vec<usize> = (0..entries.len()).filter(|&i| {
+            let e = &entries[i];
+            // Type filter
+            if type_filter_idx > 0 {
+                let t = type_filters[type_filter_idx];
+                if !e.types.iter().any(|et| et == t) { return false; }
+            }
+            // Category filter
+            if cat_filter_idx > 0 {
+                let c = cat_filters[cat_filter_idx];
+                let normalized = e.name.replace("-", "_");
+                if let Some(data) = pokemon_db_sort.get(&normalized) {
+                    if data.category != c { return false; }
+                } else { return false; }
+            }
+            // Search filter
+            if !search_term.is_empty() {
+                if !e.name.to_lowercase().contains(&search_term.to_lowercase()) { return false; }
+            }
+            true
+        }).collect();
+
+        // Sort filtered indices
+        let mut sorted = filtered.clone();
+        let sort_mode = sort_modes[sort_idx];
+        sorted.sort_by(|&a, &b| {
+            let ea = &entries[a];
+            let eb = &entries[b];
+            match sort_mode {
+                "true_odds" => {
+                    // Sort by true catch odds (rarest first)
+                    let na = ea.name.replace("-", "_");
+                    let nb = eb.name.replace("-", "_");
+                    let odds_a = pokemon_db_sort.get(&na).map(|d| {
+                        let cat_w: u32 = pokemon_db_sort.iter()
+                            .filter(|(n, dd)| valid_names_sort.contains(n.as_str()) && dd.category == d.category)
+                            .map(|(_, dd)| dd.catch_rate as u32).sum();
+                        (cat_w as f64 / total_weight as f64) * (d.catch_rate as f64 / 255.0)
+                    }).unwrap_or(0.0);
+                    let odds_b = pokemon_db_sort.get(&nb).map(|d| {
+                        let cat_w: u32 = pokemon_db_sort.iter()
+                            .filter(|(n, dd)| valid_names_sort.contains(n.as_str()) && dd.category == d.category)
+                            .map(|(_, dd)| dd.catch_rate as u32).sum();
+                        (cat_w as f64 / total_weight as f64) * (d.catch_rate as f64 / 255.0)
+                    }).unwrap_or(0.0);
+                    odds_a.partial_cmp(&odds_b).unwrap_or(std::cmp::Ordering::Equal)
+                }
+                "power" => eb.power_rank.cmp(&ea.power_rank),
+                "count" => eb.count.cmp(&ea.count),
+                "category" => {
+                    let cat_order = |name: &str| -> u8 {
+                        let n = name.replace("-", "_");
+                        match pokemon_db_sort.get(&n).map(|d| d.category.as_str()) {
+                            Some("mythical") => 0, Some("legendary") => 1,
+                            Some("pseudo_legendary") => 2, Some("starter_evolution") => 3,
+                            Some("rare") => 4, Some("starter") => 5,
+                            Some("uncommon") => 6, Some("baby") => 7,
+                            Some("common") => 8, _ => 9,
+                        }
+                    };
+                    cat_order(&ea.name).cmp(&cat_order(&eb.name)).then(ea.name.cmp(&eb.name))
+                }
+                _ => ea.name.cmp(&eb.name), // "name"
+            }
+        });
+
+        // Clamp selected
+        if sorted.is_empty() {
+            selected = 0;
+        } else if selected >= sorted.len() {
+            selected = sorted.len() - 1;
+        }
 
         // Get selected entry
-        let sel = &entries[selected];
+        let sel_idx = if !sorted.is_empty() { sorted[selected] } else { 0 };
+        let sel = if !entries.is_empty() { &entries[sel_idx] } else {
+            // Empty — skip rendering
+            break;
+        };
 
         // Load sprite only when selection changes
         // Show shiny sprite if the user has a shiny version
@@ -1727,21 +1828,34 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
         stdout().execute(cursor::MoveTo(0, 0))?;
 
         // Header
-        let header = format!(" {} ({} unique | {} caught)",
+        let type_label = if type_filter_idx > 0 { type_filters[type_filter_idx] } else { "all" };
+        let cat_label = if cat_filter_idx > 0 { cat_filters[cat_filter_idx] } else { "all" };
+        let header = format!(" {} ({}/{} shown | sort: {} | type: {} | cat: {})",
             "Pokemon PC".cyan().bold(),
+            sorted.len().to_string().yellow(),
             entries.len().to_string().yellow(),
-            entries.iter().map(|e| e.count).sum::<usize>().to_string().yellow());
+            sort_modes[sort_idx].cyan(),
+            type_label.cyan(),
+            cat_label.cyan());
         print!("{}\x1B[K\r\n", header);
-        print!(" {}\x1B[K\r\n", "─".repeat(tw.saturating_sub(2)).dimmed());
+
+        // Search bar
+        if searching {
+            print!(" {}: {}{}\x1B[K\r\n", "Search".cyan().bold(), search_term.yellow(), "▌".yellow());
+        } else if !search_term.is_empty() {
+            print!(" Search: {}\x1B[K\r\n", search_term.yellow());
+        } else {
+            print!(" {}\x1B[K\r\n", "─".repeat(tw.saturating_sub(2)).dimmed());
+        }
 
         // Body rows
-        let name_width = left_width.saturating_sub(8); // space for " >*~ name xN"
+        let name_width = left_width.saturating_sub(8);
         for row in 0..list_height {
-            // Left panel
-            let left = if row < entries.len().saturating_sub(scroll_offset).min(list_height) {
+            let left = if row < sorted.len().saturating_sub(scroll_offset).min(list_height) {
                 let idx = scroll_offset + row;
-                if idx < entries.len() {
-                    let e = &entries[idx];
+                if idx < sorted.len() {
+                    let entry_idx = sorted[idx];
+                    let e = &entries[entry_idx];
                     let arrow = if idx == selected { ">" } else { " " };
                     let team_mark = if e.on_team { "*" } else { " " };
                     let shiny_mark = if e.shiny_count > 0 { "~" } else { " " };
@@ -1781,9 +1895,14 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
             print!(" {}\x1B[K", msg.red().bold());
             status_msg = None;
         } else {
-            let team_count = entries.iter().filter(|e| e.on_team).count();
-            print!(" {}\x1B[K",
-                format!("↑↓ Navigate | T: Team ({}/20) | R: Release | Q: Quit", team_count).dimmed());
+            if searching {
+                print!(" {}\x1B[K",
+                    "Type to filter | Esc: Stop search".dimmed());
+            } else {
+                let team_count = entries.iter().filter(|e| e.on_team).count();
+                print!(" {}\x1B[K",
+                    format!("↑↓ Nav | /: Search | S: Sort | F: Type | C: Cat | T: Team ({}/20) | R: Release | Q: Quit", team_count).dimmed());
+            }
         }
         stdout().flush()?;
 
@@ -1794,39 +1913,75 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
 
         // Input
         if let Ok(Event::Key(KeyEvent { code, modifiers, .. })) = event::read() {
+            if searching {
+                match code {
+                    KeyCode::Esc | KeyCode::Enter => { searching = false; }
+                    KeyCode::Backspace => { search_term.pop(); selected = 0; scroll_offset = 0; }
+                    KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => break,
+                    KeyCode::Up => { if selected > 0 { selected -= 1; } }
+                    KeyCode::Down => { if !sorted.is_empty() && selected < sorted.len() - 1 { selected += 1; } }
+                    KeyCode::Char(c) => { search_term.push(c); selected = 0; scroll_offset = 0; }
+                    _ => {}
+                }
+                continue;
+            }
             match code {
                 KeyCode::Char('q') | KeyCode::Esc => break,
                 KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => break,
+                KeyCode::Char('/') => {
+                    searching = true;
+                    search_term.clear();
+                    selected = 0;
+                    scroll_offset = 0;
+                }
+                KeyCode::Char('s') | KeyCode::Char('S') => {
+                    sort_idx = (sort_idx + 1) % sort_modes.len();
+                    selected = 0;
+                    scroll_offset = 0;
+                    status_msg = Some(format!("Sort: {}", sort_modes[sort_idx]));
+                }
+                KeyCode::Char('f') | KeyCode::Char('F') => {
+                    type_filter_idx = (type_filter_idx + 1) % type_filters.len();
+                    selected = 0;
+                    scroll_offset = 0;
+                    status_msg = Some(format!("Type filter: {}", type_filters[type_filter_idx]));
+                }
+                KeyCode::Char('c') => {
+                    cat_filter_idx = (cat_filter_idx + 1) % cat_filters.len();
+                    selected = 0;
+                    scroll_offset = 0;
+                    status_msg = Some(format!("Category filter: {}", cat_filters[cat_filter_idx]));
+                }
                 KeyCode::Up | KeyCode::Char('k') => {
                     if selected > 0 { selected -= 1; }
                 }
                 KeyCode::Down | KeyCode::Char('j') => {
-                    if selected < entries.len() - 1 { selected += 1; }
+                    if !sorted.is_empty() && selected < sorted.len() - 1 { selected += 1; }
                 }
                 KeyCode::Char('t') | KeyCode::Char('T') => {
-                    let name = entries[selected].name.clone();
+                    if sorted.is_empty() { continue; }
+                    let ei = sorted[selected];
+                    let name = entries[ei].name.clone();
                     let normalized = name.to_lowercase().replace("-", "_");
                     let mut team = BattleTeam::load();
                     if team.pokemon.iter().any(|p| p.name.to_lowercase().replace("-", "_") == normalized) {
-                        // Remove from team
                         team.pokemon.retain(|p| p.name.to_lowercase().replace("-", "_") != normalized);
                         let _ = team.save();
-                        entries[selected].on_team = false;
+                        entries[ei].on_team = false;
                     } else if team.pokemon.len() >= 20 {
-                        // Team is full — show warning in footer on next render
                         status_msg = Some("Battle team is full! (20/20) Remove one first.".to_string());
                     } else {
-                        // Add to team
-                        let is_shiny = entries[selected].shiny_count > 0;
+                        let is_shiny = entries[ei].shiny_count > 0;
                         team.pokemon.push(BattleTeamEntry { name: name.to_lowercase(), shiny: is_shiny });
                         let _ = team.save();
-                        entries[selected].on_team = true;
+                        entries[ei].on_team = true;
                     }
                 }
                 KeyCode::Char('r') | KeyCode::Char('R') => {
-                    if entries.is_empty() { continue; }
-                    let name = entries[selected].name.clone();
-                    let count = entries[selected].count;
+                    if sorted.is_empty() { continue; }
+                    let ei = sorted[selected];
+                    let name = entries[ei].name.clone();
+                    let count = entries[ei].count;
 
                     // Show confirmation in footer
                     status_msg = Some(format!(
@@ -1840,27 +1995,26 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
                     confirming_release = true;
                 }
                 KeyCode::Char('y') | KeyCode::Char('Y') if confirming_release => {
-                    let name = entries[selected].name.clone();
+                    if sorted.is_empty() { confirming_release = false; continue; }
+                    let ei = sorted[selected];
+                    let name = entries[ei].name.clone();
                     confirming_release = false;
 
-                    // Release from PC storage
                     let mut storage = PcStorage::load();
                     let released = storage.release_pokemon(&name, 1);
                     if released > 0 {
                         if let Err(e) = storage.save() {
                             status_msg = Some(format!("Error saving: {}", e));
                         } else {
-                            // Update entries in-place
-                            entries[selected].count -= 1;
-                            if entries[selected].count == 0 {
-                                entries.remove(selected);
-                                if selected > 0 && selected >= entries.len() {
-                                    selected = entries.len() - 1;
+                            entries[ei].count -= 1;
+                            if entries[ei].count == 0 {
+                                entries.remove(ei);
+                                if selected > 0 && selected >= sorted.len().saturating_sub(1) {
+                                    selected = selected.saturating_sub(1);
                                 }
                             }
-                            // Also remove from battle team if count is 0
-                            if entries.is_empty() || (selected < entries.len() && entries[selected].count == 0) {
-                                let normalized = name.to_lowercase().replace("-", "_");
+                            let normalized = name.to_lowercase().replace("-", "_");
+                            if !entries.iter().any(|e| e.name.to_lowercase().replace("-", "_") == normalized && e.count > 0) {
                                 let mut team = BattleTeam::load();
                                 team.pokemon.retain(|p| p.name.to_lowercase().replace("-", "_") != normalized);
                                 let _ = team.save();
@@ -1877,7 +2031,7 @@ fn pc_tui(entries: &mut Vec<PcEntry>, _storage: &PcStorage) -> Result<(), Box<dy
                 }
                 KeyCode::Home => { selected = 0; }
                 KeyCode::End => {
-                    if !entries.is_empty() { selected = entries.len() - 1; }
+                    if !sorted.is_empty() { selected = sorted.len() - 1; }
                 }
                 _ => {}
             }
