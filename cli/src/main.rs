@@ -684,15 +684,6 @@ const KDF_DOMAIN: &[u8] = b"catch-pokemon:kdf:v1";
 const SIGN_DOMAIN: &[u8] = b"catch-pokemon:sign:v1";
 const CHAIN_DOMAIN: &[u8] = b"catch-pokemon:chain:v1";
 
-/// Derive a per-machine signing key using multi-round HMAC-based key stretching.
-///
-/// The derivation chain:
-///   1. HMAC(BUILD_SECRET, domain_separator) → intermediate key
-///   2. HMAC(intermediate, hostname:username) → salted key
-///   3. 10,000 rounds of HMAC(prev_round, round_counter) → stretched key
-///
-/// This makes brute-force reversal expensive even if BUILD_SECRET is extracted
-/// from the binary, and ties the key to the specific machine + user.
 /// Derive signing key from BUILD_SECRET only. No salt.
 /// Same key on every machine with the same binary.
 /// API uses the same BUILD_SECRET to verify.
