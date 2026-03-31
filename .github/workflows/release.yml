@@ -83,7 +83,7 @@ jobs:
         ref: main
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: v${{ needs.check-version.outputs.version }}
         name: Release v${{ needs.check-version.outputs.version }}
@@ -144,7 +144,7 @@ jobs:
         targets: ${{ matrix.target }}
 
     - name: Cache dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~/.cargo/registry
@@ -175,14 +175,14 @@ jobs:
 
     - name: Upload Release Asset (Unix)
       if: matrix.os != 'windows-latest'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: v${{ needs.check-version.outputs.version }}
         files: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.tar.gz
 
     - name: Upload Release Asset (Windows)
       if: matrix.os == 'windows-latest'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: v${{ needs.check-version.outputs.version }}
         files: catch-pokemon-v${{ needs.check-version.outputs.version }}-${{ matrix.suffix }}.zip
