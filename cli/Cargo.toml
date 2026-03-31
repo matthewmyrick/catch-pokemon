@@ -28,3 +28,4 @@ base64 = "0.22"
 
 [build-dependencies]
 rand = "0.8"
+
