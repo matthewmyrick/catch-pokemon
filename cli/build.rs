@@ -42,7 +42,7 @@ fn main() {
 
     // API URL — hardcoded into binary at build time
     let api_url = env::var("CATCH_POKEMON_API_URL")
-        .unwrap_or_else(|_| "http://localhost:8080".to_string());
+        .unwrap_or_else(|_| "https://catch-pokemon-api.fly.dev".to_string());
 
     let code = format!(
         "const BUILD_SECRET: [u8; 32] = [{}];\nconst API_URL: &str = \"{}\";\n",
