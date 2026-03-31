@@ -132,7 +132,7 @@ fi
 # --- Set up shell functions ---
 echo ""
 echo -e "${YELLOW}Setting up shell functions...${NC}"
-catch-pokemon setup
+"$BIN_DIR/catch-pokemon" setup
 
 echo ""
 echo -e "${GREEN}${BOLD}Installation complete!${NC}"
