@@ -147,9 +147,14 @@ Checks that:\n\
 - No Pokemon entries have been added, removed, or reordered\n\
 - No entry fields have been tampered with\n\
 - The chain is complete from genesis to the latest entry\n\n\
-Example:\n\
-  catch-pokemon verify")]
-    Verify,
+Examples:\n\
+  catch-pokemon verify\n\
+  catch-pokemon verify --file /path/to/pc_storage.json")]
+    Verify {
+        /// Path to a specific encrypted PC file to verify
+        #[arg(long)]
+        file: Option<String>,
+    },
 
     /// Set up shell functions (catch, pc, pokemon_encounter, etc.)
     #[command(long_about = "Install shell functions for the Pokemon catching game.\n\n\
@@ -368,8 +373,8 @@ fn main() {
         Commands::Clear => {
             storage::clear_pc();
         },
-        Commands::Verify => {
-            storage::verify_pc();
+        Commands::Verify { file } => {
+            storage::verify_pc(file);
         },
         Commands::Setup => {
             setup::setup_shell();

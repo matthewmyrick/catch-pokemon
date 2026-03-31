@@ -20,7 +20,37 @@ pub fn show_pokedex() {
         .filter(|l| !l.is_empty())
         .collect();
 
-    let pokedex = Pokedex::load();
+    let mut pokedex = Pokedex::load();
+
+    // Sync Pokedex with PC — mark everything in PC as caught
+    let pc = PcStorage::load();
+    let mut synced = false;
+    for p in &pc.pokemon {
+        let normalized = p.name.to_lowercase();
+        let entry = pokedex.entries.entry(normalized.clone()).or_insert_with(|| {
+            crate::models::PokedexEntry {
+                name: normalized,
+                seen: false,
+                caught: false,
+                seen_at: None,
+                caught_at: None,
+            }
+        });
+        if !entry.caught {
+            entry.seen = true;
+            entry.caught = true;
+            entry.seen_at = entry.seen_at.or(Some(p.caught_at));
+            entry.caught_at = entry.caught_at.or(Some(p.caught_at));
+            synced = true;
+        } else if !entry.seen {
+            entry.seen = true;
+            entry.seen_at = entry.seen_at.or(Some(p.caught_at));
+            synced = true;
+        }
+    }
+    if synced {
+        let _ = pokedex.save();
+    }
 
     // Build list of all valid Pokemon
     struct DexRow {

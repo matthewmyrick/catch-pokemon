@@ -188,9 +188,31 @@ pub fn clear_pc() {
     }
 }
 
-pub fn verify_pc() {
-    // Use PcStorage::load which handles decryption
-    let storage = PcStorage::load();
+pub fn verify_pc(file: Option<String>) {
+    let storage = if let Some(path) = file {
+        // Try to decrypt the specified file
+        use std::path::PathBuf;
+        let p = PathBuf::from(&path);
+        if !p.exists() {
+            eprintln!("{}", format!("File not found: {}", path).red());
+            std::process::exit(1);
+        }
+        if let Ok(data) = std::fs::read(&p) {
+            if let Some(s) = crate::crypto::decrypt_storage(&data) {
+                println!("{}", format!("Decrypted: {}", path).green());
+                s
+            } else {
+                eprintln!("{}", format!("Could not decrypt: {}", path).red().bold());
+                eprintln!("{}", "The file may be encrypted with a different key.".red());
+                std::process::exit(1);
+            }
+        } else {
+            eprintln!("{}", format!("Could not read: {}", path).red());
+            std::process::exit(1);
+        }
+    } else {
+        PcStorage::load()
+    };
 
     if storage.pokemon.is_empty() {
         println!("{}", "PC is empty. Nothing to verify.".yellow());
