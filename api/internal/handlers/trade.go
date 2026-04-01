@@ -4,24 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/matthewmyrick/catch-pokemon/api/internal/db"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/middleware"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/models"
-	"github.com/matthewmyrick/catch-pokemon/api/internal/trade"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/verify"
 )
 
-var Trades = trade.NewStore()
-
 type CreateTradeRequest struct {
-	Offering   models.Pokemon       `json:"offering"`
-	LookingFor string               `json:"looking_for"`
-	PC         verify.SignedPayload  `json:"pc_proof"`
+	Offering   models.Pokemon      `json:"offering"`
+	LookingFor string              `json:"looking_for"`
+	PC         verify.SignedPayload `json:"pc_proof"`
 }
 
 type MakeOfferRequest struct {
-	TradeID string                  `json:"trade_id"`
-	Pokemon models.Pokemon          `json:"pokemon"`
-	PC      verify.SignedPayload    `json:"pc_proof"`
+	TradeID string              `json:"trade_id"`
+	Pokemon models.Pokemon      `json:"pokemon"`
+	PC      verify.SignedPayload `json:"pc_proof"`
 }
 
 type AcceptRejectRequest struct {
@@ -29,15 +27,19 @@ type AcceptRejectRequest struct {
 	OfferID string `json:"offer_id"`
 }
 
-// ListTrades returns all open trades on the bulletin board
+// ListTrades returns all open trades
 func ListTrades(w http.ResponseWriter, r *http.Request) {
-	trades := Trades.GetOpenTrades()
+	trades, err := db.GetOpenTrades()
+	if err != nil {
+		http.Error(w, `{"error":"could not fetch trades"}`, http.StatusInternalServerError)
+		return
+	}
 	if trades == nil {
-		trades = []*models.Trade{}
+		trades = []db.DBTrade{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"trades": trades,
 		"count":  len(trades),
 	})
@@ -57,12 +59,11 @@ func CreateTrade(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"must specify a Pokemon to offer"}`, http.StatusBadRequest)
 		return
 	}
-	// looking_for is optional — just posting a pokemon for offers
 	if req.LookingFor == "" {
 		req.LookingFor = "open to offers"
 	}
 
-	// Verify the signed PC payload if provided
+	// Verify PC if provided
 	if req.PC.Signature != "" {
 		if err := verify.VerifyPayload(&req.PC); err != nil {
 			w.Header().Set("Content-Type", "application/json")
@@ -78,7 +79,7 @@ func CreateTrade(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	t, err := Trades.CreateTrade(userID, req.Offering, req.LookingFor)
+	t, err := db.CreateTrade(userID, req.Offering, req.LookingFor)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusConflict)
@@ -87,7 +88,7 @@ func CreateTrade(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"status":  "posted",
 		"trade":   t,
 		"message": "Trade posted to the bulletin board!",
@@ -102,25 +103,25 @@ func GetTradeDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t := Trades.GetTrade(tradeID)
-	if t == nil {
+	t, err := db.GetTrade(tradeID)
+	if err != nil {
 		http.Error(w, `{"error":"trade not found"}`, http.StatusNotFound)
 		return
 	}
 
-	offers := Trades.GetOffers(tradeID)
+	offers, _ := db.GetOffers(tradeID)
 	if offers == nil {
-		offers = []*models.TradeOffer{}
+		offers = []db.DBTradeOffer{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"trade":  t,
 		"offers": offers,
 	})
 }
 
-// MakeTradeOffer submits an offer for a trade listing
+// MakeTradeOffer submits an offer
 func MakeTradeOffer(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 
@@ -130,7 +131,7 @@ func MakeTradeOffer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify the signed PC payload if provided
+	// Verify PC if provided
 	if req.PC.Signature != "" {
 		if err := verify.VerifyPayload(&req.PC); err != nil {
 			w.Header().Set("Content-Type", "application/json")
@@ -146,7 +147,7 @@ func MakeTradeOffer(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	offer, err := Trades.MakeOffer(req.TradeID, userID, req.Pokemon)
+	offer, err := db.MakeOffer(req.TradeID, userID, req.Pokemon)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -155,14 +156,14 @@ func MakeTradeOffer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"status":  "offered",
 		"offer":   offer,
 		"message": "Your offer has been submitted!",
 	})
 }
 
-// AcceptTradeOffer accepts an offer on your trade listing
+// AcceptTradeOffer accepts an offer
 func AcceptTradeOffer(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 
@@ -172,7 +173,7 @@ func AcceptTradeOffer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := Trades.AcceptOffer(req.TradeID, req.OfferID, userID); err != nil {
+	if err := db.AcceptOffer(req.TradeID, req.OfferID, userID); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
@@ -186,7 +187,7 @@ func AcceptTradeOffer(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// RejectTradeOffer rejects an offer on your trade listing
+// RejectTradeOffer rejects an offer
 func RejectTradeOffer(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 
@@ -196,7 +197,7 @@ func RejectTradeOffer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := Trades.RejectOffer(req.TradeID, req.OfferID, userID); err != nil {
+	if err := db.RejectOffer(req.TradeID, req.OfferID, userID); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
@@ -210,7 +211,7 @@ func RejectTradeOffer(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// CancelTrade cancels your trade listing
+// CancelTrade cancels a trade
 func CancelTrade(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 
@@ -222,7 +223,7 @@ func CancelTrade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := Trades.CancelTrade(req.TradeID, userID); err != nil {
+	if err := db.CancelTrade(req.TradeID, userID); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
@@ -236,12 +237,12 @@ func CancelTrade(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// MyTrade returns the user's active trade listing
+// MyTrade returns the user's active trade
 func MyTrade(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 
-	t := Trades.GetUserTrade(userID)
-	if t == nil {
+	t, err := db.GetUserTrade(userID)
+	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  "none",
@@ -250,13 +251,13 @@ func MyTrade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	offers := Trades.GetOffers(t.ID)
+	offers, _ := db.GetOffers(t.ID)
 	if offers == nil {
-		offers = []*models.TradeOffer{}
+		offers = []db.DBTradeOffer{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"trade":  t,
 		"offers": offers,
 	})
