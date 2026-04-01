@@ -1,6 +1,7 @@
 use colored::*;
 use std::collections::HashMap;
 use std::io::{stdout, Write};
+use std::thread;
 use std::time::Duration;
 
 use crossterm::{
@@ -178,10 +179,14 @@ pub fn battle_tui() {
     let max_attempts = 360; // 360 x 30s = 3 hours
     let mut match_data: serde_json::Value = serde_json::Value::Null;
     let mut found = false;
+    let start_time = std::time::Instant::now();
 
-    for attempt in 0..max_attempts {
-        if attempt > 0 {
-            print!("\r  Searching... ({} min waiting)   ", attempt / 2);
+    for _attempt in 0..max_attempts {
+        let elapsed = start_time.elapsed().as_secs();
+        let mins = elapsed / 60;
+        let secs = elapsed % 60;
+        if elapsed > 0 {
+            print!("\r  Searching... ({}m {}s waiting)   ", mins, secs);
             stdout().flush().unwrap_or(());
         }
 
@@ -195,7 +200,7 @@ pub fn battle_tui() {
                         found = true;
                         break;
                     } else if status == "timeout" {
-                        // No match yet, retry
+                        // No match yet, server held for ~30s, retry immediately
                         continue;
                     } else {
                         let msg = v["error"].as_str().or(v["message"].as_str()).unwrap_or("Unknown error");
@@ -206,7 +211,8 @@ pub fn battle_tui() {
                 Err(_) => { eprintln!("\r  {}", "Invalid response from server.".red()); return; }
             },
             None => {
-                // Connection dropped (likely Fly timeout) — retry
+                // Connection dropped (likely Fly timeout) — wait before retry
+                thread::sleep(Duration::from_secs(2));
                 continue;
             }
         }
