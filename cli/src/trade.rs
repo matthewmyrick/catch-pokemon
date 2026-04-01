@@ -312,7 +312,7 @@ fn trade_loop(ctx: &mut TradeContext) -> Result<(), Box<dyn std::error::Error>> 
 
 // --- Tab header ---
 
-fn render_tab_header(ctx: &TradeContext, tw: usize) {
+fn render_tab_header(ctx: &TradeContext, _tw: usize) {
     let t1 = if ctx.active_tab == TradeTab::Browse { "\x1B[1;7;36m 1 Browse \x1B[0m" } else { "\x1B[90m 1 Browse \x1B[0m" };
     let t2 = if ctx.active_tab == TradeTab::Post { "\x1B[1;7;36m 2 Post \x1B[0m" } else { "\x1B[90m 2 Post \x1B[0m" };
     let t3 = if ctx.active_tab == TradeTab::MyTrade { "\x1B[1;7;36m 3 My Trade \x1B[0m" } else { "\x1B[90m 3 My Trade \x1B[0m" };
@@ -359,7 +359,7 @@ fn render_browse(ctx: &TradeContext) -> Result<(), Box<dyn std::error::Error>> {
             let idx = ctx.post_scroll + row;
             let left_cell = if idx < ctx.pc_pokemon.len() {
                 let p = &ctx.pc_pokemon[idx];
-                let types_str = p.types.iter().map(|t| color_type(t)).collect::<Vec<_>>().join("/");
+                let _types_str = p.types.iter().map(|t| color_type(t)).collect::<Vec<_>>().join("/");
                 if idx == ctx.post_selected {
                     format!(" \x1B[7m > {:<15} x{} P:{:<3}\x1B[0m", p.name, p.count, p.power)
                 } else {
@@ -389,17 +389,18 @@ fn render_browse(ctx: &TradeContext) -> Result<(), Box<dyn std::error::Error>> {
             let left_cell = if let Some(ti) = fi {
                 let t = &ctx.trades[ti];
                 let shiny = if t.offering_shiny { "*" } else { " " };
-                let name_w = left_width.saturating_sub(12);
+                let name_w = left_width.saturating_sub(16);
                 let display = format!("{}{}", t.offering_name, shiny);
                 let truncated: String = display.chars().take(name_w).collect();
                 let padded = format!("{:<w$}", truncated, w = name_w);
+                let poster: String = t.poster.chars().take(12).collect();
 
                 if idx == ctx.browse_selected {
-                    format!(" \x1B[7m> {}\x1B[0m \x1B[7m{}\x1B[0m", padded, &t.poster[..t.poster.len().min(12)])
+                    format!(" \x1B[7m> {:<w$} {:<12}\x1B[0m", padded, poster, w = name_w)
                 } else {
-                    format!("  \x1B[32m{}\x1B[0m \x1B[90m{}\x1B[0m", padded, &t.poster[..t.poster.len().min(12)])
+                    format!("   \x1B[32m{:<w$}\x1B[0m \x1B[90m{:<12}\x1B[0m", padded, poster, w = name_w)
                 }
-            } else { String::new() };
+            } else { format!("{:<w$}", "", w = left_width) };
 
             // Right panel — details for selected trade
             let sel_idx = if ctx.browse_selected < filtered.len() { Some(filtered[ctx.browse_selected]) } else { None };
