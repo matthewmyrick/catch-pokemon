@@ -57,25 +57,25 @@ func CreateTrade(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"must specify a Pokemon to offer"}`, http.StatusBadRequest)
 		return
 	}
+	// looking_for is optional — just posting a pokemon for offers
 	if req.LookingFor == "" {
-		http.Error(w, `{"error":"must specify what you're looking for"}`, http.StatusBadRequest)
-		return
+		req.LookingFor = "open to offers"
 	}
 
-	// Verify the signed PC payload
-	if err := verify.VerifyPayload(&req.PC); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{"error": "PC verification failed: " + err.Error()})
-		return
-	}
-
-	// Check that the offered Pokemon actually exists in the verified PC
-	if !verify.HasPokemon(req.PC.PC, req.Offering.Name) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{"error": "You don't have " + req.Offering.Name + " in your PC"})
-		return
+	// Verify the signed PC payload if provided
+	if req.PC.Signature != "" {
+		if err := verify.VerifyPayload(&req.PC); err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(map[string]string{"error": "PC verification failed: " + err.Error()})
+			return
+		}
+		if !verify.HasPokemon(req.PC.PC, req.Offering.Name) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(map[string]string{"error": "You don't have " + req.Offering.Name + " in your PC"})
+			return
+		}
 	}
 
 	t, err := Trades.CreateTrade(userID, req.Offering, req.LookingFor)
@@ -130,20 +130,20 @@ func MakeTradeOffer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify the signed PC payload
-	if err := verify.VerifyPayload(&req.PC); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{"error": "PC verification failed: " + err.Error()})
-		return
-	}
-
-	// Check that the offered Pokemon exists in the verified PC
-	if !verify.HasPokemon(req.PC.PC, req.Pokemon.Name) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]string{"error": "You don't have " + req.Pokemon.Name + " in your PC"})
-		return
+	// Verify the signed PC payload if provided
+	if req.PC.Signature != "" {
+		if err := verify.VerifyPayload(&req.PC); err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(map[string]string{"error": "PC verification failed: " + err.Error()})
+			return
+		}
+		if !verify.HasPokemon(req.PC.PC, req.Pokemon.Name) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(map[string]string{"error": "You don't have " + req.Pokemon.Name + " in your PC"})
+			return
+		}
 	}
 
 	offer, err := Trades.MakeOffer(req.TradeID, userID, req.Pokemon)
