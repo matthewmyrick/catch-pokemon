@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/matthewmyrick/catch-pokemon/api/internal/battle"
+	"github.com/matthewmyrick/catch-pokemon/api/internal/db"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/matchmaking"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/middleware"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/models"
@@ -17,7 +19,21 @@ var Battles = battle.NewStore()
 
 func Health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+
+	dbStatus := "not configured"
+	if db.DB != nil {
+		var one int
+		if err := db.DB.QueryRow("SELECT 1").Scan(&one); err != nil {
+			dbStatus = "unhealthy: " + err.Error()
+		} else {
+			dbStatus = "ok"
+		}
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":   "ok",
+		"database": dbStatus,
+	})
 }
 
 func GetMe(w http.ResponseWriter, r *http.Request) {
@@ -233,6 +249,7 @@ func BattleSelect(w http.ResponseWriter, r *http.Request) {
 				winner = b.Player2
 			}
 			log.Printf("Battle %s complete: %s wins %d-%d", b.ID, winner, b.P1Wins, b.P2Wins)
+				persistBattle(b)
 		} else {
 			// Next round (reset 2 min deadline)
 			b.Round++
@@ -289,11 +306,13 @@ func BattleStatus(w http.ResponseWriter, r *http.Request) {
 			b.P2Wins = 3
 			log.Printf("Battle %s: %s disconnected, %s wins by forfeit", b.ID, b.Player1, b.Player2)
 			Battles.Update(b)
+			persistBattle(b)
 		} else if p2Gone && userID == b.Player1 {
 			b.Status = "complete"
 			b.P1Wins = 3
 			log.Printf("Battle %s: %s disconnected, %s wins by forfeit", b.ID, b.Player2, b.Player1)
 			Battles.Update(b)
+			persistBattle(b)
 		}
 	}
 
@@ -321,6 +340,7 @@ func BattleStatus(w http.ResponseWriter, r *http.Request) {
 				winner = b.Player2
 			}
 			log.Printf("Battle %s complete (forfeit): %s wins %d-%d", b.ID, winner, b.P1Wins, b.P2Wins)
+				persistBattle(b)
 		} else if b.Status != "abandoned" {
 			// Next round
 			b.Round++
@@ -389,7 +409,47 @@ func BattleStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetRankings(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, `{"error":"not implemented"}`, http.StatusNotImplemented)
+	if db.DB == nil {
+		http.Error(w, `{"error":"database not available"}`, http.StatusServiceUnavailable)
+		return
+	}
+
+	limit := 50
+	offset := 0
+	if v := r.URL.Query().Get("limit"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 && n <= 100 {
+			limit = n
+		}
+	}
+	if v := r.URL.Query().Get("offset"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+			offset = n
+		}
+	}
+
+	users, err := db.GetRankings(limit, offset)
+	if err != nil {
+		log.Printf("ERROR: GetRankings: %v", err)
+		http.Error(w, `{"error":"failed to fetch rankings"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"rankings": users,
+		"count":    len(users),
+	})
+}
+
+// persistBattle writes a completed battle to the database asynchronously.
+func persistBattle(b *battle.ActiveBattle) {
+	go func() {
+		if db.DB != nil {
+			if err := db.PersistCompletedBattle(b); err != nil {
+				log.Printf("ERROR: failed to persist battle %s: %v", b.ID, err)
+			}
+		}
+	}()
 }
 
 func WebSocketHandler(queue *matchmaking.Queue) http.Handler {

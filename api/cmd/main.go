@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/matthewmyrick/catch-pokemon/api/internal/db"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/handlers"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/matchmaking"
 	"github.com/matthewmyrick/catch-pokemon/api/internal/middleware"
@@ -14,6 +15,16 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
+	}
+
+	// Connect to PostgreSQL (optional)
+	if os.Getenv("DATABASE_URL") != "" {
+		if err := db.Connect(); err != nil {
+			log.Fatalf("Database connection failed: %v", err)
+		}
+		defer db.DB.Close()
+	} else {
+		log.Println("WARN: DATABASE_URL not set, running without database")
 	}
 
 	// Initialize matchmaking queue

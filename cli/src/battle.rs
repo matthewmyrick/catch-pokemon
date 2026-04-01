@@ -8,34 +8,87 @@ use crate::api::{api_get, api_post, get_api_url, get_github_token};
 use crate::models::{BattleTeam, PcStorage, PokemonData, POKEMON_DATA};
 
 pub fn battle_tui() {
+    println!();
+    println!("{}", "========================================".cyan().bold());
+    println!("{}", "         POKEMON BATTLE ARENA           ".cyan().bold());
+    println!("{}", "========================================".cyan().bold());
+    println!();
+
+    // Step 1: Get GitHub token
+    println!("{}", "[1/5] Authenticating with GitHub...".dimmed());
     let token = match get_github_token() {
-        Some(t) => t,
+        Some(t) => {
+            println!("  {} GitHub token found", "OK".green().bold());
+            t
+        }
         None => {
-            eprintln!("{}", "Not logged in to GitHub. Run: gh auth login".red().bold());
+            eprintln!("  {} Not logged in to GitHub", "FAIL".red().bold());
+            eprintln!("  Run: {}", "gh auth login".yellow());
             return;
         }
     };
 
-    // Check API is reachable
-    println!("{}", "Connecting to battle server...".cyan());
-    if api_get("/health", &token).is_none() {
-        eprintln!("{}", format!("Could not connect to battle server at {}", get_api_url()).red());
-        return;
+    // Step 2: Connect to battle server and authenticate
+    println!("{}", "[2/5] Connecting to battle server...".dimmed());
+    let server_url = get_api_url();
+    match api_get("/health", &token) {
+        Some(s) => {
+            if let Ok(data) = serde_json::from_str::<serde_json::Value>(&s) {
+                let db_status = data["database"].as_str().unwrap_or("unknown");
+                println!("  {} Server at {}", "OK".green().bold(), server_url.cyan());
+                println!("  {} Database: {}", "OK".green().bold(), db_status.green());
+            } else {
+                println!("  {} Server at {}", "OK".green().bold(), server_url.cyan());
+            }
+        }
+        None => {
+            eprintln!("  {} Could not connect to {}", "FAIL".red().bold(), server_url);
+            return;
+        }
     }
-    println!("{}", "Connected.".green());
 
-    // Load PC and battle team
+    // Step 3: Authenticate user with the server
+    println!("{}", "[3/5] Verifying trainer identity...".dimmed());
+    let me_result = api_get("/api/me", &token);
+    let user_id = match me_result {
+        Some(s) => {
+            match serde_json::from_str::<serde_json::Value>(&s) {
+                Ok(data) => {
+                    let uid = data["user_id"].as_str().unwrap_or("unknown").to_string();
+                    println!("  {} Authenticated as {}", "OK".green().bold(), uid.cyan().bold());
+                    uid
+                }
+                Err(_) => {
+                    eprintln!("  {} Server returned invalid response", "FAIL".red().bold());
+                    return;
+                }
+            }
+        }
+        None => {
+            eprintln!("  {} Authentication failed — check your GitHub token", "FAIL".red().bold());
+            eprintln!("  Run: {}", "gh auth login".yellow());
+            return;
+        }
+    };
+
+    // Step 4: Load and validate PC + battle team
+    println!("{}", "[4/5] Loading battle data...".dimmed());
     let storage = PcStorage::load();
-    if storage.pokemon.len() < 6 {
-        eprintln!("{}", "You need at least 6 Pokemon. Go out there and catch em all!".red().bold());
+    let total_pokemon = storage.pokemon.len();
+    if total_pokemon < 6 {
+        eprintln!("  {} You have {} Pokemon — need at least 6", "FAIL".red().bold(), total_pokemon);
+        eprintln!("  Go catch more Pokemon first!");
         return;
     }
+    println!("  {} PC loaded ({} Pokemon)", "OK".green().bold(), total_pokemon);
 
     let team = BattleTeam::load();
     if team.pokemon.is_empty() {
-        eprintln!("{}", "Your battle team is empty. Add Pokemon with: catch-pokemon team --add <name>".red());
+        eprintln!("  {} Battle team is empty", "FAIL".red().bold());
+        eprintln!("  Add Pokemon with: {}", "catch-pokemon team --add <name>".yellow());
         return;
     }
+    println!("  {} Battle team loaded ({} Pokemon)", "OK".green().bold(), team.pokemon.len());
 
     // Build PC data for API
     let pokemon_db: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
@@ -53,12 +106,15 @@ pub fn battle_tui() {
     }).collect();
 
     if pc_pokemon.len() < 6 {
-        eprintln!("{}", "You need at least 6 Pokemon. Go out there and catch em all!".red().bold());
+        eprintln!("  {} Not enough valid Pokemon in PC", "FAIL".red().bold());
         return;
     }
 
-    // Join queue
-    println!("{}", "Searching for opponent...".yellow());
+    // Step 5: Join matchmaking queue
+    println!("{}", "[5/5] Searching for opponent...".dimmed());
+    println!("  Waiting up to 60 seconds for a match...");
+    println!();
+
     let body = serde_json::json!({ "pc": pc_pokemon }).to_string();
     let match_result = api_post("/api/battle/join", &token, &body);
 
@@ -66,37 +122,38 @@ pub fn battle_tui() {
         Some(s) => match serde_json::from_str(&s) {
             Ok(v) => v,
             Err(_) => {
-                eprintln!("{}", "Invalid response from server.".red());
+                eprintln!("{}", "  Invalid response from server.".red());
                 return;
             }
         },
         None => {
-            eprintln!("{}", "No opponent found or connection lost.".red());
+            eprintln!("{}", "  No opponent found or connection lost.".red());
             return;
         }
     };
 
     let status = match_data["status"].as_str().unwrap_or("");
     if status == "timeout" {
-        println!("{}", "No opponent found. Try again later.".yellow());
+        println!("{}", "  No opponent found. Try again later.".yellow());
         return;
     }
     if status != "matched" {
         let msg = match_data["error"].as_str().or(match_data["message"].as_str()).unwrap_or("Unknown error");
-        eprintln!("{}", msg.red());
+        eprintln!("  {}", msg.red());
         return;
     }
 
     let battle_id = match_data["battle_id"].as_str().unwrap_or("");
     let opponent = match_data["opponent_id"].as_str().unwrap_or("???");
 
-    println!();
-    println!("{}", format!("Opponent found: {}", opponent).green().bold());
-    println!("{}", format!("Battle ID: {}", battle_id).cyan());
+    println!("{}", "========================================".green().bold());
+    println!("  {} vs {}", user_id.cyan().bold(), opponent.magenta().bold());
+    println!("  Battle ID: {}", battle_id.dimmed());
+    println!("{}", "========================================".green().bold());
     println!();
 
     // Show opponent's PC
-    println!("{}", "Opponent's PC:".yellow().bold());
+    println!("{}", "Opponent's Pokemon:".yellow().bold());
     if let Some(opp_pc) = match_data["opponent_pc"].as_array() {
         for p in opp_pc {
             let name = p["name"].as_str().unwrap_or("???");
@@ -110,14 +167,15 @@ pub fn battle_tui() {
     }
 
     println!();
-    println!("{}", "Battle started! Select your team each round.".cyan().bold());
-    println!("{}", "Use the PC TUI to manage your battle team: catch-pokemon pc".dimmed());
+    println!("{}", "Best of 5 rounds — pick 6 Pokemon each round".dimmed());
+    println!("{}", "Formula: 40% power + 40% type advantage + 20% RNG".dimmed());
     println!();
 
     // Battle rounds
     let mut round = 1;
     loop {
-        println!("{}", format!("--- Round {} (Best of 5) ---", round).cyan().bold());
+        println!("{}", format!("--- Round {} ---", round).cyan().bold());
+        println!();
 
         // Show battle team for selection
         println!("{}", "Your battle team:".yellow());
@@ -182,13 +240,15 @@ pub fn battle_tui() {
                         // Show result
                         if let Some(r) = data["rounds"].as_array().and_then(|a| a.last()) {
                             let res = &r["result"];
-                            println!();
-                            println!("  Your Score:     {:.3}", res["p1_score"].as_f64().unwrap_or(0.0));
-                            println!("  Opponent Score: {:.3}", res["p2_score"].as_f64().unwrap_or(0.0));
+                            let me = data["you"].as_str().unwrap_or("");
                             let winner = res["winner"].as_str().unwrap_or("");
                             let p1w = data["p1_wins"].as_u64().unwrap_or(0);
                             let p2w = data["p2_wins"].as_u64().unwrap_or(0);
-                            let me = data["you"].as_str().unwrap_or("");
+
+                            println!();
+                            println!("  Your Score:     {:.3}", res["p1_score"].as_f64().unwrap_or(0.0));
+                            println!("  Opponent Score: {:.3}", res["p2_score"].as_f64().unwrap_or(0.0));
+
                             if winner == me {
                                 println!("  {}", "You won this round!".green().bold());
                             } else {
@@ -202,9 +262,9 @@ pub fn battle_tui() {
                     if bstatus == "complete" || bstatus == "abandoned" || bstatus == "none" {
                         let msg = data["message"].as_str().unwrap_or("Battle ended.");
                         println!();
-                        println!("{}", "================================".bold());
+                        println!("{}", "========================================".bold());
                         println!("{}", msg.bold());
-                        println!("{}", "================================".bold());
+                        println!("{}", "========================================".bold());
                         return;
                     }
                 }
@@ -218,9 +278,9 @@ pub fn battle_tui() {
                 if bstatus == "complete" {
                     let msg = data["message"].as_str().unwrap_or("Battle ended.");
                     println!();
-                    println!("{}", "================================".bold());
+                    println!("{}", "========================================".bold());
                     println!("{}", msg.bold());
-                    println!("{}", "================================".bold());
+                    println!("{}", "========================================".bold());
                     return;
                 }
             }

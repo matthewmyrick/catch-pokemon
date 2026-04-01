@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/matthewmyrick/catch-pokemon/api/internal/db"
 )
 
 type contextKey string
@@ -63,6 +66,13 @@ func Auth(next http.Handler) http.Handler {
 			}
 			// Cache for 10 minutes
 			cacheUser(token, user)
+		}
+
+		// Auto-create user in DB on first auth
+		if db.DB != nil {
+			if err := db.UpsertUser(user.Login, user.Login); err != nil {
+				log.Printf("WARN: failed to upsert user %s: %v", user.Login, err)
+			}
 		}
 
 		ctx := context.WithValue(r.Context(), UserIDKey, user.Login)

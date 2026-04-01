@@ -56,14 +56,15 @@ type BattleTeam struct {
 }
 
 type Battle struct {
-	ID        string      `json:"id" db:"id"`
-	Player1ID string      `json:"player1_id" db:"player1_id"`
-	Player2ID string      `json:"player2_id" db:"player2_id"`
-	Status    string      `json:"status" db:"status"` // waiting, selecting, battling, complete
-	Round     int         `json:"round" db:"round"`
-	P1Wins    int         `json:"p1_wins" db:"p1_wins"`
-	P2Wins    int         `json:"p2_wins" db:"p2_wins"`
-	CreatedAt time.Time   `json:"created_at" db:"created_at"`
+	ID        string    `json:"id" db:"id"`
+	Player1ID string    `json:"player1_id" db:"player1_id"`
+	Player2ID string    `json:"player2_id" db:"player2_id"`
+	Status    string    `json:"status" db:"status"`
+	Round     int       `json:"round" db:"round"`
+	P1Wins    int       `json:"p1_wins" db:"p1_wins"`
+	P2Wins    int       `json:"p2_wins" db:"p2_wins"`
+	WinnerID  string    `json:"winner_id,omitempty" db:"winner_id"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
 type BattleRound struct {
