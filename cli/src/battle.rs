@@ -41,6 +41,8 @@ struct BattleContext {
     token: String,
     user_id: String,
     opponent_id: String,
+    our_rating: u64,
+    opp_rating: u64,
     our_team: Vec<BattlePokemon>,
     opponent_pc: Vec<BattlePokemon>,
     active_pane: Pane,
@@ -55,11 +57,20 @@ struct BattleContext {
     last_our_score: f64,
     last_opp_score: f64,
     last_round_won: bool,
+    round_history: Vec<RoundSummary>,
     result_message: String,
     spinner_frame: usize,
+    opponent_ready: bool,
     status_msg: Option<String>,
     confirming_forfeit: bool,
     poll_failures: usize,
+}
+
+struct RoundSummary {
+    round: usize,
+    our_score: f64,
+    opp_score: f64,
+    won: bool,
 }
 
 // --- Auth handshake + matchmaking (unchanged) ---
@@ -161,32 +172,58 @@ pub fn battle_tui() {
 
     // Step 5: Matchmaking
     println!("{}", "[5/5] Searching for opponent...".dimmed());
-    println!("  Waiting up to 60 seconds for a match...");
+    println!("  Waiting for a match (up to 3 hours, press Ctrl+C to cancel)...");
 
     let body = serde_json::json!({ "pc": pc_pokemon }).to_string();
-    let match_data: serde_json::Value = match api_post("/api/battle/join", &token, &body) {
-        Some(s) => match serde_json::from_str(&s) {
-            Ok(v) => v,
-            Err(_) => { eprintln!("  {}", "Invalid response from server.".red()); return; }
-        },
-        None => { eprintln!("  {}", "No opponent found or connection lost.".red()); return; }
-    };
+    let max_attempts = 360; // 360 x 30s = 3 hours
+    let mut match_data: serde_json::Value = serde_json::Value::Null;
+    let mut found = false;
 
-    let status = match_data["status"].as_str().unwrap_or("");
-    if status == "timeout" {
-        println!("  {}", "No opponent found. Try again later.".yellow());
+    for attempt in 0..max_attempts {
+        if attempt > 0 {
+            print!("\r  Searching... ({} min waiting)   ", attempt / 2);
+            stdout().flush().unwrap_or(());
+        }
+
+        let result = api_post("/api/battle/join", &token, &body);
+        match result {
+            Some(s) => match serde_json::from_str::<serde_json::Value>(&s) {
+                Ok(v) => {
+                    let status = v["status"].as_str().unwrap_or("");
+                    if status == "matched" {
+                        match_data = v;
+                        found = true;
+                        break;
+                    } else if status == "timeout" {
+                        // No match yet, retry
+                        continue;
+                    } else {
+                        let msg = v["error"].as_str().or(v["message"].as_str()).unwrap_or("Unknown error");
+                        eprintln!("\r  {}", msg.red());
+                        return;
+                    }
+                }
+                Err(_) => { eprintln!("\r  {}", "Invalid response from server.".red()); return; }
+            },
+            None => {
+                eprintln!("\r  {}", "Connection lost.".red());
+                return;
+            }
+        }
+    }
+
+    if !found {
+        println!("\r  {}", "No opponent found after 3 hours. Try again later.".yellow());
         return;
     }
-    if status != "matched" {
-        let msg = match_data["error"].as_str().or(match_data["message"].as_str()).unwrap_or("Unknown error");
-        eprintln!("  {}", msg.red());
-        return;
-    }
 
+    println!();
     let battle_id = match_data["battle_id"].as_str().unwrap_or("").to_string();
     let opponent_id = match_data["opponent_id"].as_str().unwrap_or("???").to_string();
+    let our_rating = match_data["your_rating"].as_u64().unwrap_or(1000);
+    let opp_rating = match_data["opponent_rating"].as_u64().unwrap_or(1000);
 
-    println!("  {} Matched against {}", "OK".green().bold(), opponent_id.magenta().bold());
+    println!("  {} Matched against {} (ELO: {})", "OK".green().bold(), opponent_id.magenta().bold(), opp_rating.to_string().yellow());
 
     // Build our team from BattleTeam
     let our_team: Vec<BattlePokemon> = team.pokemon.iter().map(|p| {
@@ -214,6 +251,7 @@ pub fn battle_tui() {
     let mut ctx = BattleContext {
         state: BattleState::TeamSelection,
         battle_id, token, user_id, opponent_id,
+        our_rating, opp_rating,
         our_team, opponent_pc,
         active_pane: Pane::Left,
         left_selected: 0, left_scroll: 0,
@@ -223,8 +261,10 @@ pub fn battle_tui() {
         our_wins: 0, opp_wins: 0,
         last_our_score: 0.0, last_opp_score: 0.0,
         last_round_won: false,
+        round_history: Vec::new(),
         result_message: String::new(),
         spinner_frame: 0,
+        opponent_ready: false,
         status_msg: None,
         confirming_forfeit: false,
         poll_failures: 0,
@@ -318,9 +358,17 @@ fn render_selection(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error
     let count_color = if count == 6 { "\x1B[1;32m" } else { "\x1B[1;33m" };
     print!("\x1B[1;36m{}\x1B[0m{}{}{}\x1B[0m\x1B[K\r\n", round_str, " ".repeat(padding), count_color, count_str);
 
-    // Column headers
-    let left_header = if ctx.active_pane == Pane::Left { "\x1B[1;36m YOUR TEAM\x1B[0m" } else { "\x1B[90m YOUR TEAM\x1B[0m" };
-    let right_header = if ctx.active_pane == Pane::Right { "\x1B[1;36m OPPONENT'S POKEMON\x1B[0m" } else { "\x1B[90m OPPONENT'S POKEMON\x1B[0m" };
+    // Column headers with ELO
+    let left_header = if ctx.active_pane == Pane::Left {
+        format!("\x1B[1;36m {} (ELO: {})\x1B[0m", ctx.user_id, ctx.our_rating)
+    } else {
+        format!("\x1B[90m {} (ELO: {})\x1B[0m", ctx.user_id, ctx.our_rating)
+    };
+    let right_header = if ctx.active_pane == Pane::Right {
+        format!("\x1B[1;35m {} (ELO: {})\x1B[0m", ctx.opponent_id, ctx.opp_rating)
+    } else {
+        format!("\x1B[90m {} (ELO: {})\x1B[0m", ctx.opponent_id, ctx.opp_rating)
+    };
     print!(" {}\x1B[{}G\x1B[90m│\x1B[0m{}\x1B[K\r\n", left_header, left_width + 1, right_header);
 
     // Separator
@@ -524,10 +572,16 @@ fn render_waiting(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error>>
             format!("{:<w$}", "", w = left_width)
         };
 
-        let right_cell = if row == list_height / 2 - 1 {
-            "\x1B[1;33m   Waiting for opponent\x1B[0m".to_string()
-        } else if row == list_height / 2 {
-            format!("\x1B[33m          {}\x1B[0m", spinner)
+        let right_cell = if row == list_height / 2 - 2 {
+            format!("  You:      \x1B[1;32m READY \x1B[0m")
+        } else if row == list_height / 2 - 1 {
+            if ctx.opponent_ready {
+                format!("  Opponent: \x1B[1;32m READY \x1B[0m")
+            } else {
+                format!("  Opponent: \x1B[1;33m SELECTING{}\x1B[0m", spinner)
+            }
+        } else if row == list_height / 2 + 1 && !ctx.opponent_ready {
+            "\x1B[90m  Waiting for opponent to lock in...\x1B[0m".to_string()
         } else {
             String::new()
         };
@@ -562,6 +616,9 @@ fn handle_waiting_input(ctx: &mut BattleContext) -> Result<bool, Box<dyn std::er
                 let bstatus = data["status"].as_str().unwrap_or("");
                 let rounds = data["rounds"].as_array().map(|a| a.len()).unwrap_or(0);
 
+                // Update opponent ready status
+                ctx.opponent_ready = data["opponent_ready"].as_bool().unwrap_or(false);
+
                 if rounds >= ctx.current_round {
                     // Round complete — parse results
                     if let Some(r) = data["rounds"].as_array().and_then(|a| a.last()) {
@@ -594,6 +651,14 @@ fn handle_waiting_input(ctx: &mut BattleContext) -> Result<bool, Box<dyn std::er
                             std::mem::swap(&mut ctx.our_wins, &mut ctx.opp_wins);
                         }
                     }
+
+                    // Save round to history
+                    ctx.round_history.push(RoundSummary {
+                        round: ctx.current_round,
+                        our_score: ctx.last_our_score,
+                        opp_score: ctx.last_opp_score,
+                        won: ctx.last_round_won,
+                    });
 
                     ctx.state = BattleState::RoundResults;
                     return Ok(false);
@@ -654,7 +719,11 @@ fn render_results(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error>>
         let left_cell = if row < our_selected.len() {
             format_pokemon_cell(our_selected[row], left_width, false)
         } else if row == result_row {
-            format!(" \x1B[1mYour Score:     {:.3}\x1B[0m", ctx.last_our_score)
+            let our_pct = ctx.last_our_score / (ctx.last_our_score + ctx.last_opp_score) * 100.0;
+            format!(" \x1B[1mYour Score:     {:.3}  ({:.1}%)\x1B[0m", ctx.last_our_score, our_pct)
+        } else if row == result_row + 1 {
+            let opp_pct = ctx.last_opp_score / (ctx.last_our_score + ctx.last_opp_score) * 100.0;
+            format!(" \x1B[1mOpponent Score: {:.3}  ({:.1}%)\x1B[0m", ctx.last_opp_score, opp_pct)
         } else if row == winner_row {
             if ctx.last_round_won {
                 " \x1B[1;7;32m  YOU WON THIS ROUND!  \x1B[0m".to_string()
@@ -665,17 +734,8 @@ fn render_results(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error>>
             format!("{:<w$}", "", w = left_width)
         };
 
-        let right_cell = if row < 6 {
-            // Show opponent team from last round results (we don't have separate storage, show from their PC)
-            // The API doesn't return opponent's selected team in the status response clearly,
-            // so we show their full PC as reference
-            if row < ctx.opponent_pc.len() {
-                format_pokemon_cell(&ctx.opponent_pc[row], tw.saturating_sub(left_width + 2), false)
-            } else {
-                String::new()
-            }
-        } else if row == result_row {
-            format!(" \x1B[1mOpponent Score: {:.3}\x1B[0m", ctx.last_opp_score)
+        let right_cell = if row < 6 && row < ctx.opponent_pc.len() {
+            format_pokemon_cell(&ctx.opponent_pc[row], tw.saturating_sub(left_width + 2), false)
         } else {
             String::new()
         };
@@ -702,9 +762,9 @@ fn handle_results_input(ctx: &mut BattleContext) -> Result<bool, Box<dyn std::er
             return Ok(true);
         }
 
-        // Check if battle is over
-        if ctx.our_wins >= 3 || ctx.opp_wins >= 3 {
-            if ctx.our_wins >= 3 {
+        // Check if battle is over (best of 3 = first to 2)
+        if ctx.our_wins >= 2 || ctx.opp_wins >= 2 {
+            if ctx.our_wins >= 2 {
                 ctx.result_message = format!("YOU WIN! Final score: {}-{}", ctx.our_wins, ctx.opp_wins);
             } else {
                 ctx.result_message = format!("YOU LOSE. Final score: {}-{}", ctx.our_wins, ctx.opp_wins);
@@ -719,6 +779,7 @@ fn handle_results_input(ctx: &mut BattleContext) -> Result<bool, Box<dyn std::er
             ctx.right_selected = 0;
             ctx.right_scroll = 0;
             ctx.active_pane = Pane::Left;
+            ctx.opponent_ready = false;
             ctx.state = BattleState::TeamSelection;
         }
     }
@@ -734,37 +795,324 @@ fn render_complete(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error>
 
     stdout().execute(cursor::MoveTo(0, 0))?;
 
-    let won = ctx.our_wins >= 3;
+    let won = ctx.our_wins > ctx.opp_wins;
+
+    // Build content lines
+    let mut lines: Vec<String> = Vec::new();
+    lines.push(format!(" {}", "═".repeat(tw.saturating_sub(2))));
+    lines.push(String::new());
+
+    let msg = if won { "  YOU WIN!  " } else { "  YOU LOSE  " };
+    let color = if won { "\x1B[1;7;32m" } else { "\x1B[1;7;31m" };
+    let pad = tw.saturating_sub(msg.len()) / 2;
+    lines.push(format!("{}{}{}\x1B[0m", " ".repeat(pad), color, msg));
+
+    lines.push(String::new());
+    let score = format!("Final Score: {}-{}", ctx.our_wins, ctx.opp_wins);
+    let pad = tw.saturating_sub(score.len()) / 2;
+    lines.push(format!("{}\x1B[1m{}\x1B[0m", " ".repeat(pad), score));
+
+    let matchup = format!("{} vs {}", ctx.user_id, ctx.opponent_id);
+    let pad = tw.saturating_sub(matchup.len()) / 2;
+    lines.push(format!("{}\x1B[90m{}\x1B[0m", " ".repeat(pad), matchup));
+
+    lines.push(String::new());
+    lines.push(format!(" {}", "═".repeat(tw.saturating_sub(2))));
+    lines.push(String::new());
+
+    // Round-by-round breakdown
+    if !ctx.round_history.is_empty() {
+        let header = "ROUND BREAKDOWN";
+        let pad = tw.saturating_sub(header.len()) / 2;
+        lines.push(format!("{}\x1B[1;36m{}\x1B[0m", " ".repeat(pad), header));
+        lines.push(String::new());
+
+        for r in &ctx.round_history {
+            let our_pct = if r.our_score + r.opp_score > 0.0 { r.our_score / (r.our_score + r.opp_score) * 100.0 } else { 0.0 };
+            let opp_pct = 100.0 - our_pct;
+            let result = if r.won { "\x1B[1;32mWIN\x1B[0m" } else { "\x1B[1;31mLOSS\x1B[0m" };
+            let line = format!(
+                "  Round {}:  You {:.3} ({:.1}%)  vs  Opponent {:.3} ({:.1}%)  — {}",
+                r.round, r.our_score, our_pct, r.opp_score, opp_pct, result
+            );
+            let pad = tw.saturating_sub(60) / 2; // rough center
+            lines.push(format!("{}{}", " ".repeat(pad.min(10)), line));
+        }
+
+        lines.push(String::new());
+        lines.push(format!(" {}", "═".repeat(tw.saturating_sub(2))));
+    }
+
+    lines.push(String::new());
+    let exit_msg = "Press any key to exit";
+    let pad = tw.saturating_sub(exit_msg.len()) / 2;
+    lines.push(format!("{}\x1B[90m{}\x1B[0m", " ".repeat(pad), exit_msg));
+
+    // Center vertically
+    let start_row = th.saturating_sub(lines.len()) / 2;
 
     for row in 0..th {
-        if row == th / 2 - 3 {
-            let line = "═".repeat(tw.saturating_sub(2));
-            print!(" \x1B[1m{}\x1B[0m\x1B[K\r\n", line);
-        } else if row == th / 2 - 1 {
-            let msg = if won { "  YOU WIN!  " } else { "  YOU LOSE  " };
-            let color = if won { "\x1B[1;7;32m" } else { "\x1B[1;7;31m" };
-            let pad = tw.saturating_sub(msg.len()) / 2;
-            print!("{}{}{}\x1B[0m\x1B[K\r\n", " ".repeat(pad), color, msg);
-        } else if row == th / 2 + 1 {
-            let score = format!("Final Score: {}-{}", ctx.our_wins, ctx.opp_wins);
-            let pad = tw.saturating_sub(score.len()) / 2;
-            print!("{}\x1B[1m{}\x1B[0m\x1B[K\r\n", " ".repeat(pad), score);
-        } else if row == th / 2 + 3 {
-            let matchup = format!("{} vs {}", ctx.user_id, ctx.opponent_id);
-            let pad = tw.saturating_sub(matchup.len()) / 2;
-            print!("{}\x1B[90m{}\x1B[0m\x1B[K\r\n", " ".repeat(pad), matchup);
-        } else if row == th / 2 + 5 {
-            let line = "═".repeat(tw.saturating_sub(2));
-            print!(" \x1B[1m{}\x1B[0m\x1B[K\r\n", line);
-        } else if row == th / 2 + 7 {
-            let msg = "Press any key to exit";
-            let pad = tw.saturating_sub(msg.len()) / 2;
-            print!("{}\x1B[90m{}\x1B[0m\x1B[K\r\n", " ".repeat(pad), msg);
-        } else {
-            print!("\x1B[K\r\n");
+        let content_idx = row.checked_sub(start_row);
+        if let Some(idx) = content_idx {
+            if idx < lines.len() {
+                print!("{}\x1B[K\r\n", lines[idx]);
+                continue;
+            }
         }
+        print!("\x1B[K\r\n");
     }
 
     stdout().flush()?;
+    Ok(())
+}
+
+// --- Rankings TUI ---
+
+struct RankedPlayer {
+    rank: usize,
+    name: String,
+    rating: u64,
+    wins: u64,
+    losses: u64,
+    is_me: bool,
+}
+
+pub fn rankings_tui() {
+    println!();
+    println!("{}", "========================================".cyan().bold());
+    println!("{}", "         BATTLE RANKINGS                ".cyan().bold());
+    println!("{}", "========================================".cyan().bold());
+    println!();
+
+    // Auth
+    println!("{}", "[1/2] Authenticating...".dimmed());
+    let token = match get_github_token() {
+        Some(t) => {
+            println!("  {} GitHub token found", "OK".green().bold());
+            t
+        }
+        None => {
+            eprintln!("  {} Not logged in. Run: gh auth login", "FAIL".red().bold());
+            return;
+        }
+    };
+
+    println!("{}", "[2/2] Fetching rankings...".dimmed());
+
+    let my_stats = api_get("/api/me", &token).and_then(|s| serde_json::from_str::<serde_json::Value>(&s).ok());
+    let my_id = my_stats.as_ref().and_then(|m| m["user_id"].as_str()).unwrap_or("").to_string();
+    let my_rating = my_stats.as_ref().and_then(|m| m["rating"].as_u64()).unwrap_or(1000);
+    let my_wins = my_stats.as_ref().and_then(|m| m["wins"].as_u64()).unwrap_or(0);
+    let my_losses = my_stats.as_ref().and_then(|m| m["losses"].as_u64()).unwrap_or(0);
+
+    let rankings_data = match api_get("/api/rankings?limit=50", &token) {
+        Some(s) => match serde_json::from_str::<serde_json::Value>(&s) {
+            Ok(d) => d,
+            Err(_) => { eprintln!("  {} Invalid response", "FAIL".red().bold()); return; }
+        },
+        None => { eprintln!("  {} Could not fetch rankings", "FAIL".red().bold()); return; }
+    };
+
+    println!("  {} Rankings loaded", "OK".green().bold());
+
+    // Build player list
+    let mut players: Vec<RankedPlayer> = Vec::new();
+    if let Some(arr) = rankings_data["rankings"].as_array() {
+        for (i, user) in arr.iter().enumerate() {
+            let name = user["id"].as_str().or(user["name"].as_str()).unwrap_or("???").to_string();
+            players.push(RankedPlayer {
+                rank: i + 1,
+                name: name.clone(),
+                rating: user["rating"].as_u64().unwrap_or(1000),
+                wins: user["wins"].as_u64().unwrap_or(0),
+                losses: user["losses"].as_u64().unwrap_or(0),
+                is_me: name == my_id,
+            });
+        }
+    }
+
+    if let Err(e) = run_rankings_tui(&players, &my_id, my_rating, my_wins, my_losses) {
+        eprintln!("Rankings TUI error: {}", e);
+    }
+}
+
+fn run_rankings_tui(players: &[RankedPlayer], my_id: &str, my_rating: u64, my_wins: u64, my_losses: u64) -> Result<(), Box<dyn std::error::Error>> {
+    use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
+
+    stdout().execute(EnterAlternateScreen)?;
+    terminal::enable_raw_mode()?;
+    stdout().execute(cursor::Hide)?;
+
+    let mut selected: usize = 0;
+    let mut scroll_offset: usize = 0;
+    let mut search_term = String::new();
+    let mut searching = false;
+
+    loop {
+        let (tw, th) = terminal::size()?;
+        let tw = tw as usize;
+        let th = th as usize;
+        let left_width = 50.min(tw * 2 / 3);
+        let list_height = th.saturating_sub(6);
+
+        // Filter by search
+        let filtered: Vec<usize> = players.iter().enumerate()
+            .filter(|(_, p)| {
+                if search_term.is_empty() { return true; }
+                p.name.to_lowercase().contains(&search_term.to_lowercase())
+            })
+            .map(|(i, _)| i)
+            .collect();
+
+        // Clamp selection
+        if !filtered.is_empty() {
+            if selected >= filtered.len() { selected = filtered.len() - 1; }
+        }
+        if selected >= scroll_offset + list_height { scroll_offset = selected + 1 - list_height; }
+        if selected < scroll_offset { scroll_offset = selected; }
+
+        stdout().execute(cursor::MoveTo(0, 0))?;
+
+        // Header — your stats
+        let my_total = my_wins + my_losses;
+        let my_winrate = if my_total > 0 { format!("{:.1}%", (my_wins as f64 / my_total as f64) * 100.0) } else { "-".to_string() };
+        let header = format!(" {} | You: {} ELO: {} Record: {}-{} ({})",
+            "Battle Rankings".cyan().bold(),
+            my_id.green().bold(), my_rating.to_string().yellow().bold(),
+            my_wins.to_string().green(), my_losses.to_string().red(), my_winrate);
+        print!("{}\x1B[K\r\n", header);
+
+        // Search bar
+        if searching {
+            print!(" {}: {}{}\x1B[K\r\n", "Search".cyan().bold(), search_term.yellow(), "\x1B[33m|\x1B[0m");
+        } else if !search_term.is_empty() {
+            print!(" Search: {} ({} results)\x1B[K\r\n", search_term.yellow(), filtered.len());
+        } else {
+            // Column headers
+            print!(" {:<5} {:<20} {:<8} {:<10} {:<10}\x1B[{}G\x1B[90m|\x1B[0m\x1B[K\r\n",
+                "Rank".dimmed(), "Trainer".dimmed(), "ELO".dimmed(), "Record".dimmed(), "Win Rate".dimmed(),
+                left_width + 1);
+        }
+
+        // Separator
+        print!(" {}\x1B[K\r\n", "\x1B[90m-\x1B[0m".repeat(tw.saturating_sub(2)));
+
+        // Body rows
+        for row in 0..list_height {
+            let list_idx = scroll_offset + row;
+
+            let left_cell = if list_idx < filtered.len() {
+                let p = &players[filtered[list_idx]];
+                let total = p.wins + p.losses;
+                let winrate = if total > 0 { format!("{:.1}%", (p.wins as f64 / total as f64) * 100.0) } else { "-".to_string() };
+                let record = format!("{}-{}", p.wins, p.losses);
+                let rank_label = format!("#{}", p.rank);
+                let you_marker = if p.is_me { " <-" } else { "" };
+
+                if list_idx == selected {
+                    format!(" \x1B[7m {:<5} {:<20} {:<8} {:<10} {:<10}{}\x1B[0m",
+                        rank_label, p.name, p.rating, record, winrate, you_marker)
+                } else if p.is_me {
+                    format!(" \x1B[1;33m {:<5} {:<20} {:<8} {:<10} {:<10}{}\x1B[0m",
+                        rank_label, p.name, p.rating, record, winrate, you_marker)
+                } else {
+                    format!("  {:<5} \x1B[32m{:<20}\x1B[0m \x1B[33m{:<8}\x1B[0m {:<10} {:<10}",
+                        rank_label, p.name, p.rating, record, winrate)
+                }
+            } else {
+                String::new()
+            };
+
+            // Right panel — details for selected player
+            let right_cell = if row == 0 && !filtered.is_empty() && selected < filtered.len() {
+                let p = &players[filtered[selected]];
+                format!(" \x1B[1;36m{}\x1B[0m", p.name)
+            } else if row == 1 && !filtered.is_empty() && selected < filtered.len() {
+                String::new()
+            } else if row == 2 && !filtered.is_empty() && selected < filtered.len() {
+                let p = &players[filtered[selected]];
+                format!(" Rank:     \x1B[1m#{}\x1B[0m", p.rank)
+            } else if row == 3 && !filtered.is_empty() && selected < filtered.len() {
+                let p = &players[filtered[selected]];
+                format!(" ELO:      \x1B[1;33m{}\x1B[0m", p.rating)
+            } else if row == 4 && !filtered.is_empty() && selected < filtered.len() {
+                let p = &players[filtered[selected]];
+                format!(" Wins:     \x1B[32m{}\x1B[0m", p.wins)
+            } else if row == 5 && !filtered.is_empty() && selected < filtered.len() {
+                let p = &players[filtered[selected]];
+                format!(" Losses:   \x1B[31m{}\x1B[0m", p.losses)
+            } else if row == 6 && !filtered.is_empty() && selected < filtered.len() {
+                let p = &players[filtered[selected]];
+                let total = p.wins + p.losses;
+                let winrate = if total > 0 { format!("{:.1}%", (p.wins as f64 / total as f64) * 100.0) } else { "-".to_string() };
+                format!(" Win Rate: \x1B[1m{}\x1B[0m", winrate)
+            } else if row == 7 && !filtered.is_empty() && selected < filtered.len() {
+                let p = &players[filtered[selected]];
+                let total = p.wins + p.losses;
+                format!(" Battles:  {}", total)
+            } else if row == 9 && !filtered.is_empty() && selected < filtered.len() {
+                let p = &players[filtered[selected]];
+                // ELO bar visualization
+                let bar_width: usize = 20;
+                let filled = ((p.rating as f64 / 2000.0) * bar_width as f64).min(bar_width as f64) as usize;
+                let bar: String = format!("\x1B[33m{}\x1B[90m{}\x1B[0m",
+                    "█".repeat(filled), "░".repeat(bar_width.saturating_sub(filled)));
+                format!(" ELO:  {} {}", bar, p.rating)
+            } else {
+                String::new()
+            };
+
+            print!("{}\x1B[{}G\x1B[90m|\x1B[0m{}\x1B[K\r\n", left_cell, left_width + 1, right_cell);
+        }
+
+        // Footer
+        print!(" {}\x1B[K\r\n", "\x1B[90m-\x1B[0m".repeat(tw.saturating_sub(2)));
+        if searching {
+            print!(" \x1B[90mType to filter | Esc: Stop search\x1B[0m\x1B[K");
+        } else if filtered.is_empty() {
+            print!(" \x1B[33mNo players found.\x1B[0m\x1B[K");
+        } else {
+            print!(" \x1B[90m↑↓/jk: Nav | /: Search | r: Refresh | q: Quit\x1B[0m\x1B[K");
+        }
+        stdout().flush()?;
+
+        // Drain events
+        while event::poll(Duration::from_millis(0))? { let _ = event::read(); }
+
+        // Input
+        if let Ok(Event::Key(KeyEvent { code, modifiers, .. })) = event::read() {
+            if searching {
+                match code {
+                    KeyCode::Esc | KeyCode::Enter => { searching = false; }
+                    KeyCode::Backspace => { search_term.pop(); selected = 0; scroll_offset = 0; }
+                    KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => break,
+                    KeyCode::Up => { if selected > 0 { selected -= 1; } }
+                    KeyCode::Down => { if selected + 1 < filtered.len() { selected += 1; } }
+                    KeyCode::Char(c) => { search_term.push(c); selected = 0; scroll_offset = 0; }
+                    _ => {}
+                }
+            } else {
+                match code {
+                    KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => break,
+                    KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => break,
+                    KeyCode::Char('/') => { searching = true; }
+                    KeyCode::Up | KeyCode::Char('k') => { if selected > 0 { selected -= 1; } }
+                    KeyCode::Down | KeyCode::Char('j') => { if selected + 1 < filtered.len() { selected += 1; } }
+                    KeyCode::Home => { selected = 0; scroll_offset = 0; }
+                    KeyCode::End => {
+                        if !filtered.is_empty() {
+                            selected = filtered.len() - 1;
+                            if selected >= list_height { scroll_offset = selected + 1 - list_height; }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    stdout().execute(cursor::Show)?;
+    terminal::disable_raw_mode()?;
+    stdout().execute(LeaveAlternateScreen)?;
     Ok(())
 }

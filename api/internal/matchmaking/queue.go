@@ -34,6 +34,24 @@ type Queue struct {
 	leave   chan string
 }
 
+// IsInQueue returns true if the user is already waiting in the queue
+func (q *Queue) IsInQueue(userID string) bool {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	for _, p := range q.waiting {
+		if p.UserID == userID {
+			// Check if still alive
+			select {
+			case <-p.Cancel:
+				return false // disconnected, slot is stale
+			default:
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func NewQueue() *Queue {
 	return &Queue{
 		join:  make(chan *Player, 100),
@@ -88,10 +106,9 @@ func (q *Queue) Run() {
 			now := time.Now()
 			var alive []*Player
 			for _, p := range q.waiting {
-				// Remove players who have been waiting more than 90 seconds
-				// (their long-poll would have timed out at 60s)
-				if now.Sub(p.JoinedAt) > 90*time.Second {
-					log.Printf("Removing stale player %s from queue (joined %s ago)", p.UserID, now.Sub(p.JoinedAt))
+				// Remove players who have been waiting more than 3 hours
+				if now.Sub(p.JoinedAt) > 3*time.Hour {
+					log.Printf("Removing expired player %s from queue (joined %s ago)", p.UserID, now.Sub(p.JoinedAt))
 					continue
 				}
 				// Check if player's cancel channel is closed (disconnected)

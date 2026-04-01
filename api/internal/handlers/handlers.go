@@ -39,10 +39,22 @@ func Health(w http.ResponseWriter, r *http.Request) {
 func GetMe(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+
+	response := map[string]interface{}{
 		"user_id":  userID,
 		"provider": "github",
-	})
+	}
+
+	// Include stats if DB is available
+	if db.DB != nil {
+		if user, err := db.GetUser(userID); err == nil {
+			response["rating"] = user.Rating
+			response["wins"] = user.Wins
+			response["losses"] = user.Losses
+		}
+	}
+
+	json.NewEncoder(w).Encode(response)
 }
 
 // BattleJoin is a long-poll endpoint — it blocks until a match is found (up to 60s)
@@ -79,6 +91,26 @@ func BattleJoin(queue *matchmaking.Queue) http.Handler {
 			return
 		}
 
+		// Check if user is already in queue from another terminal
+		if queue.IsInQueue(userID) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "You are already in the matchmaking queue from another session.",
+			})
+			return
+		}
+
+		// Check if user is already in an active battle
+		if Battles.GetByUser(userID) != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "You already have an active battle in progress.",
+			})
+			return
+		}
+
 		cancel := make(chan struct{})
 		player := &matchmaking.Player{
 			UserID: userID,
@@ -95,7 +127,7 @@ func BattleJoin(queue *matchmaking.Queue) http.Handler {
 
 		queue.Join(player)
 
-		// Long-poll: wait up to 60 seconds for a match
+		// Long-poll: wait up to 30 seconds for a match (client retries for up to 3 hours)
 		select {
 		case match := <-player.Notify:
 			// Determine opponent
@@ -127,17 +159,31 @@ func BattleJoin(queue *matchmaking.Queue) http.Handler {
 
 			log.Printf("Battle %s created: %s vs %s", match.ID, match.Player1.UserID, match.Player2.UserID)
 
+			// Fetch ratings for both players
+			var myRating, oppRating int
+			myRating, oppRating = 1000, 1000
+			if db.DB != nil {
+				if u, err := db.GetUser(userID); err == nil {
+					myRating = u.Rating
+				}
+				if u, err := db.GetUser(opponentID); err == nil {
+					oppRating = u.Rating
+				}
+			}
+
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
-				"status":      "matched",
-				"battle_id":   match.ID,
-				"opponent_id": opponentID,
-				"opponent_pc": opponentPC,
-				"round":       1,
-				"message":     "Opponent found! Select your team of 6 Pokemon.",
+				"status":          "matched",
+				"battle_id":       match.ID,
+				"opponent_id":     opponentID,
+				"opponent_pc":     opponentPC,
+				"opponent_rating": oppRating,
+				"your_rating":     myRating,
+				"round":           1,
+				"message":         "Opponent found! Select your team of 6 Pokemon.",
 			})
 
-		case <-time.After(60 * time.Second):
+		case <-time.After(30 * time.Second):
 			queue.Leave(userID)
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]string{
@@ -241,8 +287,8 @@ func BattleSelect(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Battle %s Round %d: %s wins (P1: %.3f vs P2: %.3f)",
 			b.ID, b.Round, result.Winner, result.P1Score, result.P2Score)
 
-		// Check if battle is over (best of 5 = first to 3)
-		if b.P1Wins >= 3 || b.P2Wins >= 3 {
+		// Check if battle is over (best of 3 = first to 2)
+		if b.P1Wins >= 2 || b.P2Wins >= 2 {
 			b.Status = "complete"
 			winner := b.Player1
 			if b.P2Wins > b.P1Wins {
@@ -296,20 +342,22 @@ func BattleStatus(w http.ResponseWriter, r *http.Request) {
 		b.P2LastSeen = now
 	}
 
-	// Check if opponent disconnected (no heartbeat for 15 seconds)
-	if b.Status == "selecting" {
-		p1Gone := !b.P1LastSeen.IsZero() && now.Sub(b.P1LastSeen) > 15*time.Second
-		p2Gone := !b.P2LastSeen.IsZero() && now.Sub(b.P2LastSeen) > 15*time.Second
+	// Check if opponent disconnected (no heartbeat for 60 seconds)
+	// Only check after both players have submitted at least once (Round > 1)
+	// During first selection, use the selection deadline instead
+	if b.Status == "selecting" && b.Round > 1 {
+		p1Gone := !b.P1LastSeen.IsZero() && now.Sub(b.P1LastSeen) > 60*time.Second
+		p2Gone := !b.P2LastSeen.IsZero() && now.Sub(b.P2LastSeen) > 60*time.Second
 
 		if p1Gone && userID == b.Player2 {
 			b.Status = "complete"
-			b.P2Wins = 3
+			b.P2Wins = 2
 			log.Printf("Battle %s: %s disconnected, %s wins by forfeit", b.ID, b.Player1, b.Player2)
 			Battles.Update(b)
 			persistBattle(b)
 		} else if p2Gone && userID == b.Player1 {
 			b.Status = "complete"
-			b.P1Wins = 3
+			b.P1Wins = 2
 			log.Printf("Battle %s: %s disconnected, %s wins by forfeit", b.ID, b.Player2, b.Player1)
 			Battles.Update(b)
 			persistBattle(b)
@@ -333,7 +381,7 @@ func BattleStatus(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Check if battle is over after forfeit
-		if b.P1Wins >= 3 || b.P2Wins >= 3 {
+		if b.P1Wins >= 2 || b.P2Wins >= 2 {
 			b.Status = "complete"
 			winner := b.Player1
 			if b.P2Wins > b.P1Wins {

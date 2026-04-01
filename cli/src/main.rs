@@ -251,6 +251,13 @@ Example:\n\
   catch-pokemon trade")]
     Trade,
 
+    /// View the battle rankings leaderboard
+    #[command(long_about = "View the global battle rankings leaderboard.\n\n\
+Shows trainers ranked by ELO rating with their win/loss records.\n\n\
+Example:\n\
+  catch-pokemon rankings")]
+    Rankings,
+
     /// Generate a weighted random Pokemon encounter
     #[command(long_about = "Generate a random Pokemon encounter weighted by rarity.\n\n\
 Common Pokemon (high catch rate) appear more often than rare ones.\n\
@@ -381,6 +388,9 @@ fn main() {
         },
         Commands::Battle => {
             battle::battle_tui();
+        },
+        Commands::Rankings => {
+            battle::rankings_tui();
         },
         Commands::Trade => {
             trade::trade_tui();

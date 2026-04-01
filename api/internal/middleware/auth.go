@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -68,15 +69,23 @@ func Auth(next http.Handler) http.Handler {
 			cacheUser(token, user)
 		}
 
-		// Auto-create user in DB on first auth
-		if db.DB != nil {
-			if err := db.UpsertUser(user.Login, user.Login); err != nil {
-				log.Printf("WARN: failed to upsert user %s: %v", user.Login, err)
+		// Allow test mode override of user ID
+		login := user.Login
+		if os.Getenv("TEST_MODE") == "1" {
+			if override := r.Header.Get("X-Test-Player"); override != "" {
+				login = override
 			}
 		}
 
-		ctx := context.WithValue(r.Context(), UserIDKey, user.Login)
-		ctx = context.WithValue(ctx, UserNameKey, user.Login)
+		// Auto-create user in DB on first auth
+		if db.DB != nil {
+			if err := db.UpsertUser(login, login); err != nil {
+				log.Printf("WARN: failed to upsert user %s: %v", login, err)
+			}
+		}
+
+		ctx := context.WithValue(r.Context(), UserIDKey, login)
+		ctx = context.WithValue(ctx, UserNameKey, login)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
