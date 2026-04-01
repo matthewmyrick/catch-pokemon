@@ -211,7 +211,11 @@ pub fn battle_tui() {
                         found = true;
                         break;
                     } else if status == "timeout" {
-                        // No match yet, server held for ~30s, retry immediately
+                        // No match yet — if the server responded too fast, add a delay
+                        let request_duration = start_time.elapsed().as_secs() - elapsed;
+                        if request_duration < 10 {
+                            thread::sleep(Duration::from_secs(5));
+                        }
                         continue;
                     } else {
                         let msg = v["error"].as_str().or(v["message"].as_str()).unwrap_or("Unknown error");
