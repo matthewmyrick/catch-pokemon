@@ -143,7 +143,15 @@ pub fn battle_tui() {
         eprintln!("  {} You have {} Pokemon — need at least 6", "FAIL".red().bold(), storage.pokemon.len());
         return;
     }
-    println!("  {} PC loaded ({} Pokemon)", "OK".green().bold(), storage.pokemon.len());
+    // Verify PC integrity before allowing battle
+    if storage.chain_hash.is_some() {
+        if let Err(msg) = crate::crypto::verify_chain(&storage) {
+            eprintln!("  {} PC integrity check failed: {}", "FAIL".red().bold(), msg);
+            eprintln!("  Your PC may be corrupted. Run: {}", "catch-pokemon verify".yellow());
+            return;
+        }
+    }
+    println!("  {} PC loaded and verified ({} Pokemon)", "OK".green().bold(), storage.pokemon.len());
 
     let team = BattleTeam::load();
     if team.pokemon.is_empty() {
@@ -196,6 +204,9 @@ pub fn battle_tui() {
                 Ok(v) => {
                     let status = v["status"].as_str().unwrap_or("");
                     if status == "matched" {
+                        // Ring terminal bell to alert the user (flashes tab in iTerm2/Ghostty)
+                        print!("\x07");
+                        stdout().flush().unwrap_or(());
                         match_data = v;
                         found = true;
                         break;
@@ -395,10 +406,25 @@ fn render_selection(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error
             let truncated: String = p.name.chars().take(left_name_w).collect();
             let padded = format!("{:<w$}", truncated, w = left_name_w);
 
+            let types_str: String = p.types.iter().take(2).map(|t| {
+                match t.as_str() {
+                    "fire" => "\x1B[31mF\x1B[0m", "water" => "\x1B[34mW\x1B[0m",
+                    "grass" => "\x1B[32mG\x1B[0m", "electric" => "\x1B[33mE\x1B[0m",
+                    "ice" => "\x1B[36mI\x1B[0m", "fighting" => "\x1B[31mFi\x1B[0m",
+                    "poison" => "\x1B[35mPo\x1B[0m", "ground" => "\x1B[33mGr\x1B[0m",
+                    "flying" => "\x1B[36mFl\x1B[0m", "psychic" => "\x1B[35mPs\x1B[0m",
+                    "bug" => "\x1B[32mB\x1B[0m", "rock" => "\x1B[33mR\x1B[0m",
+                    "ghost" => "\x1B[35mGh\x1B[0m", "dragon" => "\x1B[34mD\x1B[0m",
+                    "dark" => "\x1B[37mDk\x1B[0m", "steel" => "\x1B[37mSt\x1B[0m",
+                    "fairy" => "\x1B[35mFa\x1B[0m", "normal" => "\x1B[37mN\x1B[0m",
+                    _ => "?"
+                }.to_string()
+            }).collect::<Vec<_>>().join("/");
+
             if left_idx == ctx.left_selected && ctx.active_pane == Pane::Left {
-                format!(" {}{}\x1B[7m {}{} P:{:<3}\x1B[0m", check, arrow, padded, shiny, p.power_rank)
+                format!(" {}{}\x1B[7m {}{} P:{:<3}\x1B[0m {}", check, arrow, padded, shiny, p.power_rank, types_str)
             } else {
-                format!(" {}{} \x1B[32m{}\x1B[0m{} \x1B[33mP:{:<3}\x1B[0m", check, arrow, padded, shiny, p.power_rank)
+                format!(" {}{} \x1B[32m{}\x1B[0m{} \x1B[33mP:{:<3}\x1B[0m {}", check, arrow, padded, shiny, p.power_rank, types_str)
             }
         } else {
             format!("{:<w$}", "", w = left_width)
@@ -413,10 +439,25 @@ fn render_selection(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error
             let truncated: String = p.name.chars().take(right_name_w).collect();
             let padded = format!("{:<w$}", truncated, w = right_name_w);
 
+            let types_str: String = p.types.iter().take(2).map(|t| {
+                match t.as_str() {
+                    "fire" => "\x1B[31mF\x1B[0m", "water" => "\x1B[34mW\x1B[0m",
+                    "grass" => "\x1B[32mG\x1B[0m", "electric" => "\x1B[33mE\x1B[0m",
+                    "ice" => "\x1B[36mI\x1B[0m", "fighting" => "\x1B[31mFi\x1B[0m",
+                    "poison" => "\x1B[35mPo\x1B[0m", "ground" => "\x1B[33mGr\x1B[0m",
+                    "flying" => "\x1B[36mFl\x1B[0m", "psychic" => "\x1B[35mPs\x1B[0m",
+                    "bug" => "\x1B[32mB\x1B[0m", "rock" => "\x1B[33mR\x1B[0m",
+                    "ghost" => "\x1B[35mGh\x1B[0m", "dragon" => "\x1B[34mD\x1B[0m",
+                    "dark" => "\x1B[37mDk\x1B[0m", "steel" => "\x1B[37mSt\x1B[0m",
+                    "fairy" => "\x1B[35mFa\x1B[0m", "normal" => "\x1B[37mN\x1B[0m",
+                    _ => "?"
+                }.to_string()
+            }).collect::<Vec<_>>().join("/");
+
             if right_idx == ctx.right_selected && ctx.active_pane == Pane::Right {
-                format!(" {}\x1B[7m {}{} P:{:<3}\x1B[0m", arrow, padded, shiny, p.power_rank)
+                format!(" {}\x1B[7m {}{} P:{:<3}\x1B[0m {}", arrow, padded, shiny, p.power_rank, types_str)
             } else {
-                format!(" {} \x1B[32m{}\x1B[0m{} \x1B[33mP:{:<3}\x1B[0m", arrow, padded, shiny, p.power_rank)
+                format!(" {} \x1B[32m{}\x1B[0m{} \x1B[33mP:{:<3}\x1B[0m {}", arrow, padded, shiny, p.power_rank, types_str)
             }
         } else {
             String::new()

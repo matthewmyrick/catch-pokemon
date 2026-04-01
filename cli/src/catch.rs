@@ -311,7 +311,9 @@ pub fn catch_pokemon(
         let mut storage = PcStorage::load();
         storage.add_pokemon(pokemon.clone(), ball, shiny);
         if let Err(e) = storage.save() {
-            eprintln!("Warning: Could not save to PC: {}", e);
+            eprintln!("{}", format!("SAVE FAILED: {}. Catch does NOT count!", e).red().bold());
+            eprintln!("{}", "Your PC file may be corrupted. Run: catch-pokemon verify".red());
+            return;
         } else {
             println!();
             if shiny {

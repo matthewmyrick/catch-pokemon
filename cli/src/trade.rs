@@ -113,9 +113,16 @@ pub fn trade_tui() {
         None => { eprintln!("  {} Authentication failed", "FAIL".red().bold()); return; }
     };
 
-    // Load PC
+    // Load and verify PC
     let pokemon_db: HashMap<String, PokemonData> = serde_json::from_str(POKEMON_DATA).unwrap_or_default();
     let storage = PcStorage::load();
+    if storage.chain_hash.is_some() {
+        if let Err(msg) = crate::crypto::verify_chain(&storage) {
+            eprintln!("{}", format!("PC integrity check failed: {}", msg).red().bold());
+            eprintln!("{}", "Cannot trade with a corrupted PC. Run: catch-pokemon verify".red());
+            return;
+        }
+    }
     let mut pc_pokemon = build_pc_entries(&storage, &pokemon_db);
     pc_pokemon.sort_by(|a, b| a.name.cmp(&b.name));
 
@@ -280,18 +287,22 @@ fn trade_loop(ctx: &mut TradeContext) -> Result<(), Box<dyn std::error::Error>> 
                         ctx.active_tab = TradeTab::Browse;
                         ctx.search_term.clear();
                         refresh_trades(ctx);
+                        // Clear screen on tab switch to remove stale content
+                        print!("\x1B[2J");
                         continue;
                     }
                     KeyCode::Char('2') => {
                         ctx.active_tab = TradeTab::Post;
                         ctx.search_term.clear();
                         refresh_my_trade(ctx);
+                        print!("\x1B[2J");
                         continue;
                     }
                     KeyCode::Char('3') => {
                         ctx.active_tab = TradeTab::MyTrade;
                         ctx.search_term.clear();
                         refresh_my_trade(ctx);
+                        print!("\x1B[2J");
                         continue;
                     }
                     _ => {}
@@ -694,10 +705,10 @@ fn render_my_trade(ctx: &TradeContext) -> Result<(), Box<dyn std::error::Error>>
 
     for row in 0..list_height {
         let left_cell = if ctx.my_trade.is_none() {
-            String::new()
+            format!("{:<w$}", "", w = left_width)
         } else if ctx.my_offers.is_empty() {
             if row == 0 { " \x1B[90mNo offers yet. Check back later.\x1B[0m".to_string() }
-            else { String::new() }
+            else { format!("{:<w$}", "", w = left_width) }
         } else {
             let idx = ctx.offer_scroll + row;
             if idx < ctx.my_offers.len() {
@@ -708,7 +719,7 @@ fn render_my_trade(ctx: &TradeContext) -> Result<(), Box<dyn std::error::Error>>
                 } else {
                     format!("   \x1B[32m{:<15}\x1B[0m{} \x1B[90mfrom {}\x1B[0m", o.pokemon_name, shiny, o.from)
                 }
-            } else { String::new() }
+            } else { format!("{:<w$}", "", w = left_width) }
         };
 
         // Right panel — selected offer details
