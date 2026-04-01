@@ -38,6 +38,7 @@ pub fn api_post(endpoint: &str, token: &str, body: &str) -> Option<String> {
     let url = format!("{}{}", get_api_url(), endpoint);
     let mut cmd = Command::new("curl");
     cmd.args(&["-sSL", "-X", "POST", "--fail",
+        "--max-time", "45",
         "-H", &format!("Authorization: Bearer {}", token),
         "-H", "Content-Type: application/json",
         "-d", body]);

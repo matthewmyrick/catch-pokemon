@@ -206,8 +206,8 @@ pub fn battle_tui() {
                 Err(_) => { eprintln!("\r  {}", "Invalid response from server.".red()); return; }
             },
             None => {
-                eprintln!("\r  {}", "Connection lost.".red());
-                return;
+                // Connection dropped (likely Fly timeout) — retry
+                continue;
             }
         }
     }
