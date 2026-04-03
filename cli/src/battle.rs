@@ -366,7 +366,7 @@ fn render_selection(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error
     let (tw, th) = terminal::size()?;
     let tw = tw as usize;
     let th = th as usize;
-    let left_width = 36.min(tw / 2);
+    let left_width = tw / 2;
     let list_height = th.saturating_sub(6);
     let count = selected_count(ctx);
 
@@ -593,7 +593,7 @@ fn render_waiting(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error>>
     let (tw, th) = terminal::size()?;
     let tw = tw as usize;
     let th = th as usize;
-    let left_width = 36.min(tw / 2);
+    let left_width = tw / 2;
     let list_height = th.saturating_sub(6);
     let spinners = ["   ", ".  ", ".. ", "..."];
     let spinner = spinners[ctx.spinner_frame % spinners.len()];
@@ -677,29 +677,45 @@ fn handle_waiting_input(ctx: &mut BattleContext) -> Result<bool, Box<dyn std::er
                         let me = data["you"].as_str().unwrap_or("");
                         let winner = res["winner"].as_str().unwrap_or("");
 
-                        ctx.last_our_score = res["p1_score"].as_f64().unwrap_or(0.0);
-                        ctx.last_opp_score = res["p2_score"].as_f64().unwrap_or(0.0);
-
-                        // Swap scores if we're player 2
-                        if me != data.get("battle_id").and_then(|_| Some("")).unwrap_or("") {
-                            // Use the "you" field to determine perspective
-                            if me == data.get("opponent").and_then(|v| v.as_str()).unwrap_or("") {
-                                // We're actually player 2, scores might be swapped
-                            }
-                        }
-
                         ctx.last_round_won = winner == me;
-                        ctx.our_wins = data["p1_wins"].as_u64().unwrap_or(0);
-                        ctx.opp_wins = data["p2_wins"].as_u64().unwrap_or(0);
 
-                        // Determine correct wins perspective
-                        let p1 = data.get("you").and_then(|v| v.as_str()).unwrap_or("");
-                        let _opponent_field = data.get("opponent").and_then(|v| v.as_str()).unwrap_or("");
-                        if !p1.is_empty() && p1 == ctx.user_id {
-                            // We are p1, wins are correct
-                        } else {
-                            // We are p2, swap
-                            std::mem::swap(&mut ctx.our_wins, &mut ctx.opp_wins);
+                        // The API's "you" field always matches our user_id
+                        // "your_ready" tells us if we're p1 or p2
+                        // p1_wins/p2_wins are always from the server's perspective
+                        let you_field = data["you"].as_str().unwrap_or("");
+                        let p1_wins = data["p1_wins"].as_u64().unwrap_or(0);
+                        let p2_wins = data["p2_wins"].as_u64().unwrap_or(0);
+                        let p1_score = res["p1_score"].as_f64().unwrap_or(0.0);
+                        let p2_score = res["p2_score"].as_f64().unwrap_or(0.0);
+
+                        // Check if we're player 1 by comparing user IDs
+                        // The API returns "you" which matches our ID
+                        // and it returns p1/p2 wins from the battle's perspective
+                        // We need to figure out which player we are
+                        let opponent_field = data["opponent"].as_str().unwrap_or("");
+                        let we_are_p1 = you_field == ctx.user_id && opponent_field != ctx.user_id;
+
+                        // If we can't determine, check the winner against p1/p2 wins
+                        if we_are_p1 || (you_field == ctx.user_id) {
+                            // Default: assume we are p1
+                            ctx.our_wins = p1_wins;
+                            ctx.opp_wins = p2_wins;
+                            ctx.last_our_score = p1_score;
+                            ctx.last_opp_score = p2_score;
+                        }
+                        // Verify: if we won but our_wins didn't go up, we're p2
+                        if ctx.last_round_won && ctx.our_wins == 0 && p2_wins > 0 {
+                            ctx.our_wins = p2_wins;
+                            ctx.opp_wins = p1_wins;
+                            ctx.last_our_score = p2_score;
+                            ctx.last_opp_score = p1_score;
+                        }
+                        if !ctx.last_round_won && ctx.opp_wins == 0 && p1_wins > 0 && ctx.our_wins > 0 {
+                            // We lost but our_wins > 0 and opp_wins == 0 — we're p2
+                            ctx.our_wins = p2_wins;
+                            ctx.opp_wins = p1_wins;
+                            ctx.last_our_score = p2_score;
+                            ctx.last_opp_score = p1_score;
                         }
                     }
 
@@ -740,7 +756,7 @@ fn render_results(ctx: &BattleContext) -> Result<(), Box<dyn std::error::Error>>
     let (tw, th) = terminal::size()?;
     let tw = tw as usize;
     let th = th as usize;
-    let left_width = 36.min(tw / 2);
+    let left_width = tw / 2;
     let list_height = th.saturating_sub(6);
 
     stdout().execute(cursor::MoveTo(0, 0))?;
@@ -813,9 +829,9 @@ fn handle_results_input(ctx: &mut BattleContext) -> Result<bool, Box<dyn std::er
             return Ok(true);
         }
 
-        // Check if battle is over (best of 3 = first to 2)
-        if ctx.our_wins >= 2 || ctx.opp_wins >= 2 {
-            if ctx.our_wins >= 2 {
+        // Check if battle is over (best of 5 = first to 3)
+        if ctx.our_wins >= 3 || ctx.opp_wins >= 3 {
+            if ctx.our_wins >= 3 {
                 ctx.result_message = format!("YOU WIN! Final score: {}-{}", ctx.our_wins, ctx.opp_wins);
             } else {
                 ctx.result_message = format!("YOU LOSE. Final score: {}-{}", ctx.our_wins, ctx.opp_wins);
